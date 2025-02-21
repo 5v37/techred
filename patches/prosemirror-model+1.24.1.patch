@@ -1,0 +1,26 @@
+diff --git a/node_modules/prosemirror-model/dist/index.js b/node_modules/prosemirror-model/dist/index.js
+index 241dca0..29d4dc3 100644
+--- a/node_modules/prosemirror-model/dist/index.js
++++ b/node_modules/prosemirror-model/dist/index.js
+@@ -2362,7 +2362,7 @@ class MarkType {
+     */
+     static compile(marks, schema) {
+         let result = Object.create(null), rank = 0;
+-        marks.forEach((name, spec) => result[name] = new MarkType(name, rank++, schema, spec));
++        marks.forEach((name, spec) => result[name] = new MarkType(name, rank, schema, spec));
+         return result;
+     }
+     /**
+diff --git a/node_modules/prosemirror-model/src/schema.ts b/node_modules/prosemirror-model/src/schema.ts
+index c43ec17..ce32638 100644
+--- a/node_modules/prosemirror-model/src/schema.ts
++++ b/node_modules/prosemirror-model/src/schema.ts
+@@ -314,7 +314,7 @@ export class MarkType {
+   /// @internal
+   static compile(marks: OrderedMap<MarkSpec>, schema: Schema) {
+     let result = Object.create(null), rank = 0
+-    marks.forEach((name, spec) => result[name] = new MarkType(name, rank++, schema, spec))
++    marks.forEach((name, spec) => result[name] = new MarkType(name, rank, schema, spec))
+     return result
+   }
+ 

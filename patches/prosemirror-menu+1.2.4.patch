@@ -1,0 +1,26 @@
+diff --git a/node_modules/prosemirror-menu/dist/index.js b/node_modules/prosemirror-menu/dist/index.js
+index 341abd2..05f01f1 100644
+--- a/node_modules/prosemirror-menu/dist/index.js
++++ b/node_modules/prosemirror-menu/dist/index.js
+@@ -519,7 +519,7 @@ class MenuBarView {
+             }
+             if (this.menu.offsetHeight > this.maxHeight) {
+                 this.maxHeight = this.menu.offsetHeight;
+-                this.menu.style.minHeight = this.maxHeight + "px";
++                //this.menu.style.minHeight = this.maxHeight + "px";
+             }
+         }
+     }
+diff --git a/node_modules/prosemirror-menu/src/menubar.ts b/node_modules/prosemirror-menu/src/menubar.ts
+index 8d5917b..5a73c11 100644
+--- a/node_modules/prosemirror-menu/src/menubar.ts
++++ b/node_modules/prosemirror-menu/src/menubar.ts
+@@ -82,7 +82,7 @@ class MenuBarView {
+       }
+       if (this.menu.offsetHeight > this.maxHeight) {
+         this.maxHeight = this.menu.offsetHeight
+-        this.menu.style.minHeight = this.maxHeight + "px"
++        // this.menu.style.minHeight = this.maxHeight + "px"
+       }
+     }
+   }

@@ -1,0 +1,39 @@
+{
+  "name": "techred",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "tauri": "tauri",
+    "postinstall": "patch-package"
+  },
+  "dependencies": {
+    "@primevue/themes": "^4.2.5",
+    "@tauri-apps/api": "^2.2.0",
+    "@tauri-apps/plugin-dialog": "^2.2.0",
+    "@tauri-apps/plugin-window-state": "^2.2.1",
+    "primeicons": "^7.0.0",
+    "primevue": "^4.2.5",
+    "prosemirror-commands": "^1.6.2",
+    "prosemirror-history": "^1.4.1",
+    "prosemirror-keymap": "^1.2.2",
+    "prosemirror-menu": "^1.2.4",
+    "prosemirror-model": "^1.24.1",
+    "prosemirror-state": "^1.4.3",
+    "prosemirror-view": "^1.37.2",
+    "vue": "^3.5.13"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.2.7",
+    "@types/wicg-file-system-access": "^2023.10.5",
+    "@vitejs/plugin-vue": "^5.2.1",
+    "patch-package": "^7.0.2",
+    "sass-embedded": "^1.83.4",
+    "typescript": "^5.7.3",
+    "vite": "^6.0.11",
+    "vue-tsc": "^2.2.0"
+  }
+}
