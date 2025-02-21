@@ -12,12 +12,12 @@ type documentBlocks = {
 
 class fileBroker {
     private subs: Subscribers[] = [];
-    private initailData: documentBlocks | undefined;
+    private initialData: documentBlocks | undefined;
 
     addSubscriber(parseHandler: (source: Element | undefined) => void, serializeHandler: (xmlDoc: Document, target: Element) => void, elementId: string) {
         this.subs.push({ parseHandler, serializeHandler, elementId })
-        if (this.initailData) {
-            parseHandler(this.initailData[elementId]);
+        if (this.initialData) {
+            parseHandler(this.initialData[elementId]);
         }
     }
 
@@ -37,8 +37,8 @@ class fileBroker {
         };
 
         if (!this.subs.length) {
-            this.initailData = parts;
-            setTimeout(() => {this.initailData = undefined});
+            this.initialData = parts;
+            setTimeout(() => {this.initialData = undefined});
         };
     }
 

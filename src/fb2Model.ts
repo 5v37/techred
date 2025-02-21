@@ -13,7 +13,7 @@ export const textBlocks = ["p", "v", "subtitle", "text-author"];
 export const markBlocks = Object.keys(bodySchema.marks);
 
 function template(topNode: string, toXML: boolean): Schema {
-    const defaulNameSpace = toXML ? fb2ns + " " : "";
+    const defaultNameSpace = toXML ? fb2ns + " " : "";
     return new Schema({
         topNode: topNode,
         nodes: {
@@ -45,8 +45,8 @@ function template(topNode: string, toXML: boolean): Schema {
                     }
                 }],
                 toDOM(node) {
-                    if (defaulNameSpace) {
-                        return [defaulNameSpace + "image", {
+                    if (defaultNameSpace) {
+                        return [defaultNameSpace + "image", {
                             [xlinkns + " type"]: node.attrs.type,
                             [xlinkns + " href"]: node.attrs.href,
                             alt: node.attrs.alt,
@@ -62,7 +62,7 @@ function template(topNode: string, toXML: boolean): Schema {
             title: {
                 content: "p+",
                 parseDOM: [{ tag: "title" }],
-                toDOM() { return [defaulNameSpace + "title", 0] }
+                toDOM() { return [defaultNameSpace + "title", 0] }
             },
             epigraph: {
                 content: "(p+ | poem | cite)* textauthor*",
@@ -74,7 +74,7 @@ function template(topNode: string, toXML: boolean): Schema {
                         return { id: dom.getAttribute("id") };
                     }
                 }],
-                toDOM(node) { return [defaulNameSpace + "epigraph", node.attrs, 0] }
+                toDOM(node) { return [defaultNameSpace + "epigraph", node.attrs, 0] }
             },
             section: {
                 content: "title? epigraph* image? annotation? (section+ | ((p | poem | subtitle | cite)? (p | image | poem | subtitle | cite)*))",
@@ -92,8 +92,8 @@ function template(topNode: string, toXML: boolean): Schema {
                 }],
                 //toDOM(node) { return [defaulNameSpace + "section", node.attrs, 0] }
                 toDOM(node) {
-                    if (defaulNameSpace) {
-                        return [defaulNameSpace + "section", { id: node.attrs.inid }, 0];
+                    if (defaultNameSpace) {
+                        return [defaultNameSpace + "section", { id: node.attrs.inid }, 0];
                     } else {
                         return ["section", node.attrs, 0];
                     }
@@ -114,17 +114,17 @@ function template(topNode: string, toXML: boolean): Schema {
                     { tag: "empty-line" }
                 ],
                 toDOM(node) {
-                    if (defaulNameSpace && !node.firstChild) {
-                        return [defaulNameSpace + "empty-line", 0];
+                    if (defaultNameSpace && !node.firstChild) {
+                        return [defaultNameSpace + "empty-line", 0];
                     } else {
-                        return [defaulNameSpace + "p", node.attrs, 0];
+                        return [defaultNameSpace + "p", node.attrs, 0];
                     }
                 }
             },
             textauthor: {
                 content: "(text | inlineimage)*",
                 parseDOM: [{ tag: "text-author" }],
-                toDOM() { return [defaulNameSpace + "text-author", 0] }
+                toDOM() { return [defaultNameSpace + "text-author", 0] }
             },
             poem: {
                 content: "title? epigraph* (subtitle | stanza)+ textauthor* date?",
@@ -136,12 +136,12 @@ function template(topNode: string, toXML: boolean): Schema {
                         return { id: dom.getAttribute("id") };
                     }
                 }],
-                toDOM(node) { return [defaulNameSpace + "poem", node.attrs, 0] }
+                toDOM(node) { return [defaultNameSpace + "poem", node.attrs, 0] }
             },
             stanza: {
                 content: "title? subtitle?  v+",
                 parseDOM: [{ tag: "stanza" }],
-                toDOM() { return [defaulNameSpace + "stanza", 0] }
+                toDOM() { return [defaultNameSpace + "stanza", 0] }
             },
             v: {
                 content: "(text | inlineimage)*",
@@ -153,7 +153,7 @@ function template(topNode: string, toXML: boolean): Schema {
                         return { id: dom.getAttribute("id") };
                     }
                 }],
-                toDOM(node) { return [defaulNameSpace + "v", defaulNameSpace && !node.firstChild ? " " : 0] }
+                toDOM(node) { return [defaultNameSpace + "v", defaultNameSpace && !node.firstChild ? " " : 0] }
             },
             date: {
                 attrs: {
@@ -166,7 +166,7 @@ function template(topNode: string, toXML: boolean): Schema {
                         return { value: dom.getAttribute("value") };
                     }
                 }],
-                toDOM(node) { return [defaulNameSpace + "date", node.attrs, 0] }
+                toDOM(node) { return [defaultNameSpace + "date", node.attrs, 0] }
             },
             cite: {
                 content: "(p | poem | subtitle)* textauthor*", // table
@@ -178,7 +178,7 @@ function template(topNode: string, toXML: boolean): Schema {
                         return { id: dom.getAttribute("id") };
                     }
                 }],
-                toDOM(node) { return [defaulNameSpace + "cite", node.attrs, 0] }
+                toDOM(node) { return [defaultNameSpace + "cite", node.attrs, 0] }
             },
             subtitle: {
                 content: "(text | inlineimage)*",
@@ -190,7 +190,7 @@ function template(topNode: string, toXML: boolean): Schema {
                         return { id: dom.getAttribute("id") };
                     }
                 }],
-                toDOM() { return [defaulNameSpace + "subtitle", 0] }
+                toDOM() { return [defaultNameSpace + "subtitle", 0] }
             },
             annotation: {
                 attrs: {
@@ -202,7 +202,7 @@ function template(topNode: string, toXML: boolean): Schema {
                         return { id: dom.getAttribute("id") };
                     }
                 }],
-                toDOM(node) { return [defaulNameSpace + "annotation", node.attrs, 0] }
+                toDOM(node) { return [defaultNameSpace + "annotation", node.attrs, 0] }
             },
             inlineimage: {
                 inline: true,
@@ -225,8 +225,8 @@ function template(topNode: string, toXML: boolean): Schema {
                     }
                 }],
                 toDOM(node) {
-                    if (defaulNameSpace) {
-                        return [defaulNameSpace + "image", {
+                    if (defaultNameSpace) {
+                        return [defaultNameSpace + "image", {
                             [xlinkns + " type"]: node.attrs.type,
                             [xlinkns + " href"]: node.attrs.href,
                             alt: node.attrs.alt,
@@ -242,7 +242,7 @@ function template(topNode: string, toXML: boolean): Schema {
         marks: {
             code: {
                 parseDOM: [{ tag: "code" }],
-                toDOM() { return [defaulNameSpace + "code"]; }
+                toDOM() { return [defaultNameSpace + "code"]; }
             },
             a: {
                 attrs: {
@@ -260,8 +260,8 @@ function template(topNode: string, toXML: boolean): Schema {
                     }
                 }],
                 toDOM(node) {
-                    if (defaulNameSpace) {
-                        return [defaulNameSpace + "a", {
+                    if (defaultNameSpace) {
+                        return [defaultNameSpace + "a", {
                             // [xlinkns + " type"]: node.attrs.xtype,
                             [xlinkns + " href"]: node.attrs.href,
                             type: node.attrs.type
@@ -273,25 +273,25 @@ function template(topNode: string, toXML: boolean): Schema {
             },
             emphasis: {
                 parseDOM: [{ tag: "emphasis" }],
-                toDOM() { return [defaulNameSpace + "emphasis"]; }
+                toDOM() { return [defaultNameSpace + "emphasis"]; }
             },
             strong: {
                 parseDOM: [{ tag: "strong" }],
-                toDOM() { return [defaulNameSpace + "strong"]; }
+                toDOM() { return [defaultNameSpace + "strong"]; }
             },
             strikethrough: {
                 parseDOM: [{ tag: "strikethrough" }],
-                toDOM() { return [defaulNameSpace + "strikethrough"]; }
+                toDOM() { return [defaultNameSpace + "strikethrough"]; }
             },
             sup: {
                 excludes: "sub",
                 parseDOM: [{ tag: "sup" }],
-                toDOM() { return [defaulNameSpace + "sup"]; }
+                toDOM() { return [defaultNameSpace + "sup"]; }
             },
             sub: {
                 excludes: "sup",
                 parseDOM: [{ tag: "sub" }],
-                toDOM() { return [defaulNameSpace + "sub"]; }
+                toDOM() { return [defaultNameSpace + "sub"]; }
             }
         }
     })

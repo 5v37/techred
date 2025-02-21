@@ -3,7 +3,7 @@
         <InputGroup>
             <InputText id="date" v-model.lazy="dateString" />
             <InputGroupAddon>
-                <Button :label="dateMode.shortLabel" severity="secondary" variant="text" @click="showModesSelecter"
+                <Button :label="dateMode.shortLabel" severity="secondary" variant="text" @click="showModesSelector"
                     style="line-height: 1;"></Button>
             </InputGroupAddon>
             <DatePicker v-model="date" showIcon iconDisplay="input" :view="dateMode.view" date-format="yy-mm-dd" />
@@ -85,9 +85,9 @@ watch(date, (newDate) => {
 
 function stringToDate(datebyString: string) {
     return new Date(new Date(datebyString).getTime() + timezoneOffset);
-}
+};
 
-function showModesSelecter(event: Event) {
+function showModesSelector(event: Event) {
     if (pop.value) {
         pop.value.toggle(event);
     };

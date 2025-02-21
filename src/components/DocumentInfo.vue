@@ -30,7 +30,7 @@
 
             <div class="t-ui-field">
                 <label>Авторы</label>
-                <Persons v-model="fileAutors" />
+                <Persons v-model="fileAuthors" />
             </div>
 
             <div class="t-ui-field">
@@ -57,7 +57,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue'
+import { defineComponent } from 'vue';
 
 import Persons from './Persons.vue';
 import Editor from './Editor.vue';
@@ -71,7 +71,7 @@ import { fb2ns } from '../fb2Model';
 import fileBroker from '../fileBroker';
 
 interface StateDescription {
-    fileAutors: PersonInfo[],
+    fileAuthors: PersonInfo[],
     programUsed: string,
     date: string,
     dateValue: string,
@@ -84,11 +84,11 @@ interface StateDescription {
 
 function initialStateDescription(): StateDescription {
     return {
-        fileAutors: [],
+        fileAuthors: [],
         programUsed: "",
         date: "",
         dateValue: "",
-        fileVers: 0.0,
+        fileVers: 0.1,
         fileID: self.crypto.randomUUID(),
         srcOCR: "",
         srcURL: [],
@@ -142,7 +142,7 @@ export default defineComponent({
 
             for (const item of descElement.children) {
                 if (item.tagName === "author") {
-                    this.fileAutors.push(new PersonInfo(item));
+                    this.fileAuthors.push(new PersonInfo(item));
                 } else if (item.tagName === "program-used" && item.textContent) {
                     this.programUsed = item.textContent;
                 } else if (item.tagName === "date" && item.textContent) {
@@ -164,7 +164,7 @@ export default defineComponent({
         serializeContent(xmlDoc: Document, documentInfo: Element) {
             const addElement = addingNodes(xmlDoc, fb2ns);
 
-            const authors = this.fileAutors.length ? this.fileAutors : [new PersonInfo];
+            const authors = this.fileAuthors.length ? this.fileAuthors : [new PersonInfo];
             for (const author of authors) {
                 const authorNode = xmlDoc.createElementNS(fb2ns, "author");
                 for (const prop of author.props()) {

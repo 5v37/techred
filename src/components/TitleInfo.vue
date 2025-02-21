@@ -12,7 +12,7 @@
 
             <div class="t-ui-field">
                 <label>Автор</label>
-                <Persons v-model="autors" />
+                <Persons v-model="authors" />
             </div>
 
             <div class="t-ui-group">
@@ -111,7 +111,7 @@ interface StateDescription {
     cover: string,
     coverType: string,
     languages: Language[],
-    autors: PersonInfo[],
+    authors: PersonInfo[],
     translators: PersonInfo[],
     selectedLang: Language | undefined,
     selectedSrcLang: Language | undefined,
@@ -128,7 +128,7 @@ function initialStateDescription(): StateDescription {
         bookTitle: "",
         date: "",
         dateValue: "",
-        autors: [],
+        authors: [],
         translators: [],
         genresTree: genresTree,
         keywords: "",
@@ -219,7 +219,7 @@ export default defineComponent({
                 if (item.tagName === "genre" && item.textContent) {
                     this.selectedGenres.push(findGenre(item.textContent, missingGenre));
                 } else if (item.tagName === "author") {
-                    this.autors.push(new PersonInfo(item));
+                    this.authors.push(new PersonInfo(item));
                 } else if (item.tagName === "book-title" && item.textContent) {
                     this.bookTitle = item.textContent;
                 } else if (item.tagName === "keywords" && item.textContent) {
@@ -259,7 +259,7 @@ export default defineComponent({
                 addElement(titleInfo, "genre", element.mark, true);
             };
 
-            const authors = this.autors.length ? this.autors : [new PersonInfo];
+            const authors = this.authors.length ? this.authors : [new PersonInfo];
             for (const author of authors) {
                 const authorNode = xmlDoc.createElementNS(fb2ns, "author");
                 for (const prop of author.props()) {

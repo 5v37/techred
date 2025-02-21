@@ -4,7 +4,7 @@
             <Button icon="pi pi-file" text @click="newFile" severity="secondary" v-tooltip="'Новый (Ctrl+N)'" />
             <Button icon="pi pi-file-import" text @click="openFile" severity="secondary"
                 v-tooltip="'Открыть... (Ctrl+O)'" />
-            <Button icon="pi pi-save" text @click="saveFile" severity="secondary" :disabled="!curentFilePath"
+            <Button icon="pi pi-save" text @click="saveFile" severity="secondary" :disabled="!currentFilePath"
                 v-tooltip="'Сохранить (Ctrl+S)'" />
             <Button icon="pi pi-file-export" text @click="saveFileAs" severity="secondary"
                 v-tooltip="'Сохранить как... (Ctrl+Shift+S)'" />
@@ -33,7 +33,7 @@ import fileBroker from '../fileBroker';
 
 const emit = defineEmits(['loaded']);
 
-const curentFilePath = ref("");
+const currentFilePath = ref("");
 const isDarkTheme = ref(false);
 const toast = useToast();
 const fileOptions: FilePickerOptions = {
@@ -51,7 +51,7 @@ if (isTauriMode) {
         if (filePath) {
             const xml = await readTextFile(filePath);
             fileBroker.parse(xml);
-            curentFilePath.value = filePath;
+            currentFilePath.value = filePath;
         };
     }).catch((error) => {
         toast.add({ severity: 'error', summary: 'Ошибка открытия файла', detail: error });
@@ -62,7 +62,7 @@ if (isTauriMode) {
     emit("loaded");
 };
 
-watch(curentFilePath, (newPath) => {
+watch(currentFilePath, (newPath) => {
     if (isTauriMode) {
         const fileName = !newPath ? "Новый" : newPath;
         getCurrentWindow().setTitle(`${fileName} - Техред`);
@@ -88,7 +88,7 @@ addEventListener("keydown", keyListener);
 
 function newFile() {
     fileBroker.reset();
-    curentFilePath.value = "";
+    currentFilePath.value = "";
 };
 function openFile() {
     if (isTauriMode) {
@@ -105,7 +105,7 @@ function openFile() {
             if (filePath) {
                 const xml = await readTextFile(filePath);
                 fileBroker.parse(xml);
-                curentFilePath.value = filePath;
+                currentFilePath.value = filePath;
             };
         }).catch((error) => {
             toast.add({ severity: 'error', summary: 'Ошибка открытия файла', detail: error });
@@ -119,8 +119,8 @@ function openFile() {
     };
 };
 function saveFile() {
-    if (curentFilePath) {
-        writeTextFile(curentFilePath.value, fileBroker.serialize()).then(() => {
+    if (currentFilePath) {
+        writeTextFile(currentFilePath.value, fileBroker.serialize()).then(() => {
             toast.add({ severity: 'info', summary: 'Файл успешно сохранён', life: 5000 });
         }).catch((error) => {
             toast.add({ severity: 'error', summary: 'Ошибка сохранения файла', detail: error });
@@ -134,13 +134,13 @@ function saveFileAs() {
                 name: 'FictionBook',
                 extensions: ['fb2', 'fbz', 'fb2.zip']
             }],
-            defaultPath: curentFilePath.value
+            defaultPath: currentFilePath.value
         };
 
         saveDialog(options).then(async filePath => {
             if (filePath) {
                 await writeTextFile(filePath, fileBroker.serialize());
-                curentFilePath.value = filePath;
+                currentFilePath.value = filePath;
                 toast.add({ severity: 'info', summary: 'Файл успешно сохранён', life: 5000 });
             };
         }).catch((error) => {
