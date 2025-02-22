@@ -8,7 +8,9 @@
     "build": "vue-tsc --noEmit && vite build",
     "preview": "vite preview",
     "tauri": "tauri",
-    "postinstall": "patch-package"
+    "postinstall": "patch-package",
+    "predeploy": "vue-tsc --noEmit && vite build --base=/techred/",
+    "deploy": "gh-pages -d dist"
   },
   "dependencies": {
     "@primevue/themes": "^4.2.5",
@@ -30,6 +32,7 @@
     "@tauri-apps/cli": "^2.2.7",
     "@types/wicg-file-system-access": "^2023.10.5",
     "@vitejs/plugin-vue": "^5.2.1",
+    "gh-pages": "^6.3.0",
     "patch-package": "^7.0.2",
     "sass-embedded": "^1.83.4",
     "typescript": "^5.7.3",
