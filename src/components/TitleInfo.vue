@@ -98,7 +98,8 @@ import { Genre, genresTree, findGenre } from '../types/genres'
 import { Language, languages, findLanguage } from '../types/languages';
 import PersonInfo from '../types/personInfo';
 import Series from '../types/series';
-import { addingNodes, base64toData, parseDataURL } from '../utils';
+import { openImageDialog, saveImageDialog } from '../fileAccess';
+import { addingNodes, parseDataURL } from '../utils';
 import { fb2ns, xlinkns } from '../fb2Model';
 import fileBroker from '../fileBroker';
 
@@ -319,61 +320,21 @@ export default defineComponent({
                 titleInfo.remove();
             };
         },
-        async selectCover() {
-            const fileOptions: FilePickerOptions = {
-                types: [{
-                    description: "Изображения",
-                    accept: {
-                        "image/png": [".png", ".jpeg", ".jpg"],
-                    }
-                }],
-                excludeAcceptAllOption: true
-            };
-
-            try {
-                const [fileHandle] = await window.showOpenFilePicker(fileOptions);
-
-                const file = await fileHandle.getFile();
-                const reader = new FileReader();
-
-                reader.readAsDataURL(file);
-                reader.onerror = () => { throw reader.error; };
-                reader.onload = () => {
-                    this.cover = reader.result as string;
-                    this.coverType = file.name.split('.').pop()!;
-                };
-            } catch (error) {
-                if (!(error instanceof DOMException && error.name === 'AbortError')) {
-                    this.$toast.add({ severity: 'error', summary: 'Ошибка открытия файла', detail: error, life: 10000 });
-                };
-            };
+        selectCover() {
+            openImageDialog().then(file => {
+                this.cover = file.content;
+                this.coverType = file.path.split('.').pop()!;
+            }).catch((error) => {
+                this.$toast.add({ severity: 'error', summary: 'Ошибка открытия файла', detail: error });
+            });
         },
-        async saveCover() {
-            const cover = parseDataURL(this.cover);
-            if (cover && cover.base64) {
-                const fileOptions: FilePickerOptions = {
-                    types: [{
-                        description: "Image",
-                        accept: {
-                            [cover.mime]: []
-                        }
-                    }],
-                    // @ts-ignore
-                    suggestedName: "cover",
-                    excludeAcceptAllOption: true
-                };
-
-                try {
-                    const fileHandle = await window.showSaveFilePicker(fileOptions);
-                    const writableStream = await fileHandle.createWritable();
-
-                    await writableStream.write(base64toData(cover.data));
-                    await writableStream.close();
-                } catch (error) {
-                    if (!(error instanceof DOMException && error.name === 'AbortError')) {
-                        this.$toast.add({ severity: 'error', summary: 'Ошибка сохранения файла', detail: error, life: 10000 });
-                    };
-                };
+        saveCover() {
+            if (this.cover) {
+                saveImageDialog(this.cover, "cover").then(() => {
+                    this.$toast.add({ severity: 'info', summary: 'Файл успешно сохранён', life: 3000 });
+                }).catch((error) => {
+                    this.$toast.add({ severity: 'error', summary: 'Ошибка сохранения файла', detail: error });
+                });
             };
         },
         deleteCover() {

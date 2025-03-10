@@ -1,5 +1,3 @@
-import { invoke } from "@tauri-apps/api/core";
-
 export function formatXML(xml: string, textBlocks: string[] = [], tab = " ", nl = "\r\n",) {
     let formatted = "", indent = "", MixedMode = false, mixedContent = "";
     const MixedNodeStart = textBlocks.map(tag => tag + ">");
@@ -97,19 +95,4 @@ export function addingNodes(xmlDoc: Document, nameSpace: string) {
     return addElement;
 };
 
-const isTauriMode = '__TAURI_INTERNALS__' in window;
-
-async function getFilePath() {
-    return await invoke('file_path') as string;
-};
-
-async function readTextFile(filePath: string) {
-    const fileData = await invoke('open_file', { filePath }) as ArrayBuffer;
-    return new TextDecoder().decode(fileData);
-};
-
-async function writeTextFile(filePath: string, content: string) {
-    await invoke("save_file", { filePath, content });
-};
-
-export {isTauriMode, getFilePath, readTextFile, writeTextFile};
+export const isTauriMode = '__TAURI_INTERNALS__' in window;

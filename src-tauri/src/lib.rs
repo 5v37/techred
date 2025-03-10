@@ -1,5 +1,6 @@
 use std::io::Read;
 use std::io::Write;
+use base64::prelude::*;
 
 #[tauri::command]
 fn file_path() -> String {
@@ -50,12 +51,10 @@ fn pack_to_archive(file_path: String, content: String) -> Result<(), Box<dyn std
 
 #[tauri::command]
 fn open_file(file_path: String) -> Result<tauri::ipc::Response, String> {
-    let data = if file_path.ends_with(".fb2") {
-        std::fs::read(file_path).map_err(|err| Box::from(err))
-    } else if file_path.ends_with(".fbz") || file_path.ends_with(".fb2.zip") {
+    let data = if file_path.ends_with(".fbz") || file_path.ends_with(".fb2.zip") {
         extract_file(file_path)
     } else {
-        Err("Неподдерживаемый формат файла".into())
+        std::fs::read(file_path).map_err(|err| Box::from(err))
     };
     return match data {
         Ok(vec) => Ok(tauri::ipc::Response::new(vec)),
@@ -70,7 +69,11 @@ fn save_file(file_path: String, content: String) -> Result<(), String> {
     } else if file_path.ends_with(".fbz") || file_path.ends_with(".fb2.zip") {
         return pack_to_archive(file_path, content).map_err(|err| err.to_string());
     } else {
-        return Err("Неподдерживаемый формат файла".into());
+        let decoded = BASE64_STANDARD.decode(content);
+        return match decoded {
+            Ok(vec) => std::fs::write(file_path, vec).map_err(|err| err.to_string()),
+            Err(e) => Err(e.to_string()),
+        };
     };
 }
 
