@@ -99,8 +99,9 @@ function saveFile() {
     }
 };
 function saveFileAs() {
-    saveFictionBookDialog(fileBroker.serialize(), currentFilePath.value).then(path => {
-        currentFilePath.value = path;
+    saveFictionBookDialog(fileBroker.serialize(), currentFilePath.value).then(file => {
+        currentFilePath.value = file.path;
+        fileHandle = file.handle;
         toast.add({ severity: 'info', summary: 'Файл успешно сохранён', life: 3000 });
     }).catch((error) => {
         toast.add({ severity: 'error', summary: 'Ошибка сохранения файла', detail: error });

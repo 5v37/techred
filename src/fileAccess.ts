@@ -9,8 +9,8 @@ async function readTextFile(filePath: string) {
     return new TextDecoder().decode(fileData);
 };
 
-export function openInitialFictionBook(): Promise<{ content: string, path: string } | void> {
-    return new Promise(async (resolve) => {
+export function openInitialFictionBook() {
+    return new Promise<{ content: string, path: string } | void>(async (resolve) => {
         if (isTauriMode) {
             const path = await invoke('file_path') as string;
             if (path) {
@@ -22,8 +22,8 @@ export function openInitialFictionBook(): Promise<{ content: string, path: strin
     });
 };
 
-export function openFictionBookDialog(): Promise<{ content: string, path: string, handle?: FileSystemFileHandle }> {
-    return new Promise(async (resolve, reject) => {
+export function openFictionBookDialog() {
+    return new Promise<{ content: string, path: string, handle?: FileSystemFileHandle }>(async (resolve, reject) => {
         if (isTauriMode) {
             const options: OpenDialogOptions = {
                 multiple: false,
@@ -58,8 +58,8 @@ export function openFictionBookDialog(): Promise<{ content: string, path: string
     });
 };
 
-export function openImageDialog(): Promise<{ content: string, path: string, handle?: FileSystemFileHandle }> {
-    return new Promise(async (resolve, reject) => {
+export function openImageDialog() {
+    return new Promise<{ content: string, path: string, handle?: FileSystemFileHandle }>(async (resolve, reject) => {
         if (isTauriMode) {
             const options: OpenDialogOptions = {
                 multiple: false,
@@ -106,7 +106,7 @@ export function openImageDialog(): Promise<{ content: string, path: string, hand
 };
 
 export function saveFictionBookDialog(fileData: string, filePath: string, saveDirectly?: { fileHandle?: FileSystemFileHandle }) {
-    return new Promise<string>(async (resolve, reject) => {
+    return new Promise<{ path: string, handle?: FileSystemFileHandle }>(async (resolve, reject) => {
         if (isTauriMode) {
             const options: SaveDialogOptions = {
                 defaultPath: filePath,
@@ -119,7 +119,7 @@ export function saveFictionBookDialog(fileData: string, filePath: string, saveDi
             const path = saveDirectly ? filePath : await save(options);
             if (path) {
                 await invoke("save_file", { filePath: path, content: fileData });
-                resolve(path);
+                resolve({ path, handle: undefined });
             };
         } else {
             const blob = Promise.resolve(new Blob([fileData], { type: 'application/fb2' }));
@@ -132,7 +132,7 @@ export function saveFictionBookDialog(fileData: string, filePath: string, saveDi
 
             fileSave(blob, options, saveDirectly?.fileHandle).then((handle) => {
                 if (handle) {
-                    resolve(handle.name);
+                    resolve({ path: handle.name, handle });
                 };
             }).catch((error) => {
                 if (error.name !== 'AbortError') {
@@ -144,7 +144,7 @@ export function saveFictionBookDialog(fileData: string, filePath: string, saveDi
 };
 
 export function saveImageDialog(fileData: string, filePath: string) {
-    return new Promise<string>(async (resolve, reject) => {
+    return new Promise<{ path: string, handle?: FileSystemFileHandle }>(async (resolve, reject) => {
         const image = parseDataURL(fileData);
         if (image && image.base64) {
             if (isTauriMode) {
@@ -159,7 +159,7 @@ export function saveImageDialog(fileData: string, filePath: string) {
                 const path = await save(options);
                 if (path) {
                     await invoke("save_file", { filePath: path, content: image.data });
-                    resolve(path);
+                    resolve({ path, handle: undefined });
                 };
             } else {
                 const blob = Promise.resolve(new Blob([base64toData(image.data)], { type: image.mime }));
@@ -172,7 +172,7 @@ export function saveImageDialog(fileData: string, filePath: string) {
 
                 fileSave(blob, options).then((handle) => {
                     if (handle) {
-                        resolve(handle.name);
+                        resolve({ path: handle.name, handle });
                     };
                 }).catch((error) => {
                     if (error.name !== 'AbortError') {
