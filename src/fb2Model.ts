@@ -1,4 +1,4 @@
-import { Schema } from "prosemirror-model";
+import { AttributeSpec, Node, Schema } from "prosemirror-model";
 
 export const fb2ns = "http://www.gribuser.ru/xml/fictionbook/2.0";
 export const xlinkns = "http://www.w3.org/1999/xlink";
@@ -14,6 +14,32 @@ export const markBlocks = Object.keys(bodySchema.marks);
 
 function template(topNode: string, toXML: boolean): Schema {
     const defaultNameSpace = toXML ? fb2ns + " " : "";
+    const cellAttrs: Record<string, AttributeSpec> = {
+        id: { default: null },
+        colspan: { default: 1 },
+        rowspan: { default: 1 },
+        align: { default: null },
+        valign: { default: null }
+    };
+    function getCellAttrs(dom: HTMLElement) {
+        return {
+            id: dom.getAttribute("id"),
+            colspan: Number(dom.getAttribute('colspan') || 1),
+            rowspan: Number(dom.getAttribute('rowspan') || 1),
+            align: dom.getAttribute("align"),
+            valign: dom.getAttribute("valign"),
+        };
+    };
+    function setCellAttrs(node: Node) {
+        return {
+            id: node.attrs.id,
+            colspan: node.attrs.colspan != 1 ? node.attrs.colspan : null,
+            rowspan: node.attrs.rowspan != 1 ? node.attrs.rowspan : null,
+            align: node.attrs.align,
+            valign: node.attrs.valign,
+        };
+    };
+
     return new Schema({
         topNode: topNode,
         nodes: {
@@ -23,8 +49,8 @@ function template(topNode: string, toXML: boolean): Schema {
                 inline: false,
                 attrs: {
                     src: {},
-                    type: { default: null },
-                    href: {},
+                    // type: { default: null },
+                    href: { default: null },
                     alt: { default: null },
                     title: { default: null },
                     id: { default: null }
@@ -36,7 +62,7 @@ function template(topNode: string, toXML: boolean): Schema {
                         const binary = dom.ownerDocument.getElementById(href.slice(1))!;
                         return {
                             src: "data:" + binary.getAttribute("content-type") + ";base64," + binary.textContent,
-                            type: dom.getAttributeNS(xlinkns, "type"),
+                            // type: dom.getAttributeNS(xlinkns, "type"),
                             href: href,
                             alt: dom.getAttribute("alt"),
                             title: dom.getAttribute("title"),
@@ -47,7 +73,7 @@ function template(topNode: string, toXML: boolean): Schema {
                 toDOM(node) {
                     if (defaultNameSpace) {
                         return [defaultNameSpace + "image", {
-                            [xlinkns + " type"]: node.attrs.type,
+                            // [xlinkns + " type"]: node.attrs.type,
                             [xlinkns + " href"]: node.attrs.href,
                             alt: node.attrs.alt,
                             title: node.attrs.title,
@@ -77,7 +103,7 @@ function template(topNode: string, toXML: boolean): Schema {
                 toDOM(node) { return [defaultNameSpace + "epigraph", node.attrs, 0] }
             },
             section: {
-                content: "title? epigraph* image? annotation? (section+ | ((p | poem | subtitle | cite)? (p | image | poem | subtitle | cite)*))",
+                content: "title? epigraph* image? annotation? (section+ | ((p | poem | subtitle | cite | table)? (p | image | poem | subtitle | cite | table)*))",
                 attrs: {
                     id: { default: null },
                     inid: { default: null }
@@ -157,7 +183,7 @@ function template(topNode: string, toXML: boolean): Schema {
             },
             date: {
                 attrs: {
-                    value: {}
+                    value: { default: null }
                 },
                 content: "text*",
                 marks: "",
@@ -169,7 +195,7 @@ function template(topNode: string, toXML: boolean): Schema {
                 toDOM(node) { return [defaultNameSpace + "date", node.attrs, 0] }
             },
             cite: {
-                content: "(p | poem | subtitle)* textauthor*", // table
+                content: "(p | poem | subtitle | table)* textauthor*",
                 attrs: {
                     id: { default: null }
                 },
@@ -196,7 +222,7 @@ function template(topNode: string, toXML: boolean): Schema {
                 attrs: {
                     id: { default: null }
                 },
-                content: "(p | poem | cite | subtitle)+",
+                content: "(p | poem | cite | subtitle | table)+",
                 parseDOM: [{
                     tag: "annotation", getAttrs(dom) {
                         return { id: dom.getAttribute("id") };
@@ -204,12 +230,55 @@ function template(topNode: string, toXML: boolean): Schema {
                 }],
                 toDOM(node) { return [defaultNameSpace + "annotation", node.attrs, 0] }
             },
+            table: {
+                attrs: {
+                    id: { default: null }
+                },
+                content: "tr+",
+                tableRole: "table",
+                isolating: true,
+                parseDOM: [{
+                    tag: "table", getAttrs(dom) {
+                        return { id: dom.getAttribute("id") };
+                    }
+                }],
+                toDOM(node) { return [defaultNameSpace + "table", node.attrs, 0] },
+            },
+            tr: {
+                attrs: {
+                    align: { default: null }
+                },
+                content: "(th | td)+",
+                tableRole: "row",
+                parseDOM: [{
+                    tag: "tr", getAttrs(dom) {
+                        return { align: dom.getAttribute("align") };
+                    }
+                }],
+                toDOM(node) { return [defaultNameSpace + "tr", node.attrs, 0]; },
+            },
+            th: {
+                content: "(text | inlineimage)*",
+                attrs: cellAttrs,
+                tableRole: "header_cell",
+                isolating: true,
+                parseDOM: [{ tag: "th", getAttrs: (dom) => getCellAttrs(dom) }],
+                toDOM(node) { return [defaultNameSpace + "th", setCellAttrs(node), 0] },
+            },
+            td: {
+                content: "(text | inlineimage)*",
+                attrs: cellAttrs,
+                tableRole: "cell",
+                isolating: true,
+                parseDOM: [{ tag: "td", getAttrs: (dom) => getCellAttrs(dom) }],
+                toDOM(node) { return [defaultNameSpace + "td", setCellAttrs(node), 0] },
+            },
             inlineimage: {
                 inline: true,
                 attrs: {
                     src: {},
-                    type: { default: null },
-                    href: {},
+                    // type: { default: null },
+                    href: { default: null },
                     alt: { default: null }
                 },
                 parseDOM: [{
@@ -218,7 +287,7 @@ function template(topNode: string, toXML: boolean): Schema {
                         const binary = dom.ownerDocument.getElementById(href.slice(1))!;
                         return {
                             src: "data:" + binary.getAttribute("content-type") + ";base64," + binary.textContent,
-                            type: dom.getAttributeNS(xlinkns, "type"),
+                            // type: dom.getAttributeNS(xlinkns, "type"),
                             href: href,
                             alt: dom.getAttribute("alt")
                         };
@@ -227,7 +296,7 @@ function template(topNode: string, toXML: boolean): Schema {
                 toDOM(node) {
                     if (defaultNameSpace) {
                         return [defaultNameSpace + "image", {
-                            [xlinkns + " type"]: node.attrs.type,
+                            // [xlinkns + " type"]: node.attrs.type,
                             [xlinkns + " href"]: node.attrs.href,
                             alt: node.attrs.alt,
                             src: node.attrs.src
@@ -247,8 +316,8 @@ function template(topNode: string, toXML: boolean): Schema {
             a: {
                 attrs: {
                     // xtype: { default: null },
-                    href: {},
-                    type: {}
+                    href: { default: null },
+                    type: { default: null }
                 },
                 parseDOM: [{
                     tag: "a", getAttrs(dom) {

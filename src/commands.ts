@@ -164,6 +164,36 @@ export function addTextautor(): Command {
     };
 };
 
+export function addTable(): Command {
+    return (state, dispatch) => {
+        const { $from } = state.selection;
+
+        if (!$from.depth || state.selection instanceof NodeSelection) {
+            return false;
+        };
+
+        const parentNode = $from.node($from.depth - 1);
+        const tableType = state.schema.nodes.table;
+        const currentIndex = $from.index($from.depth);
+
+        if (!parentNode.canReplaceWith(currentIndex, currentIndex + 1, tableType)) {
+            return false;
+        };
+
+        if (dispatch) {
+            const insertPos = $from.end($from.depth) + 1;
+
+            let tr = state.tr;
+            let startPos = tr.mapping.map(insertPos);
+            tr.insert(startPos, tableType.create(null, state.schema.nodes.tr.create(null, state.schema.nodes.td.create())));
+
+            dispatch(tr.scrollIntoView());
+        };
+
+        return true;
+    };
+};
+
 export function wrapPoem(): Command {
     return (state, dispatch) => {
         const { $from, $to } = state.selection;

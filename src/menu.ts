@@ -1,8 +1,9 @@
-import { wrapItem, blockTypeItem, Dropdown, undoItem, redoItem, icons, MenuItem, MenuItemSpec } from "prosemirror-menu"
-import { EditorState, Command } from "prosemirror-state"
-import { Schema, MarkType, Attrs } from "prosemirror-model"
+import { wrapItem, blockTypeItem, Dropdown, undoItem, redoItem, icons, MenuItem, MenuItemSpec, DropdownSubmenu } from "prosemirror-menu"
+import { EditorState, Command, Transaction } from "prosemirror-state"
+import { Schema, MarkType, Attrs, NodeType } from "prosemirror-model"
 import { toggleMark } from "prosemirror-commands"
-import { addTextautor, addTitle, changeToSection, wrapPoem } from "./commands"
+import { addTable, addTextautor, addTitle, changeToSection, wrapPoem } from "./commands"
+import { addColumnAfter, addColumnBefore, addRowAfter, addRowBefore, deleteColumn, deleteRow, deleteTable, mergeCells, setCellAttr, splitCell, toggleHeaderCell, toggleHeaderColumn, toggleHeaderRow } from "prosemirror-tables"
 
 function cmdItem(cmd: Command, options: Partial<MenuItemSpec>) {
     let passedOptions: MenuItemSpec = {
@@ -61,6 +62,20 @@ function linkItem(markType: MarkType, editLink: any) {
     })
 }
 
+function item(label: string, cmd: (state: EditorState) => boolean) {
+    return new MenuItem({ label, select: cmd, run: cmd });
+};
+
+function deleteTableSafety(): Command {
+    return (state, dispatch) => {
+        const $pos = state.selection.$anchor;
+        if ($pos.depth > 3 && $pos.node($pos.depth - 3).childCount > 1) {
+            return deleteTable(state, dispatch);
+        }
+        return false;
+    };
+};
+
 export function buildMenuItems(schema: Schema, dial: any) {
 
     const toggleStrong = markItem(schema.marks.strong, { title: "Включить полужирный", icon: { text: "Ж", css: "font-weight: bold;" } });
@@ -76,12 +91,18 @@ export function buildMenuItems(schema: Schema, dial: any) {
         label: "Заголовок",
         enable(state) { return addTitle()(state) },
         run(state, dispatch) { addTitle()(state, dispatch) }
-    })
+    });
     const makeTextauthor = new MenuItem({
         title: "Вставить автора",
         label: "Автор",
         enable(state) { return addTextautor()(state) },
         run(state, dispatch) { addTextautor()(state, dispatch) }
+    });
+    const makeTable = new MenuItem({
+        title: "Вставить таблицу",
+        label: "Таблица",
+        enable(state) { return addTable()(state) },
+        run(state, dispatch) { addTable()(state, dispatch) }
     });
 
     const makeSubtitle = blockTypeItem(schema.nodes.subtitle, {
@@ -109,11 +130,31 @@ export function buildMenuItems(schema: Schema, dial: any) {
         run(state, dispatch) { changeToSection()(state, dispatch) }
     });
 
-    let cut = <T>(arr: T[]) => arr.filter(x => x) as NonNullable<T>[]
-    const insertMenu = new Dropdown(cut([insertTitle, makeTextauthor]), { label: "Вставить" })
-    const typeMenu = new Dropdown(cut([makeSubtitle, makeCite, makeStanza, makeParagraph, makeSection]), { label: "Превратить" })
-
+    const insertMenu = new Dropdown([insertTitle, makeTextauthor, makeTable], { label: "Вставить" });
+    const typeMenu = new Dropdown([makeSubtitle, makeCite, makeStanza, makeParagraph, makeSection], { label: "Превратить" });
+    const tableMenu = new Dropdown([
+        item('Вставить столбец слева', addColumnBefore),
+        item('Вставить столбец справа', addColumnAfter),
+        item('Удалить столбец', deleteColumn),
+        item('Вставить строку сверху', addRowBefore),
+        item('Вставить строку снизу', addRowAfter),
+        item('Удалить строку', deleteRow),
+        item('Объединить ячейки', mergeCells),
+        item('Разделить ячейки', splitCell),
+        item('Включить заголовочный столбец', toggleHeaderColumn),
+        item('Включить заголовочную строку', toggleHeaderRow),
+        item('Включить заголовочную ячейку', toggleHeaderCell),
+        new DropdownSubmenu([
+            item('Выровнять по левому краю', setCellAttr('align', 'left')),
+            item('Выровнять по центру', setCellAttr('align', 'center')),
+            item('Выровнять по правому краю', setCellAttr('align', 'right')),
+            item('Выровнять по верхнему краю', setCellAttr('valign', 'top')),
+            item('Выровнять по середине', setCellAttr('valign', 'middle')),
+            item('Выровнять по нижнему краю', setCellAttr('valign', 'bottom'))
+        ], { label: "Выровнять" }),
+        item('Удалить таблицу', deleteTableSafety()),
+    ], { label: 'Таблица' });
     const inlineMenu = [toggleStrong, toggleEmphasis, toggleStrike, toggleSup, toggleSub, toggleCode, toggleLink];
 
-    return [inlineMenu, [insertMenu, typeMenu], [undoItem, redoItem]]
+    return [inlineMenu, [insertMenu, typeMenu, tableMenu], [undoItem, redoItem]]
 }

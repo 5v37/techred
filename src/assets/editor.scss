@@ -1,0 +1,191 @@
+@import 'prosemirror-view/style/prosemirror.css';
+@import 'prosemirror-tables/style/tables.css';
+@import 'prosemirror-menu/style/menu.css';
+@import './PTSerif/PTSerif.css';
+
+@mixin after($content: "<tag>") {
+	content: $content;
+	position: absolute;
+	bottom: -8px;
+	right: 5px;
+	font-size: small;
+	color: var(--p-text-muted-color);
+	background: var(--p-content-background);
+}
+
+@mixin block($color: rgb(0, 0, 0)) {
+	display: block;
+	border: 1px solid $color;
+	border-radius: 3px;
+	padding: 6px;
+	margin: 6px 0;
+	position: relative;
+}
+
+.ProseMirror {
+	padding-block: var(--p-inputtext-padding-y);
+	padding-inline: var(--p-inputtext-padding-x);
+	font-size: 16px;
+	font-family: "PT Serif", serif;
+	line-height: 1.3;
+	outline: none;
+
+	section {
+		@include block(rgb(221, 144, 0));
+	}
+
+	section::after {
+		@include after($content: "<section>");
+	}
+
+	title {
+		@include block(rgb(22, 231, 84));
+		padding-block: 3px;
+		margin-top: 0px;
+		text-align: center;
+	}
+
+	title::after {
+		@include after($content: "<title>");
+	}
+
+	epigraph {
+		@include block(rgb(29, 78, 214));
+	}
+
+	epigraph::after {
+		@include after($content: "<epigraph>");
+	}
+
+	text-author {
+		@include block(rgb(29, 78, 214));
+	}
+
+	text-author::after {
+		@include after($content: "<text-author>");
+	}
+
+	cite {
+		@include block(rgb(211, 214, 29));
+		font-style: normal;
+	}
+
+	cite::after {
+		@include after($content: "<cite>");
+	}
+
+	poem {
+		@include block(rgb(211, 214, 29));
+	}
+
+	poem::after {
+		@include after($content: "<poem>");
+	}
+
+	stanza {
+		@include block(rgb(211, 214, 29));
+	}
+
+	stanza::after {
+		@include after($content: "<stanza>");
+	}
+
+	date {
+		@include block(rgb(48, 29, 214));
+	}
+
+	date::after {
+		@include after($content: "<date>");
+	}
+
+	annotation {
+		@include block(rgb(230, 112, 220));
+	}
+
+	annotation::after {
+		@include after($content: "<annotation>");
+	}
+
+	subtitle {
+		@include block(rgb(68, 92, 68));
+		text-align: center;
+	}
+
+	subtitle::after {
+		@include after($content: "<subtitle>");
+	}
+
+	p,
+	v {
+		display: block;
+		margin: 0em;
+		text-indent: 1.4em;
+	}
+
+	a[type=note] {
+		vertical-align: baseline;
+		position: relative;
+		top: -0.4em;
+		font-size: smaller;
+	}
+
+	sup {
+		vertical-align: baseline;
+		position: relative;
+		top: -0.4em;
+		//line-height: 0;
+	}
+
+	sub {
+		vertical-align: baseline;
+		position: relative;
+		bottom: -0.4em;
+		//line-height: 0;
+	}
+
+	emphasis {
+		font-style: italic;
+		border: 1px solid rgb(255, 88, 88);
+	}
+
+	strikethrough {
+		text-decoration: line-through;
+	}
+
+	table {
+		margin: 0.25rem 0rem;
+	}
+
+	th,
+	td {
+		border: 1px solid var(--p-content-border-color);
+		padding: 3px 5px;
+	}
+
+	th[valign="top"],
+	td[valign="top"] {
+		vertical-align: top;
+	}
+
+	th[valign="middle"],
+	td[valign="middle"] {
+		vertical-align: middle;
+	}
+
+	th[valign="bottom"],
+	td[valign="bottom"] {
+		vertical-align: bottom;
+	}
+}
+
+.ProseMirror-menubar {
+	padding: 6px 6px;
+	color: var(--p-text-muted-color);
+	background: var(--p-toolbar-background);
+	border-color: var(--p-toolbar-border-color);
+}
+
+.ProseMirror-menubar-wrapper {
+	border-top-left-radius: inherit;
+	border-top-right-radius: inherit;
+}

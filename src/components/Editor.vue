@@ -16,6 +16,7 @@ import { undo, redo, history } from "prosemirror-history";
 import { keymap } from "prosemirror-keymap";
 import { baseKeymap, toggleMark } from "prosemirror-commands";
 import { menuBar } from "prosemirror-menu";
+import { goToNextCell, tableEditing } from "prosemirror-tables";
 
 import type { TreeNode } from "primevue/treenode";
 
@@ -70,8 +71,11 @@ onMounted(() => {
                 "Ctrl-,": toggleMark(schema.marks.sub),
                 "Ctrl-.": toggleMark(schema.marks.sup),
                 "Ctrl-Shift-x": toggleMark(schema.marks.strikethrough),
-                "Ctrl-Shift-m": toggleMark(schema.marks.code)
+                "Ctrl-Shift-m": toggleMark(schema.marks.code),
+                "Tab": goToNextCell(1),
+                "Shift-Tab": goToNextCell(-1),
             }),
+            tableEditing(),
             menuBar({
                 floating: !props.annotation,
                 content: buildMenuItems(schema, linkEditor.value?.showEditLink)
@@ -145,147 +149,4 @@ function updateTOC(doc: Node) {
 }
 </script>
 
-<style lang="scss">
-@mixin after($content: "<tag>") {
-    content: $content;
-    position: absolute;
-    bottom: -8px;
-    right: 5px;
-    font-size: small;
-    color: var(--p-text-muted-color);
-    background: var(--p-content-background);
-}
-
-@mixin block($color: rgb(0, 0, 0)) {
-    display: block;
-    border: 1px solid $color;
-    border-radius: 3px;
-    padding: 6px;
-    margin: 6px 0;
-    position: relative;
-}
-
-.ProseMirror {
-    section {
-        @include block(rgb(221, 144, 0));
-    }
-
-    section::after {
-        @include after($content: "<section>");
-    }
-
-    title {
-        @include block(rgb(22, 231, 84));
-        padding-block: 3px;
-        margin-top: 0px;
-        text-align: center;
-    }
-
-    title::after {
-        @include after($content: "<title>");
-    }
-
-    epigraph {
-        @include block(rgb(29, 78, 214));
-    }
-
-    epigraph::after {
-        @include after($content: "<epigraph>");
-    }
-
-    text-author {
-        @include block(rgb(29, 78, 214));
-    }
-
-    text-author::after {
-        @include after($content: "<text-author>");
-    }
-
-    cite {
-        @include block(rgb(211, 214, 29));
-        font-style: normal;
-    }
-
-    cite::after {
-        @include after($content: "<cite>");
-    }
-
-    poem {
-        @include block(rgb(211, 214, 29));
-    }
-
-    poem::after {
-        @include after($content: "<poem>");
-    }
-
-    stanza {
-        @include block(rgb(211, 214, 29));
-    }
-
-    stanza::after {
-        @include after($content: "<stanza>");
-    }
-
-    date {
-        @include block(rgb(48, 29, 214));
-    }
-
-    date::after {
-        @include after($content: "<date>");
-    }
-
-    annotation {
-        @include block(rgb(230, 112, 220));
-    }
-
-    annotation::after {
-        @include after($content: "<annotation>");
-    }
-
-    subtitle {
-        @include block(rgb(68, 92, 68));
-        text-align: center;
-    }
-
-    subtitle::after {
-        @include after($content: "<subtitle>");
-    }
-
-    p,
-    v {
-        display: block;
-        margin: 0em;
-        text-indent: 1.4em;
-    }
-
-    a[type=note] {
-        vertical-align: baseline;
-        position: relative;
-        top: -0.4em;
-        font-size: smaller;
-    }
-
-    sup {
-        vertical-align: baseline;
-        position: relative;
-        top: -0.4em;
-        //line-height: 0;
-    }
-
-    sub {
-        vertical-align: baseline;
-        position: relative;
-        bottom: -0.4em;
-        //line-height: 0;
-    }
-
-    emphasis {
-        font-style: italic;
-        border: 1px solid rgb(255, 88, 88);
-    }
-
-    strikethrough {
-        text-decoration: line-through;
-    }
-}
-</style>
+<style></style>
