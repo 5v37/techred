@@ -68,6 +68,7 @@ function show(event: Event, node: TreeNode) {
         range = sectionRangeByID(node.data, view.state);
         contextMenu.value!.show(event);
     } else {
+        event.stopPropagation();
         event.preventDefault();
     };
 };

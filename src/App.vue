@@ -1,19 +1,20 @@
 <template>
     <Toast />
 
-    <MainToolbar @loaded="loaded = true" />
+    <MainToolbar @loaded="loaded = true" @reloaded="reloaded" />
     <Splitter v-if="loaded" layout="horizontal" class="t-app-main" style="border-radius: 0px">
         <SplitterPanel :size="15" :minSize="10" class="t-ui-container">
             <Tree :value="TOC" selectionMode="single" @node-select="onNodeSelect" class="t-app-toc" :pt="{
                 nodeContent: ({ context }) => ({
-                    oncontextmenu: (event: Event) => onContextRightClick(event, context.node)
+                    oncontextmenu: (event: Event) => onContextRightClick(event, context.node),
+                    ondblclick: () => onDbClick(context.node),
                 }),
                 wrapper: { style: 'overflow-x: hidden' },
                 nodeIcon: { style: 'flex-shrink: 0' }
             }" />
         </SplitterPanel>
         <SplitterPanel :size="85">
-            <div v-show="showDescription" id="description" class="t-app-description">
+            <div v-show="showDescription" ref="description" class="t-app-description">
                 <TitleInfo ref="titleInfo" header="Сведения" tag="title-info" />
                 <TitleInfo ref="srcTitleInfo" header="Сведения на оригинальном языке" tag="src-title-info" />
                 <DocumentInfo ref="documentInfo" header="Информация о файле" tag="document-info" />
@@ -21,11 +22,11 @@
                 <CustomInfo ref="customInfo" header="Дополнительно" tag="custom-info" />
             </div>
             <Splitter v-show="!showDescription" layout="vertical">
-                <SplitterPanel :size="75" :minSize="10" style="overflow-y: auto;">
-                    <Editor ref="bodyEditor" editor-id="body" />
+                <SplitterPanel :size="75" :minSize="10" ref="body" style="overflow-y: auto;">
+                    <Editor editor-id="body" />
                 </SplitterPanel>
-                <SplitterPanel :size="25" :minSize="10" style="overflow-y: auto;">
-                    <Editor ref="notesEditor" editor-id="notes" />
+                <SplitterPanel :size="25" :minSize="10" ref="notes" style="overflow-y: auto;">
+                    <Editor editor-id="notes" />
                 </SplitterPanel>
             </Splitter>
         </SplitterPanel>
@@ -35,7 +36,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue'
+import { ComponentPublicInstance, defineComponent } from 'vue'
 
 import { SplitterPanel, Splitter, Tree, Toast } from 'primevue';
 import { TreeNode } from 'primevue/treenode';
@@ -51,37 +52,37 @@ import editorState from './editorState';
 
 const TOCNodes = [
     {
-        key: '0',
+        key: 'description',
         label: 'Описание',
-        data: 'description',
         icon: 'pi pi-fw pi-hashtag',
+        isRoot: true,
         children: [
             {
-                key: '0-1',
+                key: 'description-1',
                 label: 'Сведения',
                 data: 'title-info',
                 icon: 'pi pi-fw pi-hashtag'
             },
             {
-                key: '0-2',
+                key: 'description-2',
                 label: 'Сведения на оригинальном языке',
                 data: 'src-title-info',
                 icon: 'pi pi-fw pi-hashtag'
             },
             {
-                key: '0-3',
+                key: 'description-3',
                 label: 'Информация о файле',
                 data: 'document-info',
                 icon: 'pi pi-fw pi-hashtag'
             },
             {
-                key: '0-4',
+                key: 'description-4',
                 label: 'Выходные данные',
                 data: 'publish-info',
                 icon: 'pi pi-fw pi-hashtag'
             },
             {
-                key: '0-5',
+                key: 'description-5',
                 label: 'Дополнительно',
                 data: 'custom-info',
                 icon: 'pi pi-fw pi-hashtag'
@@ -89,17 +90,17 @@ const TOCNodes = [
         ]
     },
     {
-        key: '1',
+        key: 'body',
         label: 'Содержание',
-        data: 'body',
         icon: 'pi pi-fw pi-book',
+        isRoot: true,
         children: editorState.getTOC("body")
     },
     {
-        key: '2',
+        key: 'notes',
         label: 'Примечания',
-        data: 'notes',
         icon: 'pi pi-fw pi-asterisk',
+        isRoot: true,
         children: editorState.getTOC("notes")
     }
 ];
@@ -107,6 +108,7 @@ const TOCNodes = [
 interface State {
     TOC: TreeNode[],
     loaded: boolean,
+    toTop: boolean,
     showDescription: boolean
 }
 
@@ -129,23 +131,53 @@ export default defineComponent({
         return {
             showDescription: true,
             loaded: false,
+            toTop: false,
             TOC: TOCNodes,
         }
     },
     methods: {
+        scrollToTop() {
+            if (this.showDescription) {
+                (this.$refs.description as Element).scrollTop = 0;
+            } else {
+                (this.$refs.body as ComponentPublicInstance).$el.scrollTop = 0;
+                (this.$refs.notes as ComponentPublicInstance).$el.scrollTop = 0;
+            };
+        },
+        reloaded() {
+            this.toTop = true;
+            this.scrollToTop();
+        },
         onContextRightClick(event: Event, node: TreeNode) {
             (this.$refs.treeContextMenu as InstanceType<typeof TreeContextMenu>).show(event, node);
         },
+        onDbClick(node: TreeNode) {
+            if (node.key === "description") {
+                (this.$refs.description as Element).scrollTop = 0;
+            } else if (node.key === "body") {
+                (this.$refs.body as ComponentPublicInstance).$el.scrollTop = 0;
+            } else if (node.key === "notes") {
+                (this.$refs.notes as ComponentPublicInstance).$el.scrollTop = 0;
+            };
+        },
         onNodeSelect(node: TreeNode) {
-            this.showDescription = node.key.startsWith("0");
-            if (node.data) {
+            let toTop = false;
+            if (this.showDescription !== node.key.startsWith("description")) {
+                this.showDescription = !this.showDescription;
+                toTop = this.toTop;
+                this.toTop = false;
+            };
+
+            if (node.data && !node.isRoot) {
                 queueMicrotask(() => {
                     const element = document.getElementById(node.data);
                     if (element) {
                         element.scrollIntoView();
                     };
                 });
-            }
+            } else if (toTop) {
+                queueMicrotask(this.scrollToTop);
+            };
         }
     }
 })
