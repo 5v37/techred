@@ -174,7 +174,7 @@ export function addTable(): Command {
 
         const parentNode = $from.node($from.depth - 1);
         const tableType = state.schema.nodes.table;
-        const currentIndex = $from.index($from.depth);
+        const currentIndex = $from.index($from.depth-1);
 
         if (!parentNode.canReplaceWith(currentIndex, currentIndex + 1, tableType)) {
             return false;

@@ -1,6 +1,6 @@
 import { wrapItem, blockTypeItem, Dropdown, undoItem, redoItem, icons, MenuItem, MenuItemSpec, DropdownSubmenu } from "prosemirror-menu"
-import { EditorState, Command, Transaction } from "prosemirror-state"
-import { Schema, MarkType, Attrs, NodeType } from "prosemirror-model"
+import { EditorState, Command } from "prosemirror-state"
+import { Schema, MarkType, Attrs } from "prosemirror-model"
 import { toggleMark } from "prosemirror-commands"
 import { addTable, addTextautor, addTitle, changeToSection, wrapPoem } from "./commands"
 import { addColumnAfter, addColumnBefore, addRowAfter, addRowBefore, deleteColumn, deleteRow, deleteTable, mergeCells, setCellAttr, splitCell, toggleHeaderCell, toggleHeaderColumn, toggleHeaderRow } from "prosemirror-tables"

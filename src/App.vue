@@ -2,35 +2,37 @@
     <Toast />
 
     <MainToolbar @loaded="loaded = true" @reloaded="reloaded" />
-    <Splitter v-if="loaded" layout="horizontal" class="t-app-main" style="border-radius: 0px">
-        <SplitterPanel :size="15" :minSize="10" class="t-ui-container">
-            <Tree :value="TOC" selectionMode="single" @node-select="onNodeSelect" class="t-app-toc" :pt="{
-                nodeContent: ({ context }) => ({
-                    oncontextmenu: (event: Event) => onContextRightClick(event, context.node),
-                    ondblclick: () => onDbClick(context.node),
-                }),
-                wrapper: { style: 'overflow-x: hidden' },
-                nodeIcon: { style: 'flex-shrink: 0' }
-            }" />
-        </SplitterPanel>
-        <SplitterPanel :size="85">
-            <div v-show="showDescription" ref="description" class="t-app-description">
-                <TitleInfo ref="titleInfo" header="Сведения" tag="title-info" />
-                <TitleInfo ref="srcTitleInfo" header="Сведения на оригинальном языке" tag="src-title-info" />
-                <DocumentInfo ref="documentInfo" header="Информация о файле" tag="document-info" />
-                <PublishInfo ref="publishInfo" header="Выходные данные" tag="publish-info" />
-                <CustomInfo ref="customInfo" header="Дополнительно" tag="custom-info" />
-            </div>
-            <Splitter v-show="!showDescription" layout="vertical">
-                <SplitterPanel :size="75" :minSize="10" ref="body" style="overflow-y: auto;">
-                    <Editor editor-id="body" />
-                </SplitterPanel>
-                <SplitterPanel :size="25" :minSize="10" ref="notes" style="overflow-y: auto;">
-                    <Editor editor-id="notes" />
-                </SplitterPanel>
-            </Splitter>
-        </SplitterPanel>
-    </Splitter>
+    <ProsemirrorAdapterProvider>
+        <Splitter v-if="loaded" layout="horizontal" class="t-app-main" style="border-radius: 0px">
+            <SplitterPanel :size="15" :minSize="10" class="t-ui-container">
+                <Tree :value="TOC" selectionMode="single" @node-select="onNodeSelect" class="t-app-toc" :pt="{
+                    nodeContent: ({ context }) => ({
+                        oncontextmenu: (event: Event) => onContextRightClick(event, context.node),
+                        ondblclick: () => onDbClick(context.node),
+                    }),
+                    wrapper: { style: 'overflow-x: hidden' },
+                    nodeIcon: { style: 'flex-shrink: 0' }
+                }" />
+            </SplitterPanel>
+            <SplitterPanel :size="85">
+                <div v-show="showDescription" ref="description" class="t-app-description">
+                    <TitleInfo ref="titleInfo" header="Сведения" tag="title-info" />
+                    <TitleInfo ref="srcTitleInfo" header="Сведения на оригинальном языке" tag="src-title-info" />
+                    <DocumentInfo ref="documentInfo" header="Информация о файле" tag="document-info" />
+                    <PublishInfo ref="publishInfo" header="Выходные данные" tag="publish-info" />
+                    <CustomInfo ref="customInfo" header="Дополнительно" tag="custom-info" />
+                </div>
+                <Splitter v-show="!showDescription" layout="vertical">
+                    <SplitterPanel :size="75" :minSize="10" ref="body" style="overflow-y: auto;">
+                        <Editor editor-id="body" />
+                    </SplitterPanel>
+                    <SplitterPanel :size="25" :minSize="10" ref="notes" style="overflow-y: auto;">
+                        <Editor editor-id="notes" />
+                    </SplitterPanel>
+                </Splitter>
+            </SplitterPanel>
+        </Splitter>
+    </ProsemirrorAdapterProvider>
 
     <TreeContextMenu ref="treeContextMenu" />
 </template>
@@ -49,6 +51,7 @@ import CustomInfo from './components/CustomInfo.vue';
 import TreeContextMenu from './components/TreeContextMenu.vue';
 import Editor from './components/Editor.vue';
 import editorState from './editorState';
+import { ProsemirrorAdapterProvider } from '@prosemirror-adapter/vue';
 
 const TOCNodes = [
     {
@@ -125,7 +128,8 @@ export default defineComponent({
         Toast,
         Splitter,
         SplitterPanel,
-        Tree
+        Tree,
+        ProsemirrorAdapterProvider
     },
     data(): State {
         return {

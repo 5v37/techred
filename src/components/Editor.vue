@@ -8,6 +8,7 @@
 import { useTemplateRef, onMounted } from 'vue'
 
 import LinkEditor from "./LinkEditor.vue";
+import ImageView from './ImageView.vue';
 
 import { EditorState } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
@@ -17,8 +18,10 @@ import { keymap } from "prosemirror-keymap";
 import { baseKeymap, toggleMark } from "prosemirror-commands";
 import { menuBar } from "prosemirror-menu";
 import { goToNextCell, tableEditing } from "prosemirror-tables";
+import { dropCursor } from "prosemirror-dropcursor";
 
 import type { TreeNode } from "primevue/treenode";
+import { useNodeViewFactory } from '@prosemirror-adapter/vue';
 
 import { annotationSchemaXML, annotationSchema, bodySchemaXML, bodySchema } from "../fb2Model";
 import { buildMenuItems } from "../menu";
@@ -26,6 +29,7 @@ import { splitBlock } from "../commands";
 import fileBroker from '../fileBroker';
 import editorState from '../editorState';
 
+const nodeViewFactory = useNodeViewFactory();
 const linkEditor = useTemplateRef('linkEditor');
 const props = defineProps<{
     editorId: string,
@@ -76,6 +80,7 @@ onMounted(() => {
                 "Shift-Tab": goToNextCell(-1),
             }),
             tableEditing(),
+            dropCursor(),
             menuBar({
                 floating: !props.annotation,
                 content: buildMenuItems(schema, linkEditor.value?.showEditLink)
@@ -84,6 +89,12 @@ onMounted(() => {
     });
     view = new EditorView(editor.value, {
         state: state,
+        nodeViews: {
+            image: nodeViewFactory({
+                component: ImageView,
+                as: 'image'
+            })
+        },
         dispatchTransaction(transaction) {
             if (transaction.getMeta("updateTOC")) {
                 updateTOC(transaction.doc);
