@@ -2,11 +2,11 @@ import { invoke } from "@tauri-apps/api/core";
 import { open, OpenDialogOptions, save, SaveDialogOptions } from "@tauri-apps/plugin-dialog";
 import { fileOpen, fileSave, FirstFileOpenOptions, FirstFileSaveOptions } from "browser-fs-access";
 
-import { base64toData, isTauriMode, parseDataURL } from "./utils";
+import { base64toData, decodeXML, isTauriMode, parseDataURL } from "./utils";
 
 async function readTextFile(filePath: string) {
     const fileData = await invoke('open_file', { filePath }) as ArrayBuffer;
-    return new TextDecoder().decode(fileData);
+    return decodeXML(fileData);
 };
 
 export function openInitialFictionBook() {
@@ -47,7 +47,8 @@ export function openFictionBookDialog() {
             };
 
             fileOpen(options).then(async file => {
-                const content = await file.text();
+                const fileData = await file.arrayBuffer();                
+                const content = decodeXML(fileData);
                 resolve({ content, path: file.name, handle: file.handle });
             }).catch((error) => {
                 if (error.name !== 'AbortError') {

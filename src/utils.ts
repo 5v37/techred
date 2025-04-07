@@ -1,6 +1,6 @@
 export function formatXML(xml: string, textBlocks: string[] = [], tab = " ", nl = "\r\n",) {
-    let formatted = "", indent = "", MixedMode = false, mixedContent = "";
-    const MixedNodeStart = textBlocks.map(tag => tag + ">");
+    let formatted = "", indent = "", mixedMode = false, mixedContent = "";
+    const mixedNodeStart = textBlocks.map(tag => tag + ">");
     const mixedNodeEnd = textBlocks.map(tag => "/" + tag);
     const nodes = xml.slice(1, -1).split(/>\s*</);
     const spaces = xml.match(/>\s*</g)!;
@@ -11,16 +11,16 @@ export function formatXML(xml: string, textBlocks: string[] = [], tab = " ", nl 
     for (let i = 0; i < nodes.length; i++) {
         let node = nodes[i];
 
-        if (!MixedMode && MixedNodeStart.some(tag => (node + ">").startsWith(tag))) {
-            MixedMode = true;
+        if (!mixedMode && mixedNodeStart.some(tag => (node + ">").startsWith(tag))) {
+            mixedMode = true;
             mixedContent = "";
         };
-        if (MixedMode && mixedNodeEnd.some(tag => node.endsWith(tag))) {
-            MixedMode = false;
+        if (mixedMode && mixedNodeEnd.some(tag => node.endsWith(tag))) {
+            mixedMode = false;
             node = (mixedContent) ? mixedContent + node : node;
         };
 
-        if (MixedMode) {
+        if (mixedMode) {
             mixedContent += node + spaces[i];
         } else {
             if (node[0] == "/") {
@@ -33,6 +33,58 @@ export function formatXML(xml: string, textBlocks: string[] = [], tab = " ", nl 
         };
     };
     return formatted;
+};
+
+export function decodeXML(xmlData: ArrayBuffer) {
+    const startDecls = [
+        {
+            encoding: 'utf-8', // with BOM
+            bytes: [0xEF, 0xBB, 0xBF]
+        },
+        {
+            encoding: 'utf-16le', // with BOM
+            bytes: [0xFF, 0xFE]
+        },
+        {
+            encoding: 'utf-16be', // with BOM
+            bytes: [0xFE, 0xFF]
+        },
+        {
+            encoding: 'utf-16le', // without BOM
+            bytes: [0x3C, 0x00, 0x3F, 0x00]
+        },
+        {
+            encoding: 'utf-16be', // without BOM
+            bytes: [0x00, 0x3C, 0x00, 0x3F]
+        }
+    ];
+
+    const equal = (data: Uint8Array, decl: number[]) => {        
+        for (let idx = 0; idx < decl.length; idx++) {
+            if (data[idx] !== decl[idx]) {
+                return false;
+            };
+        };
+        return true;
+    };
+
+    let encoding: string | undefined;
+
+    const startXml = new Uint8Array(xmlData, 0, 100);
+    const decl = startDecls.find(decl => equal(startXml, decl.bytes))
+    if (!decl) {
+        if (equal(startXml, [0x3C, 0x3F])) { // has prolog
+            const prolog = new TextDecoder().decode(startXml);
+            const match = prolog.match(/encoding=['"]([A-Za-z]([A-Za-z0-9._]|-)*)['"]/);
+            if (match) {
+                encoding = match[1];
+            };
+        };
+    } else {
+        encoding = decl.encoding;
+    };
+
+    return new TextDecoder(encoding).decode(xmlData);
 };
 
 export function parseDataURL(dataURL: string | null) {
