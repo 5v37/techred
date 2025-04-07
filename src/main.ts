@@ -3,11 +3,11 @@ import App from "./App.vue";
 
 import PrimeVue from 'primevue/config';
 import Tooltip from 'primevue/tooltip';
+import { ru } from "primelocale/js/ru.js";
 import { ToastService } from "primevue";
 
 import './assets/main.css'
 import { Noir } from "./assets/preset";
-import { ruLocale } from "./assets/locale";
 
 const app = createApp(App);
 app.use(PrimeVue, {
@@ -17,7 +17,7 @@ app.use(PrimeVue, {
             darkModeSelector: '.my-app-dark',
         }
     },
-    locale: ruLocale
+    locale: ru
 });
 app.use(ToastService);
 app.directive('tooltip', Tooltip);
