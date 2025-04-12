@@ -3,8 +3,6 @@
 @import './editor.scss';
 @import './ui.css';
 
-:root{--p-panel-content-padding: 0 1.125rem 1.125rem 1.125rem;}
-
 html {
   height: 100%;
   font-size: 14px;
