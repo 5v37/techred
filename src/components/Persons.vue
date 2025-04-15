@@ -1,32 +1,33 @@
 <template>
     <div class="t-ui-chipcontainer">
-        <Chip v-for="(person, index) in model" :key="person.id" removable @remove="del(index)">
+        <Chip v-for="(person, index) in model" :key="person.id" removable @remove="del(index)" class="t-ui-chipinput"
+            :pt="{ removeIcon: { style: 'flex-shrink: 0' } }">
             <div class="t-persons-chip">
-                <div class="t-persons-group">
+                <div class="t-ui-rowgroup">
                     <FloatLabel variant="on">
-                        <InputText v-model.lazy="person['last-name']" />
+                        <InputText v-model.lazy="person['last-name']" fluid />
                         <label>Фамилия</label>
                     </FloatLabel>
                     <FloatLabel variant="on">
-                        <InputText v-model.lazy="person['first-name']" />
+                        <InputText v-model.lazy="person['first-name']" fluid />
                         <label>Имя</label>
                     </FloatLabel>
                     <FloatLabel variant="on">
-                        <InputText v-model.lazy="person['middle-name']" />
+                        <InputText v-model.lazy="person['middle-name']" fluid />
                         <label>Отчество</label>
                     </FloatLabel>
                 </div>
-                <div class="t-persons-group">
+                <div class="t-ui-rowgroup">
                     <FloatLabel variant="on">
-                        <InputText v-model.lazy="person.nickname" />
+                        <InputText v-model.lazy="person.nickname" fluid />
                         <label>Псевдоним</label>
                     </FloatLabel>
                     <FloatLabel variant="on">
-                        <InputText v-model.lazy="person.email" />
+                        <InputText v-model.lazy="person.email" fluid />
                         <label>email</label>
                     </FloatLabel>
                     <FloatLabel variant="on">
-                        <InputText v-model.lazy="person['home-page']" />
+                        <InputText v-model.lazy="person['home-page']" fluid />
                         <label>Сайт</label>
                     </FloatLabel>
                 </div>
@@ -54,12 +55,6 @@ function del(index: number) {
 .t-persons-chip {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
-    padding-block: 0.25rem;
-}
-
-.t-persons-group {
-    display: flex;
     gap: 0.75rem;
 }
 </style>

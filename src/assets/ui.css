@@ -35,11 +35,17 @@
     gap: 1rem;
 }
 
-.t-ui-chipgroup {
+.t-ui-chipinput {
+    max-width: 45rem;
+    flex: 1 1 45rem;
+    padding-block: 0.75rem !important;
+}
+
+.t-ui-rowgroup {
     display: flex;
-    flex-wrap: wrap;
+    flex-direction: row;
     gap: 0.75rem;
-    padding-block: 0.25rem;
+    flex-grow: 1;
 }
 
 .t-ui-panelheader {
@@ -64,12 +70,12 @@
 }
 
 .t-ui-texteditor:hover {
-	border-color: var(--p-inputtext-hover-border-color);
+    border-color: var(--p-inputtext-hover-border-color);
 }
 
 .t-ui-texteditor:focus-within {
-	border-color: var(--p-inputtext-focus-border-color);
-	box-shadow: var(--p-inputtext-focus-ring-shadow);
-	outline: var(--p-inputtext-focus-ring-width) var(--p-inputtext-focus-ring-style) var(--p-inputtext-focus-ring-color);
-	outline-offset: var(--p-inputtext-focus-ring-offset);
+    border-color: var(--p-inputtext-focus-border-color);
+    box-shadow: var(--p-inputtext-focus-ring-shadow);
+    outline: var(--p-inputtext-focus-ring-width) var(--p-inputtext-focus-ring-style) var(--p-inputtext-focus-ring-color);
+    outline-offset: var(--p-inputtext-focus-ring-offset);
 }

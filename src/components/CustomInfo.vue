@@ -6,7 +6,7 @@
 
         <div class="t-custominfo-group">
             <Chip v-for="(custom, index) in model" :key="custom.id" removable @remove="del(index)">
-                <div class="t-ui-chipgroup t-ui-grow">
+                <div class="t-custominfo-chipgroup">
                     <div class="t-custominfo-field">
                         <label>Свойство</label>
                         <InputText v-model.lazy=custom.type fluid />
@@ -69,17 +69,25 @@ defineExpose({ parseContent, serializeContent });
 </script>
 
 <style>
-.t-custominfo-field {
-    display: flex;
-    gap: 1rem;
-    align-items: center;
-    flex: 1;
-}
-
 .t-custominfo-group {
     display: flex;
     flex-direction: column;
     align-items: stretch;
     gap: 1rem;
+}
+
+.t-custominfo-chipgroup {
+    display: flex;
+    flex-wrap: wrap;
+    flex-grow: 1;
+    gap: 0.75rem;
+    padding-block: 0.25rem;
+}
+
+.t-custominfo-field {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    flex: 1;
 }
 </style>

@@ -1,12 +1,13 @@
 <template>
     <div class="t-ui-chipcontainer">
-        <Chip v-for="(series, index) in model" :key="series.id" removable @remove="del(index)">
-            <div class="t-ui-chipgroup">
-                <FloatLabel variant="on" style="width:32rem">
+        <Chip v-for="(series, index) in model" :key="series.id" removable @remove="del(index)" class="t-ui-chipinput"
+            :pt="{ removeIcon: { style: 'flex-shrink: 0' } }">
+            <div class="t-ui-rowgroup">
+                <FloatLabel variant="on" style="width:75%">
                     <InputText v-model.lazy=series.name fluid />
                     <label>Название</label>
                 </FloatLabel>
-                <FloatLabel variant="on" style="width:10.1rem">
+                <FloatLabel variant="on" style="width:25%">
                     <InputNumber v-model.lazy=series.number :useGrouping="false" fluid />
                     <label>Номер</label>
                 </FloatLabel>
