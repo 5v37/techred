@@ -4,7 +4,7 @@
             :pt="{ removeIcon: { style: 'flex-shrink: 0' } }">
             <div class="t-ui-rowgroup">
                 <FloatLabel variant="on" style="width:75%">
-                    <InputText v-model.lazy=series.name fluid />
+                    <InputText v-model.lazy.trim=series.name fluid />
                     <label>Название</label>
                 </FloatLabel>
                 <FloatLabel variant="on" style="width:25%">

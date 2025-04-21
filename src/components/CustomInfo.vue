@@ -9,9 +9,9 @@
                 <div class="t-custominfo-chipgroup">
                     <div class="t-custominfo-field">
                         <label>Свойство</label>
-                        <InputText v-model.lazy=custom.type fluid />
+                        <InputText v-model.lazy.trim=custom.type fluid />
                     </div>
-                    <Textarea v-model.lazy=custom.value autoResize rows="2" fluid />
+                    <Textarea v-model.lazy.trim=custom.value autoResize rows="2" fluid />
                 </div>
             </Chip>
             <Button type="button" icon="pi pi-plus" @click="add()" v-tooltip="'Добавить'" />
@@ -53,7 +53,7 @@ function parseContent(descElements: Element | undefined) {
 
     for (const item of descElements.children) {
         if (item.tagName === props.tag) {
-            model.value.push(new Customs(item.getAttribute("info-type") ?? "", item.textContent ?? ""));
+            model.value.push(new Customs(item.getAttribute("info-type")?.trim() , item.textContent?.trim()));
         }
     };
 };

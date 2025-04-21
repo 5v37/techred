@@ -5,29 +5,29 @@
             <div class="t-persons-chip">
                 <div class="t-ui-rowgroup">
                     <FloatLabel variant="on">
-                        <InputText v-model.lazy="person['last-name']" fluid />
+                        <InputText v-model.lazy.trim="person['last-name']" fluid />
                         <label>Фамилия</label>
                     </FloatLabel>
                     <FloatLabel variant="on">
-                        <InputText v-model.lazy="person['first-name']" fluid />
+                        <InputText v-model.lazy.trim="person['first-name']" fluid />
                         <label>Имя</label>
                     </FloatLabel>
                     <FloatLabel variant="on">
-                        <InputText v-model.lazy="person['middle-name']" fluid />
+                        <InputText v-model.lazy.trim="person['middle-name']" fluid />
                         <label>Отчество</label>
                     </FloatLabel>
                 </div>
                 <div class="t-ui-rowgroup">
                     <FloatLabel variant="on">
-                        <InputText v-model.lazy="person.nickname" fluid />
+                        <InputText v-model.lazy.trim="person.nickname" fluid />
                         <label>Псевдоним</label>
                     </FloatLabel>
                     <FloatLabel variant="on">
-                        <InputText v-model.lazy="person.email" fluid />
+                        <InputText v-model.lazy.trim="person.email" fluid />
                         <label>email</label>
                     </FloatLabel>
                     <FloatLabel variant="on">
-                        <InputText v-model.lazy="person['home-page']" fluid />
+                        <InputText v-model.lazy.trim="person['home-page']" fluid />
                         <label>Сайт</label>
                     </FloatLabel>
                 </div>

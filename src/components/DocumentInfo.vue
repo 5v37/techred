@@ -35,17 +35,17 @@
 
             <div class="t-ui-field">
                 <label>Использованные программы</label>
-                <InputText v-model.lazy=programUsed />
+                <InputText v-model.lazy.trim=programUsed />
             </div>
 
             <div class="t-ui-field">
                 <label>Источник</label>
-                <InputText v-model.lazy=srcOCR />
+                <InputText v-model.lazy.trim=srcOCR />
             </div>
 
             <div class="t-ui-field">
                 <label>Ссылки на источник</label>
-                <InputText v-model.lazy=srcURL[0] />
+                <InputText v-model.lazy.trim=srcURL[0] />
             </div>
 
             <div class="t-ui-field">
@@ -144,14 +144,14 @@ export default defineComponent({
                 if (item.tagName === "author") {
                     this.fileAuthors.push(new PersonInfo(item));
                 } else if (item.tagName === "program-used" && item.textContent) {
-                    this.programUsed = item.textContent;
+                    this.programUsed = item.textContent.trim();
                 } else if (item.tagName === "date" && item.textContent) {
                     this.dateValue = item.getAttribute("value") ?? "";
-                    this.date = item.textContent;
+                    this.date = item.textContent.trim();
                 } else if (item.tagName === "src-url" && item.textContent) {
-                    this.srcURL.push(item.textContent);
+                    this.srcURL.push(item.textContent.trim());
                 } else if (item.tagName === "src-ocr" && item.textContent) {
-                    this.srcOCR = item.textContent;
+                    this.srcOCR = item.textContent.trim();
                 } else if (item.tagName === "id" && item.textContent) {
                     this.fileID = item.textContent;
                 } else if (item.tagName === "version" && item.textContent) {

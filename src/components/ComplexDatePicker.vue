@@ -1,7 +1,7 @@
 <template>
     <div>
         <InputGroup>
-            <InputText id="date" v-model.lazy="dateString" />
+            <InputText id="date" v-model.lazy.trim="dateString" />
             <InputGroupAddon>
                 <Button :label="dateMode.shortLabel" severity="secondary" variant="text" @click="showModesSelector"
                     style="line-height: 1;"></Button>

@@ -12,7 +12,7 @@ class PersonInfo implements Record<PersonProps, string> {
         if (item) {
             for (const person of item.children) {
                 if (person.tagName in this && person.textContent) {
-                    this[person.tagName as PersonProps] = person.textContent;
+                    this[person.tagName as PersonProps] = person.textContent.trim();
                 };
             };
         };

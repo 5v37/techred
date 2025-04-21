@@ -7,18 +7,18 @@
         <div class="t-ui-container">
             <div class="t-ui-field">
                 <label>Заглавие</label>
-                <InputText v-model.lazy=bookName />
+                <InputText v-model.lazy.trim=bookName />
             </div>
 
             <div class="t-ui-field">
                 <label>Издательство</label>
-                <InputText v-model.lazy=publisher />
+                <InputText v-model.lazy.trim=publisher />
             </div>
 
             <div class="t-ui-group">
                 <div class="t-ui-field">
                     <label>Город</label>
-                    <InputText v-model.lazy=city />
+                    <InputText v-model.lazy.trim=city />
                 </div>
 
                 <div class="t-ui-field t-ui-grow05">
@@ -28,7 +28,7 @@
 
                 <div class="t-ui-field">
                     <label>ISBN</label>
-                    <InputText v-model.lazy=ISBN />
+                    <InputText v-model.lazy.trim=ISBN />
                 </div>
             </div>
 
@@ -108,17 +108,17 @@ export default defineComponent({
 
             for (const item of descElement.children) {
                 if (item.tagName === "book-name" && item.textContent) {
-                    this.bookName = item.textContent;
+                    this.bookName = item.textContent.trim();
                 } else if (item.tagName === "publisher" && item.textContent) {
-                    this.publisher = item.textContent;
+                    this.publisher = item.textContent.trim();
                 } else if (item.tagName === "city" && item.textContent) {
-                    this.city = item.textContent;
+                    this.city = item.textContent.trim();
                 } else if (item.tagName === "year" && item.textContent) {
                     this.year = new Date(item.textContent);
                 } else if (item.tagName === "isbn" && item.textContent) {
-                    this.ISBN = item.textContent;
+                    this.ISBN = item.textContent.trim();
                 } else if (item.tagName === "sequence") {
-                    const name = item.getAttribute("name");
+                    const name = item.getAttribute("name")?.trim();
                     const number = item.getAttribute("number");
                     if (name) {
                         this.sequences.push(new Series(name, number));

@@ -7,7 +7,7 @@
         <div class="t-ui-container">
             <div class="t-ui-field">
                 <label>Заглавие</label>
-                <InputText v-model.lazy=bookTitle />
+                <InputText v-model.lazy.trim=bookTitle />
             </div>
 
             <div class="t-ui-field">
@@ -73,7 +73,7 @@
 
             <div class="t-ui-field">
                 <label>Ключевые слова</label>
-                <InputText v-model.lazy=keywords />
+                <InputText v-model.lazy.trim=keywords />
             </div>
 
             <div class="t-ui-field">
@@ -225,12 +225,12 @@ export default defineComponent({
                 } else if (item.tagName === "author") {
                     this.authors.push(new PersonInfo(item));
                 } else if (item.tagName === "book-title" && item.textContent) {
-                    this.bookTitle = item.textContent;
+                    this.bookTitle = item.textContent.trim();
                 } else if (item.tagName === "keywords" && item.textContent) {
-                    this.keywords = item.textContent;
+                    this.keywords = item.textContent.trim();
                 } else if (item.tagName === "date" && item.textContent) {
                     this.dateValue = item.getAttribute("value") ?? "";
-                    this.date = item.textContent;
+                    this.date = item.textContent.trim();
                 } else if (item.tagName === "coverpage" && item.children) {
                     this.coverHref = item.children[0].getAttributeNS(xlinkns, "href") ?? "";
                 } else if (item.tagName === "lang" && item.textContent) {
@@ -240,7 +240,7 @@ export default defineComponent({
                 } else if (item.tagName === "translator") {
                     this.translators.push(new PersonInfo(item));
                 } else if (item.tagName === "sequence") {
-                    const name = item.getAttribute("name");
+                    const name = item.getAttribute("name")?.trim();
                     const number = item.getAttribute("number");
                     if (name) {
                         this.sequences.push(new Series(name, number));
