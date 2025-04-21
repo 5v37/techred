@@ -174,7 +174,7 @@ export function addTable(): Command {
 
         const parentNode = $from.node($from.depth - 1);
         const tableType = state.schema.nodes.table;
-        const currentIndex = $from.index($from.depth-1);
+        const currentIndex = $from.index($from.depth - 1);
 
         if (!parentNode.canReplaceWith(currentIndex, currentIndex + 1, tableType)) {
             return false;
@@ -185,7 +185,10 @@ export function addTable(): Command {
 
             let tr = state.tr;
             let startPos = tr.mapping.map(insertPos);
-            tr.insert(startPos, tableType.create(null, state.schema.nodes.tr.create(null, state.schema.nodes.td.create())));
+            tr.insert(startPos, tableType.create(null,
+                [state.schema.nodes.tr.create(null, [state.schema.nodes.td.create(), state.schema.nodes.td.create()]),
+                state.schema.nodes.tr.create(null, [state.schema.nodes.td.create(), state.schema.nodes.td.create()])])
+            );
 
             dispatch(tr.scrollIntoView());
         };

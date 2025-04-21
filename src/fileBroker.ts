@@ -1,5 +1,5 @@
-import { formatXML, parseDataURL } from './utils';
-import { textBlocks, fb2ns, xlinkns, markBlocks } from './fb2Model';
+import { formatXML } from './utils';
+import { textBlocks, markBlocks } from './fb2Model';
 
 type Subscribers = {
     parseHandler: (source: Element | undefined) => void,
@@ -29,8 +29,6 @@ class fileBroker {
             throw new Error(errorNode.textContent?.split("\n")[0]);
         };
 
-        replaceInlineImage(xmlDoc);
-
         const parts = getParts(xmlDoc);
         for (const sub of this.subs) {
             sub.parseHandler(parts[sub.elementId]);
@@ -38,7 +36,7 @@ class fileBroker {
 
         if (!this.subs.length) {
             this.initialData = parts;
-            setTimeout(() => {this.initialData = undefined});
+            setTimeout(() => { this.initialData = undefined });
         };
     }
 
@@ -51,10 +49,8 @@ class fileBroker {
             sub.serializeHandler(xmlDoc, parts[sub.elementId]!);
         };
 
-        moveImageToBinary(xmlDoc);
-
         const serializer = new XMLSerializer();
-        const xmlStr = serializer.serializeToString(xmlDoc).replace(/\n/g, "").replace(/  +/g, " ");
+        const xmlStr = serializer.serializeToString(xmlDoc).replace(/  +/g, " ");
         return formatXML(fixMarks(xmlStr), textBlocks);
     }
 
@@ -77,10 +73,12 @@ const xmlTemplate =
 </FictionBook>`;
 
 function getParts(xmlDoc: Document) {
+    const [fb2] = xmlDoc.getElementsByTagName("FictionBook");
     const [desc] = xmlDoc.getElementsByTagName("description");
     const [body, notes] = xmlDoc.getElementsByTagName("body");
 
     const parts: documentBlocks = {
+        "fiction-book": fb2,
         "title-info": undefined,
         "src-title-info": undefined,
         "document-info": undefined,
@@ -114,35 +112,6 @@ function getParts(xmlDoc: Document) {
 function fixMarks(xml: string) {
     const regex = new RegExp('<(' + markBlocks.join("|") + ')>([  ]*)<\/\\1>', 'g');
     return xml.replace(regex, '$2'); // убираем пустые теги
-};
-
-
-function replaceInlineImage(xmlDoc: Document) {
-    textBlocks.forEach(tag => {
-        xmlDoc.querySelectorAll(tag + " image").forEach(element => {
-            const inlineImg = xmlDoc.createElementNS(fb2ns, "inlineimage");
-            for (let index = element.attributes.length - 1; index >= 0; --index) {
-                inlineImg.attributes.setNamedItem(element.attributes[index].cloneNode() as Attr);
-            };
-            element.replaceWith(inlineImg);
-        });
-    });
-};
-
-function moveImageToBinary(xmlDoc: Document) {
-    const FictionBook = xmlDoc.getElementsByTagName("FictionBook")[0]
-    xmlDoc.querySelectorAll("image, inlineimage").forEach(element => {
-        const image = parseDataURL(element.getAttribute("src"));
-        if (image && image.base64) {
-            const binary = xmlDoc.createElementNS(fb2ns, "binary");
-            binary.setAttribute("id", element.getAttributeNS(xlinkns, "href")!.substring(1));
-            binary.setAttribute("content-type", image.mime);
-            binary.textContent = image.data;
-
-            FictionBook.appendChild(binary);
-            element.removeAttribute("src");
-        };
-    });
 };
 
 export default new fileBroker();

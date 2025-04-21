@@ -1,11 +1,14 @@
-import { reactive } from 'vue';
+import { ref, reactive } from 'vue';
 
 import { EditorView } from "prosemirror-view";
 import { TreeNode } from 'primevue/treenode';
 
+import Images from './types/images';
+
 class editorState {
     private views: { [key: string]: EditorView } = {};
     private tocs: { [key: string]: TreeNode[] } = {};
+    public images = ref<Images>(new Images);
 
     setView(id: string, view: EditorView) {
         this.views[id] = view;

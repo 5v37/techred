@@ -1,4 +1,4 @@
-export function formatXML(xml: string, textBlocks: string[] = [], tab = " ", nl = "\r\n",) {
+export function formatXML(xml: string, textBlocks: string[] = [], tab = " ", nl = "\n",) {
     let formatted = "", indent = "", mixedMode = false, mixedContent = "";
     const mixedNodeStart = textBlocks.map(tag => tag + ">");
     const mixedNodeEnd = textBlocks.map(tag => "/" + tag);
@@ -87,7 +87,7 @@ export function decodeXML(xmlData: ArrayBuffer) {
     return new TextDecoder(encoding).decode(xmlData);
 };
 
-export function parseDataURL(dataURL: string | null) {
+export function parseDataURL(dataURL: string | undefined) {
     if (dataURL && dataURL.startsWith("data:")) {
         const [mediatype, data] = dataURL.substring(5).split(",")
         const parameters = mediatype.split(";");

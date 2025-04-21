@@ -15,14 +15,14 @@
                 }" />
             </SplitterPanel>
             <SplitterPanel :size="85">
-                <div v-show="showDescription" ref="description" class="t-app-description">
+                <div v-show="current === 'description'" ref="description" class="t-app-description">
                     <TitleInfo ref="titleInfo" header="Сведения" tag="title-info" />
                     <TitleInfo ref="srcTitleInfo" header="Сведения на оригинальном языке" tag="src-title-info" />
                     <DocumentInfo ref="documentInfo" header="Информация о файле" tag="document-info" />
                     <PublishInfo ref="publishInfo" header="Выходные данные" tag="publish-info" />
                     <CustomInfo ref="customInfo" header="Дополнительно" tag="custom-info" />
                 </div>
-                <Splitter v-show="!showDescription" layout="vertical">
+                <Splitter v-show="current === 'content'" layout="vertical">
                     <SplitterPanel :size="75" :minSize="10" ref="body" style="overflow-y: auto;">
                         <Editor editor-id="body" />
                     </SplitterPanel>
@@ -30,6 +30,7 @@
                         <Editor editor-id="notes" />
                     </SplitterPanel>
                 </Splitter>
+                <Images v-show="current === 'images'" />
             </SplitterPanel>
         </Splitter>
     </ProsemirrorAdapterProvider>
@@ -43,6 +44,8 @@ import { ComponentPublicInstance, defineComponent } from 'vue'
 import { SplitterPanel, Splitter, Tree, Toast } from 'primevue';
 import { TreeNode } from 'primevue/treenode';
 
+import { ProsemirrorAdapterProvider } from '@prosemirror-adapter/vue';
+
 import MainToolbar from './components/MainToolbar.vue';
 import TitleInfo from './components/TitleInfo.vue';
 import DocumentInfo from './components/DocumentInfo.vue';
@@ -50,8 +53,8 @@ import PublishInfo from './components/PublishInfo.vue';
 import CustomInfo from './components/CustomInfo.vue';
 import TreeContextMenu from './components/TreeContextMenu.vue';
 import Editor from './components/Editor.vue';
+import Images from './components/Images.vue';
 import editorState from './editorState';
-import { ProsemirrorAdapterProvider } from '@prosemirror-adapter/vue';
 
 const TOCNodes = [
     {
@@ -105,51 +108,62 @@ const TOCNodes = [
         icon: 'pi pi-fw pi-asterisk',
         isRoot: true,
         children: editorState.getTOC("notes")
-    }
+    },
+    {
+        key: 'images',
+        label: 'Изображения',
+        icon: 'pi pi-fw pi-images',
+        isRoot: true,
+        children: []
+    },
 ];
 
 interface State {
     TOC: TreeNode[],
     loaded: boolean,
-    toTop: boolean,
-    showDescription: boolean
+    toTopDescription: boolean,
+    toTopContent: boolean,
+    current: string
 }
 
 export default defineComponent({
     name: "App",
     components: {
+        ProsemirrorAdapterProvider,
         MainToolbar,
         TitleInfo,
         DocumentInfo,
         PublishInfo,
         CustomInfo,
         Editor,
+        Images,
         TreeContextMenu,
         Toast,
         Splitter,
         SplitterPanel,
-        Tree,
-        ProsemirrorAdapterProvider
+        Tree
     },
     data(): State {
         return {
-            showDescription: true,
+            current: "description",
             loaded: false,
-            toTop: false,
+            toTopDescription: false,
+            toTopContent: false,
             TOC: TOCNodes,
         }
     },
     methods: {
         scrollToTop() {
-            if (this.showDescription) {
+            if (this.current === "description") {
                 (this.$refs.description as Element).scrollTop = 0;
-            } else {
+            } else if (this.current === "content") {
                 (this.$refs.body as ComponentPublicInstance).$el.scrollTop = 0;
                 (this.$refs.notes as ComponentPublicInstance).$el.scrollTop = 0;
             };
         },
         reloaded() {
-            this.toTop = true;
+            this.toTopDescription = this.current !== "description";
+            this.toTopContent = this.current !== "content";
             this.scrollToTop();
         },
         onContextRightClick(event: Event, node: TreeNode) {
@@ -166,11 +180,22 @@ export default defineComponent({
         },
         onNodeSelect(node: TreeNode) {
             let toTop = false;
-            if (this.showDescription !== node.key.startsWith("description")) {
-                this.showDescription = !this.showDescription;
-                toTop = this.toTop;
-                this.toTop = false;
-            };
+
+            if (node.key === "images") {
+                this.current = "images";
+            } else if (node.key.startsWith("description")) {
+                this.current = "description";
+            } else {
+                this.current = "content";
+            }
+
+            if (this.current === "description" && this.toTopDescription) {
+                toTop = true;
+                this.toTopDescription = false;
+            } else if ((this.current === "content") && this.toTopContent) {
+                toTop = true;
+                this.toTopContent = false;
+            }
 
             if (node.data && !node.isRoot) {
                 queueMicrotask(() => {

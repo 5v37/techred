@@ -1,16 +1,29 @@
 import { AttributeSpec, Node, Schema } from "prosemirror-model";
 
-export const fb2ns = "http://www.gribuser.ru/xml/fictionbook/2.0";
-export const xlinkns = "http://www.w3.org/1999/xlink";
+const fb2ns = "http://www.gribuser.ru/xml/fictionbook/2.0";
+const xlinkns = "http://www.w3.org/1999/xlink";
+const textBlocks = ["p", "v", "th", "td", "subtitle", "text-author"];
+const inlineImageSelector = ":is(" + textBlocks.join(",") + ") > image";
 
-export const bodySchema = template("body", false);
-export const bodySchemaXML = template("body", true);
+function getCellAttrs(dom: HTMLElement) {
+    return {
+        id: dom.getAttribute("id"),
+        colspan: Number(dom.getAttribute('colspan') || 1),
+        rowspan: Number(dom.getAttribute('rowspan') || 1),
+        align: dom.getAttribute("align"),
+        valign: dom.getAttribute("valign"),
+    };
+};
 
-export const annotationSchema = template("annotation", false);
-export const annotationSchemaXML = template("annotation", true);
-
-export const textBlocks = ["p", "v", "subtitle", "text-author"];
-export const markBlocks = Object.keys(bodySchema.marks);
+function setCellAttrs(node: Node) {
+    return {
+        id: node.attrs.id,
+        colspan: node.attrs.colspan != 1 ? node.attrs.colspan : null,
+        rowspan: node.attrs.rowspan != 1 ? node.attrs.rowspan : null,
+        align: node.attrs.align,
+        valign: node.attrs.valign,
+    };
+};
 
 function template(topNode: string, toXML: boolean): Schema {
     const defaultNameSpace = toXML ? fb2ns + " " : "";
@@ -21,24 +34,6 @@ function template(topNode: string, toXML: boolean): Schema {
         align: { default: null },
         valign: { default: null }
     };
-    function getCellAttrs(dom: HTMLElement) {
-        return {
-            id: dom.getAttribute("id"),
-            colspan: Number(dom.getAttribute('colspan') || 1),
-            rowspan: Number(dom.getAttribute('rowspan') || 1),
-            align: dom.getAttribute("align"),
-            valign: dom.getAttribute("valign"),
-        };
-    };
-    function setCellAttrs(node: Node) {
-        return {
-            id: node.attrs.id,
-            colspan: node.attrs.colspan != 1 ? node.attrs.colspan : null,
-            rowspan: node.attrs.rowspan != 1 ? node.attrs.rowspan : null,
-            align: node.attrs.align,
-            valign: node.attrs.valign,
-        };
-    };
 
     return new Schema({
         topNode: topNode,
@@ -48,8 +43,6 @@ function template(topNode: string, toXML: boolean): Schema {
             image: {
                 inline: false,
                 attrs: {
-                    src: {},
-                    // type: { default: null },
                     href: { default: null },
                     alt: { default: null },
                     title: { default: null },
@@ -57,13 +50,10 @@ function template(topNode: string, toXML: boolean): Schema {
                 },
                 draggable: true,
                 parseDOM: [{
-                    tag: "image", getAttrs(dom) {
-                        const href = dom.getAttributeNS(xlinkns, "href")!;
-                        const binary = dom.ownerDocument.getElementById(href.slice(1))!;
+                    tag: `image:not(${inlineImageSelector})`,
+                    getAttrs(dom) {
                         return {
-                            src: "data:" + binary.getAttribute("content-type") + ";base64," + binary.textContent,
-                            // type: dom.getAttributeNS(xlinkns, "type"),
-                            href: href,
+                            href: dom.getAttributeNS(xlinkns, "href"),
                             alt: dom.getAttribute("alt"),
                             title: dom.getAttribute("title"),
                             id: dom.getAttribute("id")
@@ -73,12 +63,10 @@ function template(topNode: string, toXML: boolean): Schema {
                 toDOM(node) {
                     if (defaultNameSpace) {
                         return [defaultNameSpace + "image", {
-                            // [xlinkns + " type"]: node.attrs.type,
                             [xlinkns + " href"]: node.attrs.href,
                             alt: node.attrs.alt,
                             title: node.attrs.title,
-                            id: node.attrs.id,
-                            src: node.attrs.src
+                            id: node.attrs.id
                         }]
                     } else {
                         return ["image", node.attrs];
@@ -96,7 +84,8 @@ function template(topNode: string, toXML: boolean): Schema {
                     id: { default: null }
                 },
                 parseDOM: [{
-                    tag: "epigraph", getAttrs(dom) {
+                    tag: "epigraph",
+                    getAttrs(dom) {
                         return { id: dom.getAttribute("id") };
                     }
                 }],
@@ -109,14 +98,14 @@ function template(topNode: string, toXML: boolean): Schema {
                     inid: { default: null }
                 },
                 parseDOM: [{
-                    tag: "section", getAttrs(dom) {
+                    tag: "section",
+                    getAttrs(dom) {
                         return {
                             id: self.crypto.randomUUID(),
                             inid: dom.getAttribute("id")
                         };
                     }
                 }],
-                //toDOM(node) { return [defaulNameSpace + "section", node.attrs, 0] }
                 toDOM(node) {
                     if (defaultNameSpace) {
                         return [defaultNameSpace + "section", { id: node.attrs.inid }, 0];
@@ -133,7 +122,8 @@ function template(topNode: string, toXML: boolean): Schema {
                 },
                 parseDOM: [
                     {
-                        tag: "p", getAttrs(dom) {
+                        tag: "p",
+                        getAttrs(dom) {
                             return { id: dom.getAttribute("id") };
                         }
                     },
@@ -158,7 +148,8 @@ function template(topNode: string, toXML: boolean): Schema {
                     id: { default: null }
                 },
                 parseDOM: [{
-                    tag: "poem", getAttrs(dom) {
+                    tag: "poem",
+                    getAttrs(dom) {
                         return { id: dom.getAttribute("id") };
                     }
                 }],
@@ -175,7 +166,8 @@ function template(topNode: string, toXML: boolean): Schema {
                     id: { default: null }
                 },
                 parseDOM: [{
-                    tag: "v", getAttrs(dom) {
+                    tag: "v",
+                    getAttrs(dom) {
                         return { id: dom.getAttribute("id") };
                     }
                 }],
@@ -188,7 +180,8 @@ function template(topNode: string, toXML: boolean): Schema {
                 content: "text*",
                 marks: "",
                 parseDOM: [{
-                    tag: "date", getAttrs(dom) {
+                    tag: "date",
+                    getAttrs(dom) {
                         return { value: dom.getAttribute("value") };
                     }
                 }],
@@ -200,7 +193,8 @@ function template(topNode: string, toXML: boolean): Schema {
                     id: { default: null }
                 },
                 parseDOM: [{
-                    tag: "cite", getAttrs(dom) {
+                    tag: "cite",
+                    getAttrs(dom) {
                         return { id: dom.getAttribute("id") };
                     }
                 }],
@@ -212,7 +206,8 @@ function template(topNode: string, toXML: boolean): Schema {
                     id: { default: null }
                 },
                 parseDOM: [{
-                    tag: "subtitle", getAttrs(dom) {
+                    tag: "subtitle",
+                    getAttrs(dom) {
                         return { id: dom.getAttribute("id") };
                     }
                 }],
@@ -224,7 +219,8 @@ function template(topNode: string, toXML: boolean): Schema {
                 },
                 content: "(p | poem | cite | subtitle | table)+",
                 parseDOM: [{
-                    tag: "annotation", getAttrs(dom) {
+                    tag: "annotation",
+                    getAttrs(dom) {
                         return { id: dom.getAttribute("id") };
                     }
                 }],
@@ -238,7 +234,8 @@ function template(topNode: string, toXML: boolean): Schema {
                 tableRole: "table",
                 isolating: true,
                 parseDOM: [{
-                    tag: "table", getAttrs(dom) {
+                    tag: "table",
+                    getAttrs(dom) {
                         return { id: dom.getAttribute("id") };
                     }
                 }],
@@ -251,7 +248,8 @@ function template(topNode: string, toXML: boolean): Schema {
                 content: "(th | td)+",
                 tableRole: "row",
                 parseDOM: [{
-                    tag: "tr", getAttrs(dom) {
+                    tag: "tr",
+                    getAttrs(dom) {
                         return { align: dom.getAttribute("align") };
                     }
                 }],
@@ -277,17 +275,16 @@ function template(topNode: string, toXML: boolean): Schema {
                 inline: true,
                 attrs: {
                     src: {},
-                    // type: { default: null },
                     href: { default: null },
                     alt: { default: null }
                 },
                 parseDOM: [{
-                    tag: "inlineimage", getAttrs(dom) {
+                    tag: inlineImageSelector,
+                    getAttrs(dom) {
                         const href = dom.getAttributeNS(xlinkns, "href")!;
                         const binary = dom.ownerDocument.getElementById(href.slice(1))!;
                         return {
                             src: "data:" + binary.getAttribute("content-type") + ";base64," + binary.textContent,
-                            // type: dom.getAttributeNS(xlinkns, "type"),
                             href: href,
                             alt: dom.getAttribute("alt")
                         };
@@ -296,10 +293,8 @@ function template(topNode: string, toXML: boolean): Schema {
                 toDOM(node) {
                     if (defaultNameSpace) {
                         return [defaultNameSpace + "image", {
-                            // [xlinkns + " type"]: node.attrs.type,
                             [xlinkns + " href"]: node.attrs.href,
-                            alt: node.attrs.alt,
-                            src: node.attrs.src
+                            alt: node.attrs.alt
                         }]
                     } else {
                         return ["img", node.attrs];
@@ -315,14 +310,13 @@ function template(topNode: string, toXML: boolean): Schema {
             },
             a: {
                 attrs: {
-                    // xtype: { default: null },
                     href: { default: null },
                     type: { default: null }
                 },
                 parseDOM: [{
-                    tag: "a", getAttrs(dom) {
+                    tag: "a",
+                    getAttrs(dom) {
                         return {
-                            // xtype: dom.getAttributeNS(xlinkns, "type"),
                             href: dom.getAttributeNS(xlinkns, "href"),
                             type: dom.getAttribute("type")
                         };
@@ -331,7 +325,6 @@ function template(topNode: string, toXML: boolean): Schema {
                 toDOM(node) {
                     if (defaultNameSpace) {
                         return [defaultNameSpace + "a", {
-                            // [xlinkns + " type"]: node.attrs.xtype,
                             [xlinkns + " href"]: node.attrs.href,
                             type: node.attrs.type
                         }]
@@ -365,3 +358,13 @@ function template(topNode: string, toXML: boolean): Schema {
         }
     })
 };
+
+const bodySchema = template("body", false);
+const bodySchemaXML = template("body", true);
+
+const annotationSchema = template("annotation", false);
+const annotationSchemaXML = template("annotation", true);
+
+const markBlocks = Object.keys(bodySchema.marks);
+
+export { fb2ns, xlinkns, bodySchema, bodySchemaXML, annotationSchema, annotationSchemaXML, textBlocks, markBlocks };

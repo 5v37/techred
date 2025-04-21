@@ -20,7 +20,8 @@
                     <label>Обложка</label>
                     <div class="t-ui-group">
                         <div v-show="!hasCover" class="t-titleinfo-nocover">ОТСУТСТВУЕТ</div>
-                        <Image v-show="hasCover" :src="cover" alt="Обложка" preview width="200" />
+                        <Image v-show="hasCover" :src="cover" alt="Обложка" preview width="200"
+                            :pt="{ image: { style: 'object-fit: contain' } }" style="min-height: 150px;" />
                         <div class="t-titleinfo-coverbuttons">
                             <Button icon="pi pi-file-import" @click="selectCover" severity="contrast"
                                 v-tooltip="'Выбрать...'" />
@@ -62,7 +63,7 @@
                 <div class="t-ui-chipcontainer">
                     <Chip v-for="genre in selectedGenres" :key="genre.mark" :label="genre.name" removable
                         @remove="genreRemove(genre.mark)" />
-                    <Button type="button" icon="pi pi-plus" @click="showGenreSelecter" v-tooltip="'Добавить'" />
+                    <Button type="button" icon="pi pi-plus" @click="showGenreSelector" v-tooltip="'Добавить'" />
                     <Popover ref="genrespop">
                         <Tree :value="genresTree" selectionMode="single" class="t-titleinfo-genrespop"
                             @node-select="genreSelect" />
@@ -99,9 +100,10 @@ import { Language, languages, findLanguage } from '../types/languages';
 import PersonInfo from '../types/personInfo';
 import Series from '../types/series';
 import { openImageDialog, saveImageDialog } from '../fileAccess';
-import { addingNodes, parseDataURL } from '../utils';
+import { addingNodes } from '../utils';
 import { fb2ns, xlinkns } from '../fb2Model';
 import fileBroker from '../fileBroker';
+import editorState from '../editorState';
 
 interface StateDescription {
     bookTitle: string,
@@ -109,8 +111,7 @@ interface StateDescription {
     dateValue: string,
     genresTree: TreeNode[],
     keywords: string,
-    cover: string,
-    coverType: string,
+    coverHref: string,
     languages: Language[],
     authors: PersonInfo[],
     translators: PersonInfo[],
@@ -133,8 +134,7 @@ function initialStateDescription(): StateDescription {
         translators: [],
         genresTree: genresTree,
         keywords: "",
-        cover: "",
-        coverType: "",
+        coverHref: "",
         languages: languages,
         sequences: [],
         isEmpty: false
@@ -187,10 +187,13 @@ export default defineComponent({
         },
         required() {
             return !this.$props.tag.startsWith("src");
+        },
+        cover() {
+            return editorState.images.value.getByHref(this.coverHref)?.dataURL ?? "";
         }
     },
     methods: {
-        showGenreSelecter(event: Event) {
+        showGenreSelector(event: Event) {
             (this.$refs.genrespop as InstanceType<typeof Popover>).toggle(event);
         },
         genreSelect(node: TreeNode) {
@@ -229,14 +232,7 @@ export default defineComponent({
                     this.dateValue = item.getAttribute("value") ?? "";
                     this.date = item.textContent;
                 } else if (item.tagName === "coverpage" && item.children) {
-                    const image = item.children[0];
-                    const href = image.getAttributeNS(xlinkns, "href")!;
-                    const binary = item.ownerDocument.getElementById(href.slice(1));
-
-                    if (binary) {
-                        this.cover = "data:" + binary.getAttribute("content-type") + ";base64," + binary.textContent;
-                        this.coverType = href.split('.').pop()!;
-                    }
+                    this.coverHref = item.children[0].getAttributeNS(xlinkns, "href") ?? "";
                 } else if (item.tagName === "lang" && item.textContent) {
                     this.selectedLang = findLanguage(item.textContent, missingLang);
                 } else if (item.tagName === "src-lang" && item.textContent) {
@@ -277,18 +273,10 @@ export default defineComponent({
             addElement(titleInfo, "keywords", this.keywords);
             addElement(titleInfo, "date", this.date, false, [{ key: "value", value: this.dateValue || undefined }]);
 
-            const cover = parseDataURL(this.cover);
-            if (cover && cover.base64) {
-                const id = (this.required ? "cover." : "src-cover.") + this.coverType;
-                const attrs = [
-                    { key: "id", value: id },
-                    { key: "content-type", value: cover.mime },
-                ]
-                addElement(xmlDoc.getElementsByTagName("FictionBook")[0], "binary", cover.data, false, attrs);
-
+            if (this.cover) {
                 const coverpage = xmlDoc.createElementNS(fb2ns, "coverpage");
                 const image = xmlDoc.createElementNS(fb2ns, "image");
-                image.setAttributeNS(xlinkns, "href", "#" + id);
+                image.setAttributeNS(xlinkns, "href", this.coverHref);
 
                 coverpage.appendChild(image);
                 titleInfo.appendChild(coverpage);
@@ -322,15 +310,16 @@ export default defineComponent({
         },
         selectCover() {
             openImageDialog().then(file => {
-                this.cover = file.content;
-                this.coverType = file.path.split('.').pop()!;
+                const fileName = file.path.split("\\").pop()!.split("/").pop()!;
+                editorState.images.value.addAsDataURL(fileName, file.content);
+                this.coverHref = "#" + fileName;
             }).catch((error) => {
                 this.$toast.add({ severity: 'error', summary: 'Ошибка открытия файла', detail: error });
             });
         },
         saveCover() {
             if (this.cover) {
-                saveImageDialog(this.cover, "cover").then(() => {
+                saveImageDialog(this.cover, this.coverHref.slice(1)).then(() => {
                     this.$toast.add({ severity: 'info', summary: 'Файл успешно сохранён', life: 3000 });
                 }).catch((error) => {
                     this.$toast.add({ severity: 'error', summary: 'Ошибка сохранения файла', detail: error });
@@ -338,8 +327,7 @@ export default defineComponent({
             };
         },
         deleteCover() {
-            this.cover = "";
-            this.coverType = "";
+            this.coverHref = "";
         }
     }
 })
