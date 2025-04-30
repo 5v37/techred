@@ -3,14 +3,14 @@
 		<div class="t-images-panel">
 			<div v-for="(value, key) in images.items" :key="key" class="t-images-block">
 				<Image class="img" :src=value.dataURL preview width="200" />
-				<span class="t-images-caption">{{ key }}</span>
+				<InputText v-model.lazy.trim=value.newId :invalid="!value.newId" class="t-images-caption" />
 			</div>
 		</div>
 	</div>
 </template>
 
 <script setup lang="ts">
-import { Image } from 'primevue';
+import { Image, InputText } from 'primevue';
 
 import fileBroker from "../fileBroker";
 import editorState from "../editorState";
@@ -22,7 +22,7 @@ const images = editorState.images;
 fileBroker.addSubscriber(parseContent, serializeContent, "fiction-book");
 
 function parseContent(descElements: Element | undefined) {
-	images.value.items = Object.create(null);
+	images.value.clear();
 
 	if (!descElements) {
 		return;
@@ -31,8 +31,8 @@ function parseContent(descElements: Element | undefined) {
 	for (const item of descElements.children) {
 		if (item.tagName === "binary") {
 			const id = item.getAttribute("id");
-			if (id) {
-				images.value.addAsContent(id, item.textContent, item.getAttribute("content-type"));
+			if (id && item.textContent) {
+				images.value.addAsContent(id, item.textContent.replace(/[\n\r]/g, ""), item.getAttribute("content-type"));
 			};
 		};
 	};
@@ -40,23 +40,28 @@ function parseContent(descElements: Element | undefined) {
 function serializeContent(xmlDoc: Document, target: Element) {
 	const addElement = addingNodes(xmlDoc, fb2ns);
 
-	let imageToSave: Set<string> = new Set;
+	let image = undefined, id = undefined;
+	let idToSave: Set<string> = new Set;
 	xmlDoc.querySelectorAll("image, inlineimage").forEach(element => {
-		const id = element.getAttributeNS(xlinkns, "href")?.slice(1);
+		id = element.getAttributeNS(xlinkns, "href")?.slice(1);
 		if (id) {
-			imageToSave.add(id);
+			image = images.value.items[id];
+			if (image) {
+				if (image.newId && image.newId !== id) {
+					id = image.newId;
+					element.setAttributeNS(xlinkns, "href", "#" + id);
+				};
+				if (!idToSave.has(id)) {
+					idToSave.add(id);
+					const attrs = [
+						{ key: "id", value: id },
+						{ key: "content-type", value: image.type },
+					];
+					addElement(target, "binary", image.content, false, attrs);
+				}
+			};
 		};
 	});
-
-	for (const [id, picture] of Object.entries(images.value.items)) {
-		if (imageToSave.has(id)) {
-			const attrs = [
-				{ key: "id", value: id },
-				{ key: "content-type", value: picture.type },
-			];
-			addElement(target, "binary", picture.content, false, attrs);
-		};
-	};
 };
 
 defineExpose({ parseContent, serializeContent });
@@ -91,7 +96,6 @@ defineExpose({ parseContent, serializeContent });
 }
 
 .t-images-caption {
-	text-align: center;
-	padding: 0.25rem;
+	margin-top: 0.5rem;
 }
 </style>

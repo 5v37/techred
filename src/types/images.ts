@@ -4,7 +4,8 @@ type Image = {
 	[id: string]: {
 		type: string,
 		content: string,
-		dataURL: string
+		dataURL: string,
+		newId: string
 	}
 }
 
@@ -17,7 +18,8 @@ class Images {
 			this.items[id] = {
 				content: data.data,
 				type: data.mime,
-				dataURL: dataURL!
+				dataURL: dataURL!,
+				newId: id
 			};
 		};
 	};
@@ -27,7 +29,8 @@ class Images {
 			this.items[id] = {
 				content: content,
 				type: type,
-				dataURL: "data:" + type + ";base64," + content
+				dataURL: "data:" + type + ";base64," + content,
+				newId: id
 			};
 		};
 	};
@@ -39,6 +42,10 @@ class Images {
 		};
 		return undefined;
 	};
+
+	clear() {
+		this.items = Object.create(null);
+	}
 };
 
 export default Images;
