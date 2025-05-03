@@ -35,12 +35,12 @@ class Images {
 		};
 	};
 
-	getByHref(href: string) {
-		const id = href.slice(1);
-		if (id) {
-			return this.items[id];
-		};
-		return undefined;
+	getDataByHref(href: string) {
+		if (href.startsWith("#")) {
+			return this.items[href.slice(1)]?.dataURL ?? "";
+		} else {
+			return href;
+		}
 	};
 
 	clear() {

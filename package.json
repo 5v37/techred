@@ -18,16 +18,16 @@
     "@tauri-apps/api": "^2.5.0",
     "@tauri-apps/plugin-dialog": "^2.2.1",
     "@tauri-apps/plugin-window-state": "^2.2.2",
-    "browser-fs-access": "^0.35.0",
+    "browser-fs-access": "^0.37.0",
     "primeicons": "^7.0.0",
     "primelocale": "^2.1.2",
     "primevue": "^4.3.3",
     "prosemirror-commands": "^1.7.1",
-    "prosemirror-dropcursor": "^1.8.1",
+    "prosemirror-dropcursor": "^1.8.2",
     "prosemirror-history": "^1.4.1",
     "prosemirror-keymap": "^1.2.2",
-    "prosemirror-menu": "^1.2.4",
-    "prosemirror-model": "^1.24.1",
+    "prosemirror-menu": "^1.2.5",
+    "prosemirror-model": "^1.25.1",
     "prosemirror-state": "^1.4.3",
     "prosemirror-tables": "^1.7.1",
     "prosemirror-view": "^1.39.1",
@@ -40,7 +40,7 @@
     "patch-package": "^8.0.0",
     "sass-embedded": "^1.86.3",
     "typescript": "^5.8.3",
-    "vite": "^6.3.2",
-    "vue-tsc": "^2.2.8"
+    "vite": "^6.3.4",
+    "vue-tsc": "^2.2.10"
   }
 }

@@ -189,7 +189,7 @@ export default defineComponent({
             return !this.$props.tag.startsWith("src");
         },
         cover() {
-            return editorState.images.value.getByHref(this.coverHref)?.dataURL ?? "";
+            return editorState.images.value.getDataByHref(this.coverHref);
         }
     },
     methods: {
@@ -273,7 +273,7 @@ export default defineComponent({
             addElement(titleInfo, "keywords", this.keywords);
             addElement(titleInfo, "date", this.date, false, [{ key: "value", value: this.dateValue || undefined }]);
 
-            if (this.cover) {
+            if (this.hasCover) {
                 const coverpage = xmlDoc.createElementNS(fb2ns, "coverpage");
                 const image = xmlDoc.createElementNS(fb2ns, "image");
                 image.setAttributeNS(xlinkns, "href", this.coverHref);
@@ -318,7 +318,7 @@ export default defineComponent({
             });
         },
         saveCover() {
-            if (this.cover) {
+            if (this.hasCover && this.coverHref.startsWith("#")) {
                 saveImageDialog(this.cover, this.coverHref.slice(1)).then(() => {
                     this.$toast.add({ severity: 'info', summary: 'Файл успешно сохранён', life: 3000 });
                 }).catch((error) => {

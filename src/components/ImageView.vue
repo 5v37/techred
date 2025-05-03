@@ -3,7 +3,7 @@
     <div class="t-imageview-commands">
       <Button icon="pi pi-times" rounded severity="contrast" variant="text" size="small" @click="del" />
     </div>
-    <img class="t-imageview-image" :src="src" :alt="node.attrs.alt" />
+    <img class="t-imageview-image" :src="src" :alt="alt" />
     <figcaption v-if="node.attrs.title" class="t-imageview-caption"> {{ node.attrs.title }} </figcaption>
   </figure>
 </template>
@@ -17,8 +17,11 @@ import { Button } from 'primevue'
 import editorState from '../editorState';
 
 const { node, selected, view, getPos } = useNodeViewContext();
+const alt = computed(() => {
+  return node.value.attrs.alt || node.value.attrs.href ? node.value.attrs.alt : "нет данных для отображения"; 
+});
 const src = computed(() => {
-  return editorState.images.value.getByHref(node.value.attrs.href)?.dataURL ?? "";
+  return node.value.attrs.href ? editorState.images.value.getDataByHref(node.value.attrs.href) : undefined;
 });
 
 function del() {
@@ -44,6 +47,8 @@ function del() {
 }
 
 .t-imageview-image {
+  min-height: 2rem;
+  min-width: 2rem;
   max-width: 100%;
 }
 
