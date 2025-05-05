@@ -18,7 +18,7 @@ import editorState from '../editorState';
 
 const { node, selected, view, getPos } = useNodeViewContext();
 const alt = computed(() => {
-  return node.value.attrs.alt || node.value.attrs.href ? node.value.attrs.alt : "нет данных для отображения"; 
+  return node.value.attrs.alt || src.value ? node.value.attrs.alt : "нет данных для отображения"; 
 });
 const src = computed(() => {
   return node.value.attrs.href ? editorState.images.value.getDataByHref(node.value.attrs.href) : undefined;
@@ -27,7 +27,7 @@ const src = computed(() => {
 function del() {
   let tr = view.state.tr;
   const pos = getPos();
-  if (pos) {
+  if (pos !== undefined) {
     tr.delete(pos, pos + 1)
     view.dispatch(tr.scrollIntoView());
   }

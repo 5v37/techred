@@ -32,7 +32,7 @@ import { openInitialFictionBook, openFictionBookDialog, saveFictionBookDialog } 
 import { isTauriMode } from '../utils';
 import fileBroker from '../fileBroker';
 
-const emit = defineEmits(['loaded', 'reloaded']);
+const emit = defineEmits(['loaded']);
 const toast = useToast();
 
 const currentFilePath = ref("");
@@ -79,14 +79,12 @@ function newFile() {
     fileBroker.reset();
     currentFilePath.value = "";
     fileHandle = undefined;
-    emit("reloaded");
 };
 function openFile() {
     openFictionBookDialog().then(file => {
         fileBroker.parse(file.content);
         currentFilePath.value = file.path;
         fileHandle = file.handle;
-        emit("reloaded");
     }).catch((error) => {
         toast.add({ severity: 'error', summary: 'Ошибка открытия файла', detail: error });
     });

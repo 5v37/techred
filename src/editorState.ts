@@ -9,6 +9,7 @@ class editorState {
     private views: { [key: string]: EditorView } = {};
     private tocs: { [key: string]: TreeNode[] } = {};
     public images = ref<Images>(new Images);
+    public menu = reactive<TreeNode[]>([]);
 
     setView(id: string, view: EditorView) {
         this.views[id] = view;

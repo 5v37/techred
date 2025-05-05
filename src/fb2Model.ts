@@ -1,5 +1,18 @@
 import { AttributeSpec, Node, Schema } from "prosemirror-model";
 
+const xmlTemplate =
+`<?xml version="1.0" encoding="UTF-8"?>
+<FictionBook xmlns="http://www.gribuser.ru/xml/fictionbook/2.0" xmlns:l="http://www.w3.org/1999/xlink">
+ <description>
+  <title-info><annotation/></title-info>
+  <src-title-info><annotation/></src-title-info>
+  <document-info><history/></document-info>
+  <publish-info/>
+ </description>
+ <body/>
+ <body name="notes"/>
+</FictionBook>`;
+
 const fb2ns = "http://www.gribuser.ru/xml/fictionbook/2.0";
 const xlinkns = "http://www.w3.org/1999/xlink";
 const textBlocks = ["p", "v", "th", "td", "subtitle", "text-author"];
@@ -367,4 +380,4 @@ const annotationSchemaXML = template("annotation", true);
 
 const markBlocks = Object.keys(bodySchema.marks);
 
-export { fb2ns, xlinkns, bodySchema, bodySchemaXML, annotationSchema, annotationSchemaXML, textBlocks, markBlocks };
+export { xmlTemplate, fb2ns, xlinkns, bodySchema, bodySchemaXML, annotationSchema, annotationSchemaXML, textBlocks, markBlocks };

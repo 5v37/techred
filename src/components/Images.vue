@@ -1,5 +1,5 @@
 <template>
-	<div class="t-images-container">
+	<div ref="binary" class="t-images-container">
 		<div class="t-images-panel">
 			<div v-for="(value, key) in images.items" :key="key" class="t-images-block">
 				<Image class="img" :src=value.dataURL preview width="200" />
@@ -10,14 +10,46 @@
 </template>
 
 <script setup lang="ts">
+import { onUpdated, useTemplateRef } from 'vue';
+
 import { Image, InputText } from 'primevue';
 
-import fileBroker from "../fileBroker";
+import fileBroker, { documentBlocks } from "../fileBroker";
 import editorState from "../editorState";
 import { addingNodes } from "../utils";
 import { fb2ns, xlinkns } from "../fb2Model";
 
 const images = editorState.images;
+
+let toTop = false;
+const binary = useTemplateRef('binary');
+onUpdated(() => {
+	if (toTop && binary.value && !binary.value.style.display) {
+		binary.value.scrollTop = 0;
+		toTop = false;
+	}
+});
+
+editorState.menu.push({
+	key: 'images',
+	label: 'Изображения',
+	icon: 'pi pi-fw pi-images',
+	isRoot: true
+});
+
+fileBroker.addDescriber(getParts);
+
+function getParts(xmlDoc: Document, method: string) {
+	toTop = method === "parse";
+
+	const [fb2] = xmlDoc.getElementsByTagName("FictionBook");
+
+	const parts: documentBlocks = {
+		"fiction-book": fb2
+	};
+
+	return parts;
+};
 
 fileBroker.addSubscriber(parseContent, serializeContent, "fiction-book");
 
@@ -64,7 +96,7 @@ function serializeContent(xmlDoc: Document, target: Element) {
 	});
 };
 
-defineExpose({ parseContent, serializeContent });
+defineExpose({ getParts, parseContent, serializeContent, });
 </script>
 
 <style>
