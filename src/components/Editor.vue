@@ -121,7 +121,7 @@ function parseContent(bodyElement: Element | undefined) {
 };
 function serializeContent(xmlDoc: Document, target: Element) {
     const schemaXML = props.annotation ? annotationSchemaXML : bodySchemaXML;
-    if (props.editorId === "body" || hasContent()) {
+    if (props.editorId === "body0" || hasContent()) {
         pmDOMSerializer.fromSchema(schemaXML).serializeFragment(view.state.doc.content, { document: xmlDoc }, target as HTMLElement);
     } else {
         target.remove();
@@ -129,23 +129,24 @@ function serializeContent(xmlDoc: Document, target: Element) {
 };
 
 function updateTOC(doc: Node) {
+    function getTitle(node: Node) {
+        const title = node.firstChild;
+        if (title && title.type.name == 'title') {
+            let text: string[] = [];
+            title.content.forEach(p => {
+                if (p.firstChild?.text) {
+                    text.push(p.firstChild.text);
+                }
+            });
+            return text.join(' ');
+        };
+    };
     function getTOC(keyName: string, Node: Node) {
         let TOC: TreeNode[] = [];
         let index = 0;
         Node.forEach(node => {
             if (node.attrs.id) {
-                let titleName = "<section>";
-                const title = node.firstChild;
-
-                if (title && title.type.name == 'title') {
-                    let text: string[] = [];
-                    title.content.forEach(p => {
-                        if (p.firstChild?.text) {
-                            text.push(p.firstChild.text);
-                        }
-                    });
-                    titleName = text.join(' ');
-                };
+                const titleName = getTitle(node) || "<section>";
                 const key = keyName + '-' + index;
                 const innerTOC = getTOC(key, node);
                 const id = node.attrs.inid ? "#" + node.attrs.inid : undefined;
@@ -156,7 +157,9 @@ function updateTOC(doc: Node) {
         return TOC;
     }
 
-    editorState.setTOC(props.editorId, getTOC(props.editorId, doc));
+    editorState.bodies[props.editorId].toc.label = getTitle(doc) || editorState.bodies[props.editorId].name || "<body>";
+    editorState.bodies[props.editorId].toc.icon = 'pi pi-fw pi-bookmark-fill';
+    editorState.bodies[props.editorId].toc.children = getTOC(props.editorId, doc);
 }
 </script>
 

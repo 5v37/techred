@@ -36,7 +36,7 @@ function onNodeSelect(node: TreeNode) {
         emit("switch", "content");
     };
 
-    if (node.data && !node.isRoot) {
+    if (node.data) {
         queueMicrotask(() => {
             const element = document.getElementById(node.data);
             if (element) {

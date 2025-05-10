@@ -33,7 +33,7 @@ const typeLink = ref(typeLinkOptions.value[0]);
 const visible = ref(false);
 const href = ref("");
 const node = ref();
-const notes = editorState.getTOC("notes");
+let notes: TreeNode[] = [];
 
 let callback: (attrs: Attrs) => void;
 let selectedNode: TreeNode | undefined;
@@ -51,6 +51,7 @@ function showEditLink(attrs: Attrs, command: (attrs: Attrs) => void) {
 
     href.value = "";
     node.value = undefined;
+    notes = editorState.bodies.body1.toc.children!
 
     if (attrs.type === "" && !noteLink.value) {
         typeLink.value = typeLinkOptions.value[1];

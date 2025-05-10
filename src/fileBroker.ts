@@ -18,7 +18,7 @@ class fileBroker {
     addDescriber(partsHandler: (xmlDoc: Document, method: string) => documentBlocks) {
         this.descs.push(partsHandler);
         if (this.initialData) {
-            Object.assign(this.initialData.parts, partsHandler(this.initialData.xmlDoc, "init"));
+            Object.assign(this.initialData.parts, partsHandler(this.initialData.xmlDoc, "parse"));
         }
     }
 
@@ -27,6 +27,10 @@ class fileBroker {
         if (this.initialData) {
             parseHandler(this.initialData.parts[elementId]);
         }
+    }
+
+    delSubscriber(elementId: string) {
+        this.subs = this.subs.filter(item => item.elementId !== elementId);
     }
 
     parse(xml: string) {
@@ -42,10 +46,8 @@ class fileBroker {
             sub.parseHandler(parts[sub.elementId]);
         };
 
-        if (!this.subs.length) {
-            this.initialData = { parts, xmlDoc };
-            setTimeout(() => { this.initialData = undefined });
-        };
+        this.initialData = { parts, xmlDoc };
+        setTimeout(() => { this.initialData = undefined });
     }
 
     serialize() {

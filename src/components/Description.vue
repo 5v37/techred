@@ -32,7 +32,6 @@ editorState.menu.push({
     key: 'description',
     label: 'Описание',
     icon: 'pi pi-fw pi-hashtag',
-    isRoot: true,
     children: [
         {
             key: 'description-1',

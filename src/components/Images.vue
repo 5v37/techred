@@ -33,8 +33,7 @@ onUpdated(() => {
 editorState.menu.push({
 	key: 'images',
 	label: 'Изображения',
-	icon: 'pi pi-fw pi-images',
-	isRoot: true
+	icon: 'pi pi-fw pi-images'
 });
 
 fileBroker.addDescriber(getParts);

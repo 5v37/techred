@@ -9,8 +9,6 @@ const xmlTemplate =
   <document-info><history/></document-info>
   <publish-info/>
  </description>
- <body/>
- <body name="notes"/>
 </FictionBook>`;
 
 const fb2ns = "http://www.gribuser.ru/xml/fictionbook/2.0";

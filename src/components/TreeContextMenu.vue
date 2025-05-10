@@ -36,7 +36,6 @@ const contextMenuItems = ref<MenuItem[]>([
         icon: 'pi pi-chevron-circle-up',
         disabled: () => !joinSection(range)(view.state),
         command: () => joinSection(range)(view.state, view.dispatch)
-
     },
     {
         label: 'Сместить вверх',
