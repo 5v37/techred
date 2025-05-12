@@ -10,13 +10,13 @@
                 v-tooltip="'Сохранить как... (Ctrl+Shift+S)'" />
         </template>
         <template #end>
+            <Button icon="pi pi-pencil" text :severity="editorState.spellCheckOn.value ? 'contrast' : 'secondary'" @click="toggleSpellCheck"
+                v-tooltip="'Проверка орфографии'" />
             <Button text severity="secondary" @click="toggleDarkMode"
                 v-tooltip="!isDarkTheme ? 'Тёмный режим' : 'Светлый режим'">
                 <i :class="['pi', { 'pi-moon': isDarkTheme, 'pi-sun': !isDarkTheme }]"></i>
             </Button>
-
         </template>
-
     </Toolbar>
 </template>
 
@@ -31,6 +31,7 @@ import { supported as fileAPIsupported } from 'browser-fs-access';
 import { openInitialFictionBook, openFictionBookDialog, saveFictionBookDialog } from '../fileAccess';
 import { isTauriMode } from '../utils';
 import fileBroker from '../fileBroker';
+import editorState from '../editorState';
 
 const emit = defineEmits(['loaded']);
 const toast = useToast();
@@ -111,6 +112,9 @@ function saveFileAs() {
 function toggleDarkMode() {
     const element = document.querySelector('html') as HTMLElement;
     isDarkTheme.value = element.classList.toggle('my-app-dark');
+};
+function toggleSpellCheck() {
+    editorState.spellCheckOn.value = !editorState.spellCheckOn.value;
 };
 </script>
 

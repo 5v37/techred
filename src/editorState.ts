@@ -11,7 +11,8 @@ class editorState {
     private views: { [key: string]: EditorView } = {};
     public images = ref<Images>(new Images);
     public menu = reactive<TreeNode[]>([]);
-    public bodies: bodiesType = {};    
+    public bodies: bodiesType = {};
+    public spellCheckOn = ref(false);
 
     setView(id: string, view: EditorView) {
         this.views[id] = view;

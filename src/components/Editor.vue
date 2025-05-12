@@ -1,5 +1,5 @@
 <template>
-    <div :id="editorId" ref="editor" spellcheck="false">
+    <div :id="editorId" ref="editor" :spellcheck="spellcheckOn">
         <LinkEditor ref="linkEditor" />
     </div>
 </template>
@@ -29,6 +29,7 @@ import { splitBlock } from "../commands";
 import fileBroker from '../fileBroker';
 import editorState from '../editorState';
 
+const spellcheckOn = editorState.spellCheckOn;
 const nodeViewFactory = useNodeViewFactory();
 const linkEditor = useTemplateRef('linkEditor');
 const props = defineProps<{
