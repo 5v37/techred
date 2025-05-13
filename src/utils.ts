@@ -147,4 +147,4 @@ export function addingNodes(xmlDoc: Document, nameSpace: string) {
     return addElement;
 };
 
-export const isTauriMode = '__TAURI_INTERNALS__' in window;
+export const isTauriMode = __APP_TAURI_MODE__;

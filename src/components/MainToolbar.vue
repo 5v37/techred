@@ -10,8 +10,8 @@
                 v-tooltip="'Сохранить как... (Ctrl+Shift+S)'" />
         </template>
         <template #end>
-            <Button icon="pi pi-pencil" text :severity="editorState.spellCheckOn.value ? 'contrast' : 'secondary'" @click="toggleSpellCheck"
-                v-tooltip="'Проверка орфографии'" />
+            <Button icon="pi pi-pencil" text @click="toggleSpellCheck" v-tooltip="'Проверка орфографии'"
+                :severity="editorState.spellCheckOn.value ? 'contrast' : 'secondary'" />
             <Button text severity="secondary" @click="toggleDarkMode"
                 v-tooltip="!isDarkTheme ? 'Тёмный режим' : 'Светлый режим'">
                 <i :class="['pi', { 'pi-moon': isDarkTheme, 'pi-sun': !isDarkTheme }]"></i>
@@ -38,7 +38,7 @@ const toast = useToast();
 
 const currentFilePath = ref("");
 const isDarkTheme = ref(false);
-const saveButtonAvailable = fileAPIsupported || isTauriMode
+const saveButtonAvailable = isTauriMode || fileAPIsupported;
 let fileHandle: FileSystemFileHandle | undefined = undefined;
 
 openInitialFictionBook().then(file => {
@@ -52,12 +52,12 @@ openInitialFictionBook().then(file => {
     emit("loaded");
 });
 
-watch(currentFilePath, (newPath) => {
-    if (isTauriMode) {
+if (isTauriMode) {
+    watch(currentFilePath, (newPath) => {
         const fileName = !newPath ? "Новый" : newPath;
         getCurrentWindow().setTitle(`${fileName} - Техред`);
-    };
-});
+    });
+};
 
 function keyListener(event: KeyboardEvent) {
     if (!(event.ctrlKey || event.metaKey) || event.altKey) {
