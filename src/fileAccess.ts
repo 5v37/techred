@@ -1,29 +1,59 @@
 import { invoke } from "@tauri-apps/api/core";
-import { open, OpenDialogOptions, save, SaveDialogOptions } from "@tauri-apps/plugin-dialog";
+import { open as openDialog, OpenDialogOptions, save as saveDialog, SaveDialogOptions } from "@tauri-apps/plugin-dialog";
+import { readFile, writeFile } from '@tauri-apps/plugin-fs';
 import { fileOpen, fileSave, FirstFileOpenOptions, FirstFileSaveOptions } from "browser-fs-access";
 
-import { base64toData, decodeXML, isTauriMode, parseDataURL } from "./utils";
+import { base64toData, decodeXML, imageFileType, isTauriMode, isZIP, parseDataURL } from "./utils";
+import { encode as encodeZIP, parse as parseZIP } from "uzip";
 
-async function readTextFile(filePath: string) {
-    const fileData = await invoke('open_file', { filePath }) as ArrayBuffer;
-    return decodeXML(fileData);
+function unzip(fileData: ArrayBuffer) {
+    if (isZIP(fileData)) {
+        const unpackedData = Object.values(parseZIP(fileData));
+        if (unpackedData.length === 1) {
+            return unpackedData[0];
+        } else if (unpackedData.length === 0) {
+            throw new Error("Файл архива пустой");
+        } else {
+            throw new Error("Файл архива содержит больше одного файла");
+        };
+    };
+    return fileData;
+};
+
+function encode(content: string, filePath: string) {
+    let fileData = new TextEncoder().encode(content);
+    if (!filePath.endsWith(".fb2")) {
+        let fileName = filePath.split("\\").pop()!.split("/").pop()!.slice(0, -4);
+        if (!fileName.endsWith(".fb2")) {
+            fileName += ".fb2";
+        };
+        fileData = new Uint8Array(encodeZIP({ [fileName]: fileData }));
+    }
+    return fileData;
 };
 
 export function openInitialFictionBook() {
-    return new Promise<{ content: string, path: string } | void>(async (resolve) => {
+    return new Promise<{ content: string, path: string } | void>((resolve, reject) => {
         if (isTauriMode) {
-            const path = await invoke('file_path') as string;
-            if (path) {
-                const content = await readTextFile(path);
-                resolve({ content, path });
-            };
+            invoke<string>('file_path').then(async path => {
+                if (path) {
+                    const fileData = (await readFile(path)).buffer;
+                    const content = decodeXML(unzip(fileData));
+                    resolve({ content, path });
+                } else {
+                    resolve();
+                };
+            }).catch((error) => {
+                reject(error);
+            });
+        } else {
+            resolve();
         };
-        resolve();
     });
 };
 
 export function openFictionBookDialog() {
-    return new Promise<{ content: string, path: string, handle?: FileSystemFileHandle }>(async (resolve, reject) => {
+    return new Promise<{ content: string, path: string, handle?: FileSystemFileHandle }>((resolve, reject) => {
         if (isTauriMode) {
             const options: OpenDialogOptions = {
                 multiple: false,
@@ -34,21 +64,25 @@ export function openFictionBookDialog() {
                 }]
             };
 
-            const path = await open(options);
-            if (path) {
-                const content = await readTextFile(path);
-                resolve({ content, path, handle: undefined });
-            };
+            openDialog(options).then(async path => {
+                if (path) {
+                    const fileData = (await readFile(path)).buffer;
+                    const content = decodeXML(unzip(fileData));
+                    resolve({ content, path, handle: undefined });
+                };
+            }).catch((error) => {
+                reject(error);
+            });
         } else {
             const options: FirstFileOpenOptions<false> = {
                 description: 'FictionBook',
-                extensions: ['.fb2'],
+                extensions: ['.fb2', '.fbz', '.fb2.zip'],
                 excludeAcceptAllOption: true
             };
 
             fileOpen(options).then(async file => {
-                const fileData = await file.arrayBuffer();                
-                const content = decodeXML(fileData);
+                const fileData = await file.arrayBuffer();
+                const content = decodeXML(unzip(fileData));
                 resolve({ content, path: file.name, handle: file.handle });
             }).catch((error) => {
                 if (error.name !== 'AbortError') {
@@ -60,7 +94,7 @@ export function openFictionBookDialog() {
 };
 
 export function openImageDialog() {
-    return new Promise<{ content: string, path: string, handle?: FileSystemFileHandle }>(async (resolve, reject) => {
+    return new Promise<{ content: string, path: string, handle?: FileSystemFileHandle }>((resolve, reject) => {
         if (isTauriMode) {
             const options: OpenDialogOptions = {
                 multiple: false,
@@ -71,17 +105,25 @@ export function openImageDialog() {
                 }]
             };
 
-            const path = await open(options);
-            if (path) {
-                const fileData = await invoke('open_file', { filePath: path }) as ArrayBuffer;
-                const reader = new FileReader();
-                reader.readAsDataURL(new Blob([fileData], { type: path.endsWith(".png") ? 'image/png' : 'image/jpeg' }));
-                reader.onerror = () => { reject(reader.error) };
-                reader.onload = () => {
-                    const content = reader.result as string;
-                    resolve({ content, path, handle: undefined });
+            openDialog(options).then(async path => {
+                if (path) {
+                    const fileData = (await readFile(path)).buffer;
+                    const fileType = imageFileType(fileData);
+                    if (!fileType) {
+                        throw new Error("Неподдерживаемый формат изображения");
+                    };
+
+                    const reader = new FileReader();
+                    reader.readAsDataURL(new Blob([fileData], { type: fileType }));
+                    reader.onerror = () => { reject(reader.error) };
+                    reader.onload = () => {
+                        const content = reader.result as string;
+                        resolve({ content, path, handle: undefined });
+                    };
                 };
-            };
+            }).catch((error) => {
+                reject(error);
+            });
         } else {
             const options: FirstFileOpenOptions<false> = {
                 description: "Изображения",
@@ -90,6 +132,10 @@ export function openImageDialog() {
             };
 
             fileOpen(options).then(async file => {
+                if (!imageFileType(await file.arrayBuffer())) {
+                    throw new Error("Неподдерживаемый формат изображения");
+                };
+
                 const reader = new FileReader();
                 reader.readAsDataURL(file);
                 reader.onerror = () => { reject(reader.error) };
@@ -106,8 +152,8 @@ export function openImageDialog() {
     });
 };
 
-export function saveFictionBookDialog(fileData: string, filePath: string, saveDirectly?: { fileHandle?: FileSystemFileHandle }) {
-    return new Promise<{ path: string, handle?: FileSystemFileHandle }>(async (resolve, reject) => {
+export function saveFictionBookDialog(content: string, filePath: string, saveDirectly?: { fileHandle?: FileSystemFileHandle }) {
+    return new Promise<{ path: string, handle?: FileSystemFileHandle }>((resolve, reject) => {
         if (isTauriMode) {
             const options: SaveDialogOptions = {
                 defaultPath: filePath,
@@ -117,15 +163,23 @@ export function saveFictionBookDialog(fileData: string, filePath: string, saveDi
                 }]
             };
 
-            const path = saveDirectly ? filePath : await save(options);
-            if (path) {
-                await invoke("save_file", { filePath: path, content: fileData });
-                resolve({ path, handle: undefined });
-            };
+            const method = saveDirectly ? Promise.resolve(filePath) : saveDialog(options);
+            method.then(async (path) => {
+                if (path) {
+                    await writeFile(path, encode(content, path));
+                    resolve({ path, handle: undefined });
+                };
+            });
         } else {
-            const blob = Promise.resolve(new Blob([fileData], { type: 'application/fb2' }));
+            let blob: Blob;
+            if (saveDirectly?.fileHandle && !filePath.endsWith(".fb2")) {
+                blob = new Blob([encode(content, filePath)], { type: 'application/zip' })
+            } else {
+                blob = new Blob([content], { type: 'application/fb2' });
+            };
+
             const options: FirstFileSaveOptions = {
-                fileName: filePath,
+                fileName: filePath.endsWith(".fb2") ? filePath : filePath.slice(0, - 4) + (filePath.endsWith(".fbz") ? ".fb2" : ""),
                 description: 'FictionBook',
                 extensions: ['.fb2'],
                 excludeAcceptAllOption: true
@@ -144,9 +198,9 @@ export function saveFictionBookDialog(fileData: string, filePath: string, saveDi
     });
 };
 
-export function saveImageDialog(fileData: string, filePath: string) {
-    return new Promise<{ path: string, handle?: FileSystemFileHandle }>(async (resolve, reject) => {
-        const image = parseDataURL(fileData);
+export function saveImageDialog(content: string, filePath: string) {
+    return new Promise<{ path: string, handle?: FileSystemFileHandle }>((resolve, reject) => {
+        const image = parseDataURL(content);
         if (image && image.base64) {
             if (isTauriMode) {
                 const options: SaveDialogOptions = {
@@ -157,13 +211,16 @@ export function saveImageDialog(fileData: string, filePath: string) {
                     }]
                 };
 
-                const path = await save(options);
-                if (path) {
-                    await invoke("save_file", { filePath: path, content: image.data });
-                    resolve({ path, handle: undefined });
-                };
+                saveDialog(options).then(async (path) => {
+                    if (path) {
+                        await writeFile(path, base64toData(image.data));
+                        resolve({ path, handle: undefined });
+                    };
+                }).catch((error) => {
+                    reject(error);
+                });
             } else {
-                const blob = Promise.resolve(new Blob([base64toData(image.data)], { type: image.mime }));
+                const blob = new Blob([base64toData(image.data)], { type: image.mime });
                 const options: FirstFileSaveOptions = {
                     fileName: filePath,
                     description: "Изображения",

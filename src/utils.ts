@@ -35,6 +35,29 @@ export function formatXML(xml: string, textBlocks: string[] = [], tab = " ", nl 
     return formatted;
 };
 
+function equalBytes(data: Uint8Array, decl: number[]) {
+    for (let idx = 0; idx < decl.length; idx++) {
+        if (data[idx] !== decl[idx]) {
+            return false;
+        };
+    };
+    return true;
+}
+
+export function isZIP(fileData: ArrayBuffer) {
+    const startZip = new Uint8Array(fileData, 0, 4);
+    return equalBytes(startZip, [0x50, 0x4B, 0x03, 0x04]);
+}
+
+export function imageFileType(fileData: ArrayBuffer) {
+    const startFile = new Uint8Array(fileData, 0, 8);
+    if (equalBytes(startFile, [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A])) {
+        return "image/png";
+    } else if (equalBytes(startFile, [0xFF, 0xD8, 0xFF])) {
+        return "image/jpeg";
+    };
+}
+
 export function decodeXML(xmlData: ArrayBuffer) {
     const startDecls = [
         {
@@ -59,21 +82,12 @@ export function decodeXML(xmlData: ArrayBuffer) {
         }
     ];
 
-    const equal = (data: Uint8Array, decl: number[]) => {        
-        for (let idx = 0; idx < decl.length; idx++) {
-            if (data[idx] !== decl[idx]) {
-                return false;
-            };
-        };
-        return true;
-    };
-
     let encoding: string | undefined;
 
     const startXml = new Uint8Array(xmlData, 0, 100);
-    const decl = startDecls.find(decl => equal(startXml, decl.bytes))
+    const decl = startDecls.find(decl => equalBytes(startXml, decl.bytes))
     if (!decl) {
-        if (equal(startXml, [0x3C, 0x3F])) { // has prolog
+        if (equalBytes(startXml, [0x3C, 0x3F])) { // has prolog
             const prolog = new TextDecoder().decode(startXml);
             const match = prolog.match(/encoding=['"]([A-Za-z]([A-Za-z0-9._]|-)*)['"]/);
             if (match) {

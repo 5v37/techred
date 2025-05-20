@@ -60,7 +60,7 @@ if (isTauriMode) {
 };
 
 function keyListener(event: KeyboardEvent) {
-    if (!(event.ctrlKey || event.metaKey) || event.altKey) {
+    if (event.defaultPrevented || !(event.ctrlKey || event.metaKey) || event.altKey) {
         return;
     };
 
@@ -72,7 +72,11 @@ function keyListener(event: KeyboardEvent) {
         saveFile();
     } else if (event.shiftKey && event.code === "KeyS") {
         saveFileAs();
+    } else {
+        return;
     };
+
+    event.preventDefault();
 };
 addEventListener("keydown", keyListener);
 
