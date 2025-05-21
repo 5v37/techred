@@ -59,7 +59,7 @@ if (isTauriMode) {
     });
 };
 
-function keyListener(event: KeyboardEvent) {
+addEventListener("keydown", (event: KeyboardEvent) => {
     if (event.defaultPrevented || !(event.ctrlKey || event.metaKey) || event.altKey) {
         return;
     };
@@ -77,8 +77,10 @@ function keyListener(event: KeyboardEvent) {
     };
 
     event.preventDefault();
-};
-addEventListener("keydown", keyListener);
+});
+addEventListener("error", (event: ErrorEvent) => {
+    toast.add({ severity: 'error', summary: 'Непредвиденная ошибка', detail: event.message });
+});
 
 function newFile() {
     fileBroker.reset();

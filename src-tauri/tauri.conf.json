@@ -24,6 +24,11 @@
   },
   "bundle": {
     "active": true,
+    "windows": {
+      "nsis": {
+        "languages": ["Russian"]
+      }
+    },
     "fileAssociations": [
       {
         "description": "FictionBook",

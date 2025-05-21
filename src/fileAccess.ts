@@ -169,6 +169,8 @@ export function saveFictionBookDialog(content: string, filePath: string, saveDir
                     await writeFile(path, encode(content, path));
                     resolve({ path, handle: undefined });
                 };
+            }).catch((error) => {
+                reject(error);
             });
         } else {
             let blob: Blob;
