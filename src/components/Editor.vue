@@ -131,15 +131,16 @@ function serializeContent(xmlDoc: Document, target: Element) {
 
 function updateTOC(doc: Node) {
     function getTitle(node: Node) {
-        const title = node.firstChild;
-        if (title && title.type.name == 'title') {
-            let text: string[] = [];
-            title.content.forEach(p => {
-                if (p.firstChild?.text) {
-                    text.push(p.firstChild.text);
-                }
-            });
-            return text.join(' ');
+        for (let idx = 0; idx < 2 && idx < node.childCount; idx++) {
+            if (node.children[idx].type.name == "title" ) {            
+                let text: string[] = [];
+                node.children[idx].content.forEach(p => {
+                    if (p.textContent) {
+                        text.push(p.textContent);
+                    }
+                });
+                return text.join(" ");
+            };
         };
     };
     function getTOC(keyName: string, Node: Node) {
