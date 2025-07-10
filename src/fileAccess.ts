@@ -3,31 +3,17 @@ import { open as openDialog, OpenDialogOptions, save as saveDialog, SaveDialogOp
 import { readFile, writeFile } from '@tauri-apps/plugin-fs';
 import { fileOpen, fileSave, FirstFileOpenOptions, FirstFileSaveOptions } from "browser-fs-access";
 
-import { base64toData, decodeXML, imageFileType, isTauriMode, isZIP, parseDataURL } from "./utils";
-import { encode as encodeZIP, parse as parseZIP } from "uzip";
+import { base64toData, decodeXML, imageFileType, isTauriMode, parseDataURL } from "./utils";
+import { unpack, pack } from "./zip";
 
-function unzip(fileData: ArrayBuffer) {
-    if (isZIP(fileData)) {
-        const unpackedData = Object.values(parseZIP(fileData));
-        if (unpackedData.length === 1) {
-            return unpackedData[0];
-        } else if (unpackedData.length === 0) {
-            throw new Error("Файл архива пустой");
-        } else {
-            throw new Error("Файл архива содержит больше одного файла");
-        };
-    };
-    return fileData;
-};
-
-function encode(content: string, filePath: string) {
+async function encode(content: string, filePath: string) {
     let fileData = new TextEncoder().encode(content);
     if (!filePath.endsWith(".fb2")) {
         let fileName = filePath.split("\\").pop()!.split("/").pop()!.slice(0, -4);
         if (!fileName.endsWith(".fb2")) {
             fileName += ".fb2";
         };
-        fileData = new Uint8Array(encodeZIP({ [fileName]: fileData }));
+        fileData = new Uint8Array(await pack(fileData, fileName));
     }
     return fileData;
 };
@@ -38,7 +24,7 @@ export function openInitialFictionBook() {
             invoke<string>('file_path').then(async path => {
                 if (path) {
                     const fileData = (await readFile(path)).buffer;
-                    const content = decodeXML(unzip(fileData));
+                    const content = decodeXML(await unpack(fileData));
                     resolve({ content, path });
                 } else {
                     resolve();
@@ -67,7 +53,7 @@ export function openFictionBookDialog() {
             openDialog(options).then(async path => {
                 if (path) {
                     const fileData = (await readFile(path)).buffer;
-                    const content = decodeXML(unzip(fileData));
+                    const content = decodeXML(await unpack(fileData));
                     resolve({ content, path, handle: undefined });
                 };
             }).catch((error) => {
@@ -82,7 +68,7 @@ export function openFictionBookDialog() {
 
             fileOpen(options).then(async file => {
                 const fileData = await file.arrayBuffer();
-                const content = decodeXML(unzip(fileData));
+                const content = decodeXML(await unpack(fileData));
                 resolve({ content, path: file.name, handle: file.handle });
             }).catch((error) => {
                 if (error.name !== 'AbortError') {
@@ -166,16 +152,16 @@ export function saveFictionBookDialog(content: string, filePath: string, saveDir
             const method = saveDirectly ? Promise.resolve(filePath) : saveDialog(options);
             method.then(async (path) => {
                 if (path) {
-                    await writeFile(path, encode(content, path));
+                    await writeFile(path, await encode(content, path));
                     resolve({ path, handle: undefined });
                 };
             }).catch((error) => {
                 reject(error);
             });
         } else {
-            let blob: Blob;
+            let blob: Blob | Promise<Blob>;
             if (saveDirectly?.fileHandle && !filePath.endsWith(".fb2")) {
-                blob = new Blob([encode(content, filePath)], { type: 'application/zip' })
+                blob = encode(content, filePath).then(fileData => new Blob([fileData], { type: 'application/zip' }));
             } else {
                 blob = new Blob([content], { type: 'application/fb2' });
             };

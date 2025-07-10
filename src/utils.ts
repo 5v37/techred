@@ -44,11 +44,6 @@ function equalBytes(data: Uint8Array, decl: number[]) {
     return true;
 }
 
-export function isZIP(fileData: ArrayBuffer) {
-    const startZip = new Uint8Array(fileData, 0, 4);
-    return equalBytes(startZip, [0x50, 0x4B, 0x03, 0x04]);
-}
-
 export function imageFileType(fileData: ArrayBuffer) {
     const startFile = new Uint8Array(fileData, 0, 8);
     if (equalBytes(startFile, [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A])) {

@@ -13,38 +13,35 @@
     "deploy": "gh-pages -d dist"
   },
   "dependencies": {
-    "@primevue/themes": "^4.3.3",
+    "@primevue/themes": "^4.3.6",
     "@prosemirror-adapter/vue": "^0.4.1",
     "@tauri-apps/api": "^2.5.0",
     "@tauri-apps/plugin-dialog": "^2.2.1",
     "@tauri-apps/plugin-fs": "^2.2.1",
     "@tauri-apps/plugin-window-state": "^2.2.2",
-    "browser-fs-access": "^0.37.0",
+    "browser-fs-access": "^0.38.0",
     "primeicons": "^7.0.0",
-    "primelocale": "^2.1.2",
-    "primevue": "^4.3.3",
+    "primelocale": "^2.1.4",
+    "primevue": "^4.3.6",
     "prosemirror-commands": "^1.7.1",
     "prosemirror-dropcursor": "^1.8.2",
     "prosemirror-history": "^1.4.1",
-    "prosemirror-keymap": "^1.2.2",
+    "prosemirror-keymap": "^1.2.3",
     "prosemirror-menu": "^1.2.5",
     "prosemirror-model": "^1.25.1",
     "prosemirror-state": "^1.4.3",
     "prosemirror-tables": "^1.7.1",
-    "prosemirror-view": "^1.39.1",
-    "uzip": "^0.20201231.0",
-    "vue": "^3.5.13"
+    "prosemirror-view": "^1.40.0",
+    "vue": "^3.5.17"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^2.5.0",
-    "@types/uzip": "^0.20201231.2",
     "@vitejs/plugin-vue": "^5.2.3",
     "gh-pages": "^6.3.0",
     "patch-package": "^8.0.0",
-    "sass-embedded": "^1.86.3",
+    "sass-embedded": "^1.89.2",
     "typescript": "^5.8.3",
-    "vite": "^6.3.4",
-    "vue-tsc": "^2.2.10"
-  },
-  "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
+    "vite": "^6.3.5",
+    "vue-tsc": "^3.0.1"
+  }
 }

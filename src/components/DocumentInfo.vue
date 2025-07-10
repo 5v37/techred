@@ -182,7 +182,7 @@ export default defineComponent({
 
             addElement(documentInfo, "src-ocr", this.srcOCR);
             addElement(documentInfo, "id", this.fileID, true);
-            addElement(documentInfo, "version", `${this.fileVers}`, true);
+            addElement(documentInfo, "version", this.fileVers + (Number.isInteger(this.fileVers) ? ".0" : ""), true);
 
             const [history] = documentInfo.getElementsByTagName("history");
             documentInfo.appendChild(history);
