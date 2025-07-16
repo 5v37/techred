@@ -310,9 +310,8 @@ export default defineComponent({
         },
         selectCover() {
             openImageDialog().then(file => {
-                const fileName = file.path.split("\\").pop()!.split("/").pop()!;
-                editorState.images.value.addAsDataURL(fileName, file.content);
-                this.coverHref = "#" + fileName;
+                editorState.images.value.addAsDataURL(file.name, file.content);
+                this.coverHref = "#" + file.name;
             }).catch((error) => {
                 this.$toast.add({ severity: 'error', summary: 'Ошибка открытия файла', detail: error });
             });

@@ -80,7 +80,7 @@ export function openFictionBookDialog() {
 };
 
 export function openImageDialog() {
-    return new Promise<{ content: string, path: string, handle?: FileSystemFileHandle }>((resolve, reject) => {
+    return new Promise<{ content: string, name: string, handle?: FileSystemFileHandle }>((resolve, reject) => {
         if (isTauriMode) {
             const options: OpenDialogOptions = {
                 multiple: false,
@@ -98,13 +98,14 @@ export function openImageDialog() {
                     if (!fileType) {
                         throw new Error("Неподдерживаемый формат изображения");
                     };
+                    const fileName = path.split("\\").pop()!.split("/").pop()!;
 
                     const reader = new FileReader();
                     reader.readAsDataURL(new Blob([fileData], { type: fileType }));
                     reader.onerror = () => { reject(reader.error) };
                     reader.onload = () => {
                         const content = reader.result as string;
-                        resolve({ content, path, handle: undefined });
+                        resolve({ content, name: fileName, handle: undefined });
                     };
                 };
             }).catch((error) => {
@@ -127,7 +128,7 @@ export function openImageDialog() {
                 reader.onerror = () => { reject(reader.error) };
                 reader.onload = () => {
                     const content = reader.result as string;
-                    resolve({ content, path: file.name, handle: file.handle });
+                    resolve({ content, name: file.name, handle: file.handle });
                 };
             }).catch((error) => {
                 if (error.name !== 'AbortError') {

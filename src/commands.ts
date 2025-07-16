@@ -335,6 +335,33 @@ function markPosition(state: EditorState, pos: number, markType: MarkType) {
     return { from, to, mark };
 }
 
+export function addNode(parentNode: Node, nodeType: NodeType, startPos: number, node?: Node): Command {
+    return (state, dispatch) => {
+        let pos = -1;
+        let insertPos = startPos;
+        for (let idx = 0; idx < parentNode.childCount; idx++) {
+            if (parentNode.canReplaceWith(idx, idx, nodeType)) {
+                pos = idx;
+                break;
+            };
+            insertPos += parentNode.children[idx].nodeSize;
+        };
+
+        if (pos === -1) {
+            return false;
+        }
+
+        if (dispatch) {
+            let tr = state.tr;
+            tr.insert(insertPos, node ?? nodeType.create(null, state.schema.nodes.p.create()));
+
+            dispatch(tr.scrollIntoView());
+        };
+
+        return true;
+    };
+};
+
 export type SectionRange = {
     from: number,
     to: number,
