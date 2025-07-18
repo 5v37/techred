@@ -24,7 +24,9 @@ import { openImageDialog } from '../fileAccess';
 import editorState from '../editorState';
 
 let view: EditorView;
+let nodeTypes: typeof view.state.schema.nodes;
 let range: SectionRange | undefined;
+let startPos = 0;
 
 let curBody = editorState.bodies[0];
 let needUpdateLabel = false;
@@ -63,6 +65,48 @@ const sectionItems = () => [
         command: () => joinSection(range)(view.state, view.dispatch)
     },
     {
+        label: 'Вставить',
+        icon: 'pi pi-plus-circle',
+        disabled: range === undefined,
+        items: [
+            {
+                label: 'Заголовок',
+                disabled: !addNode(range!.node, nodeTypes.title, startPos)(view.state),
+                command: () => addNode(range!.node, nodeTypes.title, startPos)(view.state, view.dispatch)
+            },
+            {
+                label: 'Изображение',
+                disabled: !addNode(range!.node, nodeTypes.image, startPos)(view.state),
+                command: () =>
+                    openImageDialog().then(file => {
+                        editorState.images.value.addAsDataURL(file.name, file.content);
+                        const image = nodeTypes.image.create({ href: "#" + file.name }, nodeTypes.p.create());
+                        addNode(range!.node, nodeTypes.image, startPos, image)(view.state, view.dispatch);
+                    }).catch((error) => {
+                        toast.add({ severity: 'error', summary: 'Ошибка открытия файла', detail: error });
+                    })
+            },
+            {
+                label: 'Эпиграф',
+                disabled: !addNode(range!.node, nodeTypes.epigraph, startPos)(view.state),
+                command: () => addNode(range!.node, nodeTypes.epigraph, startPos)(view.state, view.dispatch)
+            },
+            {
+                label: 'Аннотацию',
+                disabled: !addNode(range!.node, nodeTypes.annotation, startPos)(view.state),
+                command: () => addNode(range!.node, nodeTypes.annotation, startPos)(view.state, view.dispatch)
+            },
+            {
+                label: 'Секцию',
+                disabled: !addNode(range!.node, nodeTypes.section, startPos)(view.state),
+                command: () => {
+                    const section = nodeTypes.section.create({ id: self.crypto.randomUUID() }, nodeTypes.p.create());
+                    addNode(range!.node, nodeTypes.section, startPos, section)(view.state, view.dispatch);
+                }
+            },
+        ]
+    },
+    {
         label: 'Сместить вверх',
         icon: 'pi pi-arrow-up',
         disabled: !moveUpSection(range)(view.state),
@@ -94,18 +138,18 @@ const bodyItems = () => [
     {
         label: 'Вставить заголовок',
         icon: 'pi pi-plus-circle',
-        disabled: !addNode(view.state.doc, view.state.schema.nodes.title, 0)(view.state),
-        command: () => addNode(view.state.doc, view.state.schema.nodes.title, 0)(view.state, view.dispatch)
+        disabled: !addNode(view.state.doc, nodeTypes.title, startPos)(view.state),
+        command: () => addNode(view.state.doc, nodeTypes.title, startPos)(view.state, view.dispatch)
     },
     {
         label: 'Вставить изображение',
         icon: 'pi pi-plus-circle',
-        disabled: !addNode(view.state.doc, view.state.schema.nodes.image, 0)(view.state),
+        disabled: !addNode(view.state.doc, nodeTypes.image, startPos)(view.state),
         command: () =>
             openImageDialog().then(file => {
                 editorState.images.value.addAsDataURL(file.name, file.content);
-                const image = view.state.schema.nodes.image.create({ href: "#" + file.name }, view.state.schema.nodes.p.create());
-                addNode(view.state.doc, view.state.schema.nodes.image, 0, image)(view.state, view.dispatch);
+                const image = nodeTypes.image.create({ href: "#" + file.name }, nodeTypes.p.create());
+                addNode(view.state.doc, nodeTypes.image, startPos, image)(view.state, view.dispatch);
             }).catch((error) => {
                 toast.add({ severity: 'error', summary: 'Ошибка открытия файла', detail: error });
             })
@@ -113,23 +157,34 @@ const bodyItems = () => [
     {
         label: 'Вставить эпиграф',
         icon: 'pi pi-plus-circle',
-        disabled: !addNode(view.state.doc, view.state.schema.nodes.epigraph, 0)(view.state),
-        command: () => addNode(view.state.doc, view.state.schema.nodes.epigraph, 0)(view.state, view.dispatch)
-    }
+        disabled: !addNode(view.state.doc, nodeTypes.epigraph, startPos)(view.state),
+        command: () => addNode(view.state.doc, nodeTypes.epigraph, startPos)(view.state, view.dispatch)
+    },
+    {
+        label: 'Вставить секцию',
+        icon: 'pi pi-plus-circle',
+        disabled: !addNode(view.state.doc, nodeTypes.section, startPos)(view.state),
+        command: () => {
+            const section = nodeTypes.section.create({ id: self.crypto.randomUUID() }, nodeTypes.p.create());
+            addNode(view.state.doc, nodeTypes.section, startPos, section)(view.state, view.dispatch);
+        }
+    },
 ];
 
 function show(event: Event, node: TreeNode) {
-    const target = editorState.getView(node.key.split("-")[0]);
+    const target = editorState.getView(node.data || node.key);
     if (target) {
         view = target;
+        nodeTypes = view.state.schema.nodes;
         if (node.data) {
-            range = sectionRangeByID(node.data, view.state);
+            range = sectionRangeByID(node.key, view.state);
+            startPos = range ? range.from + 1 : 0;
             contextMenuItems.value = sectionItems();
         } else {
             curBody = editorState.bodies[node.key];
             bodyName.value = curBody.name;
             needUpdateLabel = curBody.toc.label === bodyName.value || bodyName.value === "";
-
+            startPos = 0;
             contextMenuItems.value = bodyItems();
         };
         contextMenu.value!.show(event);

@@ -10,9 +10,10 @@ import { useTemplateRef, onMounted } from 'vue'
 import LinkEditor from "./LinkEditor.vue";
 import ImageView from './ImageView.vue';
 
-import { EditorState } from "prosemirror-state";
+import { EditorState, Transaction } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
 import { Node, DOMParser as pmDOMParser, DOMSerializer as pmDOMSerializer } from "prosemirror-model";
+import { ReplaceAroundStep, ReplaceStep } from "prosemirror-transform";
 import { undo, redo, history } from "prosemirror-history";
 import { keymap } from "prosemirror-keymap";
 import { baseKeymap, toggleMark } from "prosemirror-commands";
@@ -97,11 +98,11 @@ onMounted(() => {
             })
         },
         dispatchTransaction(transaction) {
-            if (transaction.getMeta("updateTOC")) {
-                updateTOC(transaction.doc);
+            let newState = view.state.apply(transaction);
+            view.updateState(newState);
+            if (needUpdateTOC(transaction)) {
+                updateTOC(view.state.doc);
             };
-            let newState = view.state.apply(transaction)
-            view.updateState(newState)
         }
     });
     editorState.setView(props.editorId, view);
@@ -132,7 +133,7 @@ function serializeContent(xmlDoc: Document, target: Element) {
 function updateTOC(doc: Node) {
     function getTitle(node: Node) {
         for (let idx = 0; idx < 2 && idx < node.childCount; idx++) {
-            if (node.children[idx].type.name == "title" ) {            
+            if (node.children[idx].type.name == "title") {
                 let text: string[] = [];
                 node.children[idx].content.forEach(p => {
                     if (p.textContent) {
@@ -142,18 +143,13 @@ function updateTOC(doc: Node) {
                 return text.join(" ");
             };
         };
-    };
-    function getTOC(keyName: string, Node: Node) {
+    }
+    function getTOC(Node: Node) {
         let TOC: TreeNode[] = [];
-        let index = 0;
         Node.forEach(node => {
             if (node.attrs.id) {
                 const titleName = getTitle(node) || "<section>";
-                const key = keyName + '-' + index;
-                const innerTOC = getTOC(key, node);
-                const id = node.attrs.inid ? "#" + node.attrs.inid : undefined;
-                TOC.push({ key: key, label: titleName, icon: 'pi pi-fw pi-bookmark', data: node.attrs.id, children: innerTOC, id: id });
-                index++;
+                TOC.push({ key: node.attrs.id, label: titleName, icon: 'pi pi-fw pi-bookmark', data: props.editorId, children: getTOC(node) });
             };
         });
         return TOC;
@@ -161,7 +157,43 @@ function updateTOC(doc: Node) {
 
     editorState.bodies[props.editorId].toc.label = getTitle(doc) || editorState.bodies[props.editorId].name || "<body>";
     editorState.bodies[props.editorId].toc.icon = 'pi pi-fw pi-bookmark-fill';
-    editorState.bodies[props.editorId].toc.children = getTOC(props.editorId, doc);
+    editorState.bodies[props.editorId].toc.children = getTOC(doc);
+}
+
+function needUpdateTOC(transaction: Transaction) {
+    if (transaction.docChanged) {
+        let hasChange = false;
+        for (const step of transaction.steps) {
+            if (step instanceof ReplaceStep || step instanceof ReplaceAroundStep) {
+                step.slice.content.forEach(node => {
+                    if (node.attrs.id || node.type === schema.nodes.title && node.textContent !== "") {
+                        hasChange = true;
+                        return;
+                    };
+                });
+                if (!hasChange && step.slice.size === 0) {
+                    transaction.before.slice(step.from, step.to).content.forEach(node => {
+                        if (node.attrs.id || node.type === schema.nodes.title && node.textContent !== "") {
+                            hasChange = true;
+                            return;
+                        }
+                    });
+                };
+                if (!hasChange) {
+                    const pos = transaction.doc.resolve(step.from);
+                    if (pos.depth > 1 && pos.node(pos.depth - 1).type === schema.nodes.title) {
+                        let parentType = pos.node(pos.depth - 2).type;
+                        hasChange = parentType === schema.nodes.section || parentType === schema.nodes.body;
+                    };
+                };
+
+                if (hasChange) {
+                    return true;
+                };
+            };
+        };
+    };
+    return false;
 }
 </script>
 
