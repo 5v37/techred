@@ -59,10 +59,6 @@ export function splitBlock(shift: boolean): Command {
                     const title = state.schema.nodes.title.create(null, selectedText);
                     tr.insert(tr.selection.$from.start($from.depth - 1), title);
                 };
-
-                if (types[0].type === sectionType) {
-                    tr.setMeta("updateTOC", true);
-                };
             };
 
             dispatch(tr.scrollIntoView());
@@ -271,7 +267,6 @@ export function changeToSection(): Command {
 
             const section = sectionType.create({ id: self.crypto.randomUUID() }, parentNode.children[nodeIndex].children);
             tr.replaceWith($from.start($from.depth - 1) - 1, $from.end($from.depth - 1) + 1, section);
-            tr.setMeta("updateTOC", true);
 
             dispatch(tr);
         };
@@ -424,7 +419,7 @@ function excludeSection(range?: SectionRange): Command {
         };
 
         if (dispatch) {
-            let tr = state.tr
+            let tr = state.tr;
 
             const cutNodes = range.parent.cut(range.from - range.parentStart);
             tr.insert(range.parentEnd, cutNodes.content);
@@ -435,7 +430,6 @@ function excludeSection(range?: SectionRange): Command {
                 tr.replaceWith(range.from, range.parentEnd, state.schema.node("p"));
             };
 
-            tr.setMeta("updateTOC", true);
             dispatch(tr);
         };
         return true;
@@ -449,7 +443,7 @@ function includeSection(range?: SectionRange): Command {
         };
 
         if (dispatch) {
-            let tr = state.tr
+            let tr = state.tr;
 
             tr.delete(range.from, range.to);
 
@@ -479,7 +473,6 @@ function includeSection(range?: SectionRange): Command {
                 };
             };
 
-            tr.setMeta("updateTOC", true);
             dispatch(tr);
         };
         return true;
@@ -513,7 +506,6 @@ function joinSection(range?: SectionRange): Command {
             } else {
                 tr.insert(range.from - 2, range.node.children);
             }
-            tr.setMeta("updateTOC", true);
             dispatch(tr);
 
         };
@@ -531,7 +523,6 @@ function moveUpSection(range?: SectionRange): Command {
             let tr = state.tr
             tr.delete(range.from, range.to);
             tr.insert(range.before, range.node);
-            tr.setMeta("updateTOC", true);
             dispatch(tr);
         };
         return true;
@@ -548,7 +539,6 @@ function moveDownSection(range?: SectionRange): Command {
             let tr = state.tr
             tr.insert(range.after, range.node);
             tr.delete(range.from, range.to);
-            tr.setMeta("updateTOC", true);
             dispatch(tr);
         };
         return true;
@@ -562,13 +552,12 @@ function deleteSection(range?: SectionRange): Command {
         }
 
         if (dispatch) {
-            let tr = state.tr
+            let tr = state.tr;
             if (range.from === range.before && range.to === range.after) {
                 tr.replaceWith(range.from, range.to, state.schema.nodes.p.create());
             } else {
                 tr.delete(range.from, range.to);
-            }
-            tr.setMeta("updateTOC", true);
+            };
             dispatch(tr);
         };
         return true;
