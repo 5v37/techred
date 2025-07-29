@@ -1,7 +1,7 @@
 [package]
-name = "techred"
+name = "Techred"
 version = "0.2.0"
-description = "A Tauri App"
+description = "FictionBook e-book editor"
 authors = ["5v37"]
 edition = "2021"
 

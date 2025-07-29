@@ -45,7 +45,14 @@
 
             <div class="t-ui-field">
                 <label>Ссылки на источник</label>
-                <InputText v-model.lazy.trim=srcURL[0] />
+                <div class="t-ui-long-chipcontainer">
+                    <Chip v-for="(srcURL, index) in srcURLs" :key="srcURL.id" removable @remove="delSrcURL(index)">
+                        <div class="t-ui-long-chipgroup">
+                            <InputText v-model.lazy.trim=srcURL.url fluid />
+                        </div>
+                    </Chip>
+                    <Button type="button" icon="pi pi-plus" @click="addSrcURL()" v-tooltip="'Добавить'" />
+                </div>
             </div>
 
             <div class="t-ui-field">
@@ -78,20 +85,21 @@ interface StateDescription {
     fileVers: number,
     fileID: string,
     srcOCR: string,
-    srcURL: string[],
+    srcURLs: { url: string, id: number }[],
     publishers: PersonInfo[],
 };
+let idxSrcURL = 0;
 
 function initialStateDescription(): StateDescription {
     return {
         fileAuthors: [],
-        programUsed: "",
+        programUsed: "Techred " + __APP_VERSION__,
         date: "",
         dateValue: "",
         fileVers: 0.1,
         fileID: self.crypto.randomUUID(),
         srcOCR: "",
-        srcURL: [],
+        srcURLs: [],
         publishers: [],
     };
 };
@@ -133,6 +141,12 @@ export default defineComponent({
         fileBroker.addSubscriber(this.parseContent, this.serializeContent, this.$props.tag);
     },
     methods: {
+        addSrcURL() {
+            this.srcURLs.push({ url: "", id: ++idxSrcURL });
+        },
+        delSrcURL(index: number) {
+            this.srcURLs.splice(index, 1);
+        },
         parseContent(descElement: Element | undefined) {
             Object.assign(this.$data, initialStateDescription());
 
@@ -149,7 +163,7 @@ export default defineComponent({
                     this.dateValue = item.getAttribute("value") ?? "";
                     this.date = item.textContent.trim();
                 } else if (item.tagName === "src-url" && item.textContent) {
-                    this.srcURL.push(item.textContent.trim());
+                    this.srcURLs.push({ url: item.textContent.trim(), id: ++idxSrcURL });
                 } else if (item.tagName === "src-ocr" && item.textContent) {
                     this.srcOCR = item.textContent.trim();
                 } else if (item.tagName === "id" && item.textContent) {
@@ -159,6 +173,10 @@ export default defineComponent({
                 } else if (item.tagName === "publisher") {
                     this.publishers.push(new PersonInfo(item));
                 };
+            };
+
+            if (!this.programUsed.includes("Techred")) {
+                this.programUsed += (this.programUsed.length > 0 ? ", " : "") + "Techred " + __APP_VERSION__;
             };
         },
         serializeContent(xmlDoc: Document, documentInfo: Element) {
@@ -176,8 +194,8 @@ export default defineComponent({
             addElement(documentInfo, "program-used", this.programUsed);
             addElement(documentInfo, "date", this.date, true, [{ key: "value", value: this.dateValue || undefined }]);
 
-            for (const element of this.srcURL) {
-                addElement(documentInfo, "src-url", element);
+            for (const element of this.srcURLs) {
+                addElement(documentInfo, "src-url", element.url);
             };
 
             addElement(documentInfo, "src-ocr", this.srcOCR);

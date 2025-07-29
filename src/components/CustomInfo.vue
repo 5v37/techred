@@ -4,9 +4,9 @@
             <div :id=tag class="t-ui-panelheader">{{ header }}</div>
         </template>
 
-        <div class="t-custominfo-group">
+        <div class="t-ui-long-chipcontainer">
             <Chip v-for="(custom, index) in model" :key="custom.id" removable @remove="del(index)">
-                <div class="t-custominfo-chipgroup">
+                <div class="t-ui-long-chipgroup">
                     <div class="t-custominfo-field">
                         <label>Свойство</label>
                         <InputText v-model.lazy.trim=custom.type fluid />
@@ -69,21 +69,6 @@ defineExpose({ parseContent, serializeContent });
 </script>
 
 <style>
-.t-custominfo-group {
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 1rem;
-}
-
-.t-custominfo-chipgroup {
-    display: flex;
-    flex-wrap: wrap;
-    flex-grow: 1;
-    gap: 0.75rem;
-    padding-block: 0.25rem;
-}
-
 .t-custominfo-field {
     display: flex;
     gap: 0.75rem;

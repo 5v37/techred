@@ -7,3 +7,4 @@ declare module "*.vue" {
 }
 
 declare const __APP_TAURI_MODE__: boolean
+declare const __APP_VERSION__: string
