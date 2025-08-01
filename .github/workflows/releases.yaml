@@ -28,13 +28,20 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-tags: true
 
       - name: Get tag
         id: latest-tag
-        uses: "WyriHaximus/github-action-get-previous-tag@v1"
-        with:
-          prefix: v
+        run: |
+          if [ "${{ github.event_name }}" = "push" ]; then
+            # Для события push используем текущий тег
+            echo "tag=${{ github.ref_name }}" >> $GITHUB_OUTPUT
+          else
+            # Для workflow_dispatch ищем последний тег в репозитории
+            git fetch --tags -f
+            tag=$(git tag --list 'v*' --sort=-v:refname | head -n 1)
+            echo "tag=$tag" >> $GITHUB_OUTPUT
+          fi
 
       - name: Get changelog
         id: changelog
