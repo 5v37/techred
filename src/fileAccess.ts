@@ -13,7 +13,7 @@ async function encode(content: string, filePath: string) {
         if (!fileName.endsWith(".fb2")) {
             fileName += ".fb2";
         };
-        fileData = new Uint8Array(await pack(fileData, fileName));
+        fileData = new Uint8Array(await pack(fileData.buffer, fileName));
     }
     return fileData;
 };
