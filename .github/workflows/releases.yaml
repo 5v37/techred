@@ -30,24 +30,25 @@ jobs:
         with:
           fetch-tags: true
 
-      - name: Get tag
+      - name: Get latest tag
         id: latest-tag
         run: |
           if [ "${{ github.event_name }}" = "push" ]; then
             # Для события push используем текущий тег
-            echo "tag=${{ github.ref_name }}" >> $GITHUB_OUTPUT
+            tag=${{ github.ref_name }}
           else
             # Для workflow_dispatch ищем последний тег в репозитории
             git fetch --tags -f
-            tag=$(git tag --list 'v*' --sort=-v:refname | head -n 1)
-            echo "tag=$tag" >> $GITHUB_OUTPUT
+            tag=$(git tag --list 'v*' --sort=-v:refname | head -n 1)            
           fi
+          echo "tag=$tag" >> $GITHUB_OUTPUT
+          echo "version=${tag#v}" >> $GITHUB_OUTPUT
 
       - name: Get changelog
         id: changelog
         uses: mindsers/changelog-reader-action@v2
         with:          
-          version: ${{ steps.latest-tag.outputs.tag }}
+          version: ${{ steps.latest-tag.outputs.version }}
           path: ./CHANGELOG.md
 
       - name: Setup Node
@@ -81,8 +82,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tagName: v${{ steps.latest-tag.outputs.tag }}
-          releaseName: ${{ steps.latest-tag.outputs.tag }}
+          tagName: ${{ steps.latest-tag.outputs.tag }}
+          releaseName: ${{ steps.latest-tag.outputs.version }}
           releaseBody: ${{ steps.changelog.outputs.changes }}
           releaseDraft: true
           prerelease: true
