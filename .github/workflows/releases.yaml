@@ -27,12 +27,14 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Get tag
         id: latest-tag
-        uses: actions-ecosystem/action-get-latest-tag@v1        
+        uses: "WyriHaximus/github-action-get-previous-tag@v1"
         with:
-          semver_only: true
+          prefix: v
 
       - name: Get changelog
         id: changelog
@@ -45,7 +47,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: lts/*
-          cache: 'npm'
+          cache: npm
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
