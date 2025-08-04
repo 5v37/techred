@@ -1,6 +1,6 @@
 [package]
 name = "Techred"
-version = "0.2.0"
+version = "0.3.0"
 description = "FictionBook e-book editor"
 authors = ["5v37"]
 edition = "2021"

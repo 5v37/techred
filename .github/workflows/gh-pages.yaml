@@ -26,6 +26,12 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Insert counter
+        env:
+          COUNTER_CODE: ${{ secrets.COUNTER_HTML }}
+        run: |
+          perl -i -pe 's|<!-- COUNTER_PLACEHOLDER -->|$ENV{COUNTER_CODE}|g' index.html
+
       - name: Build
         run: npm run predeploy
 
