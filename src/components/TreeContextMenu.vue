@@ -80,7 +80,7 @@ const sectionItems = () => [
                 command: () =>
                     openImageDialog().then(file => {
                         editorState.images.value.addAsDataURL(file.name, file.content);
-                        const image = nodeTypes.image.create({ href: "#" + file.name }, nodeTypes.p.create());
+                        const image = nodeTypes.image.create({ href: "#" + file.name });
                         addNode(range!.node, nodeTypes.image, startPos, image)(view.state, view.dispatch);
                     }).catch((error) => {
                         toast.add({ severity: 'error', summary: 'Ошибка открытия файла', detail: error });
@@ -148,7 +148,7 @@ const bodyItems = () => [
         command: () =>
             openImageDialog().then(file => {
                 editorState.images.value.addAsDataURL(file.name, file.content);
-                const image = nodeTypes.image.create({ href: "#" + file.name }, nodeTypes.p.create());
+                const image = nodeTypes.image.create({ href: "#" + file.name });
                 addNode(view.state.doc, nodeTypes.image, startPos, image)(view.state, view.dispatch);
             }).catch((error) => {
                 toast.add({ severity: 'error', summary: 'Ошибка открытия файла', detail: error });

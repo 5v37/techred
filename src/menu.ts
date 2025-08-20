@@ -2,8 +2,11 @@ import { wrapItem, blockTypeItem, Dropdown, undoItem, redoItem, icons, MenuItem,
 import { EditorState, Command } from "prosemirror-state"
 import { Schema, MarkType, Attrs } from "prosemirror-model"
 import { toggleMark } from "prosemirror-commands"
-import { addTable, addTextautor, addTitle, changeToSection, wrapPoem } from "./commands"
+import { addNodeAfterSelection, addTextautor, addTitle, changeToSection, wrapPoem } from "./commands"
 import { addColumnAfter, addColumnBefore, addRowAfter, addRowBefore, deleteColumn, deleteRow, deleteTable, mergeCells, setCellAttr, splitCell, toggleHeaderCell, toggleHeaderColumn, toggleHeaderRow } from "prosemirror-tables"
+import { openImageDialog } from "./fileAccess"
+import editorState from "./editorState"
+import { useToast } from "primevue"
 
 function cmdItem(cmd: Command, options: Partial<MenuItemSpec>) {
     let passedOptions: MenuItemSpec = {
@@ -78,6 +81,8 @@ function deleteTableSafety(): Command {
 
 export function buildMenuItems(schema: Schema, dial: any) {
 
+    const toast = useToast();
+
     const toggleStrong = markItem(schema.marks.strong, { title: "Включить полужирный", icon: { text: "Ж", css: "font-weight: bold;" } });
     const toggleEmphasis = markItem(schema.marks.emphasis, { title: "Включить курсив", icon: { text: "К", css: "font-style: italic;" } });
     const toggleStrike = markItem(schema.marks.strikethrough, { title: "Включить зачеркнутый", icon: { text: "З", css: "text-decoration: line-through;" } });
@@ -98,40 +103,64 @@ export function buildMenuItems(schema: Schema, dial: any) {
         enable(state) { return addTextautor()(state) },
         run(state, dispatch) { addTextautor()(state, dispatch) }
     });
+    const makeParagraph = new MenuItem({
+        title: "Вставить абзац",
+        label: "Абзац",
+        enable(state) { return addNodeAfterSelection(schema.nodes.p)(state) },
+        run(state, dispatch) { addNodeAfterSelection(schema.nodes.p)(state, dispatch) }
+    });
+    const makeImage = new MenuItem({
+        title: "Вставить изображение",
+        label: "Изображение",
+        enable(state) { return addNodeAfterSelection(schema.nodes.image)(state) },
+        run(state, dispatch) { 
+            openImageDialog().then(file => {
+                editorState.images.value.addAsDataURL(file.name, file.content);
+                const image = schema.nodes.image.create({ href: "#" + file.name });
+                addNodeAfterSelection(schema.nodes.image, image)(state, dispatch);
+            }).catch((error) => {
+                toast.add({ severity: 'error', summary: 'Ошибка открытия файла', detail: error });
+            })
+            
+        }
+    });
+    const tableTemplate = schema.nodes.table.create(null,
+        [schema.nodes.tr.create(null, [schema.nodes.td.create(), schema.nodes.td.create()]),
+        schema.nodes.tr.create(null, [schema.nodes.td.create(), schema.nodes.td.create()])])
     const makeTable = new MenuItem({
         title: "Вставить таблицу",
         label: "Таблица",
-        enable(state) { return addTable()(state) },
-        run(state, dispatch) { addTable()(state, dispatch) }
+        enable(state) { return addNodeAfterSelection(schema.nodes.table)(state) },
+        run(state, dispatch) { addNodeAfterSelection(schema.nodes.table, tableTemplate)(state, dispatch) }
     });
-
-    const makeSubtitle = blockTypeItem(schema.nodes.subtitle, {
+    
+    const toSubtitle = blockTypeItem(schema.nodes.subtitle, {
         title: "Обернуть в подзаголовок",
         label: "Подзаголовок",
     });
-    const makeCite = wrapItem(schema.nodes.cite, {
+    const toCite = wrapItem(schema.nodes.cite, {
         title: "Обернуть в цитату",
         label: "Цитата",
     });
-    const makeStanza = wrapItem(schema.nodes.stanza, {
+    const toStanza = wrapItem(schema.nodes.stanza, {
         title: "Обернуть в стих",
         label: "Стих",
         enable(state) { return wrapPoem()(state) },
         run(state, dispatch) { wrapPoem()(state, dispatch) }
     });
-    const makeParagraph = blockTypeItem(schema.nodes.p, {
+    const toParagraph = blockTypeItem(schema.nodes.p, {
         title: "Заменить на абзац",
         label: "Абзац",
     });
-    const makeSection = blockTypeItem(schema.nodes.section, {
+    const toSection = blockTypeItem(schema.nodes.section, {
         title: "Заменить на секцию",
         label: "Секция",
         enable(state) { return changeToSection()(state) },
         run(state, dispatch) { changeToSection()(state, dispatch) }
     });
 
-    const insertMenu = new Dropdown([insertTitle, makeTextauthor, makeTable], { label: "Вставить" });
-    const typeMenu = new Dropdown([makeSubtitle, makeCite, makeStanza, makeParagraph, makeSection], { label: "Превратить" });
+    const insertMenu = new Dropdown([insertTitle, makeTextauthor, makeParagraph, makeImage, makeTable], { label: "Вставить" });
+    const typeMenu = new Dropdown([toSubtitle, toCite, toStanza, toParagraph, toSection], { label: "Превратить" });
     const tableMenu = new Dropdown([
         item('Вставить столбец слева', addColumnBefore),
         item('Вставить столбец справа', addColumnAfter),

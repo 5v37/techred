@@ -160,39 +160,6 @@ export function addTextautor(): Command {
     };
 };
 
-export function addTable(): Command {
-    return (state, dispatch) => {
-        const { $from } = state.selection;
-
-        if (!$from.depth || state.selection instanceof NodeSelection) {
-            return false;
-        };
-
-        const parentNode = $from.node($from.depth - 1);
-        const tableType = state.schema.nodes.table;
-        const currentIndex = $from.index($from.depth - 1);
-
-        if (!parentNode.canReplaceWith(currentIndex, currentIndex + 1, tableType)) {
-            return false;
-        };
-
-        if (dispatch) {
-            const insertPos = $from.end($from.depth) + 1;
-
-            let tr = state.tr;
-            let startPos = tr.mapping.map(insertPos);
-            tr.insert(startPos, tableType.create(null,
-                [state.schema.nodes.tr.create(null, [state.schema.nodes.td.create(), state.schema.nodes.td.create()]),
-                state.schema.nodes.tr.create(null, [state.schema.nodes.td.create(), state.schema.nodes.td.create()])])
-            );
-
-            dispatch(tr.scrollIntoView());
-        };
-
-        return true;
-    };
-};
-
 export function wrapPoem(): Command {
     return (state, dispatch) => {
         const { $from, $to } = state.selection;
@@ -349,6 +316,38 @@ export function addNode(parentNode: Node, nodeType: NodeType, startPos: number, 
         if (dispatch) {
             let tr = state.tr;
             tr.insert(insertPos, node ?? nodeType.create(null, state.schema.nodes.p.create()));
+
+            dispatch(tr.scrollIntoView());
+        };
+
+        return true;
+    };
+};
+
+
+export function addNodeAfterSelection(nodeType: NodeType, node?: Node): Command {
+    return (state, dispatch) => {
+        const { $from, $to } = state.selection;
+
+        if (!$from.depth) {
+            return false;
+        };
+
+        const isNodeSelection = state.selection instanceof NodeSelection;
+        const depth = isNodeSelection ? $from.depth : $from.depth - 1;
+
+        const parentNode = $from.node(depth);
+        const currentIndex = $from.index(depth);
+
+        if (!parentNode.canReplaceWith(currentIndex, currentIndex, nodeType)) {
+            return false;
+        };
+
+        if (dispatch) {
+            const insertPos = isNodeSelection ? $to.pos : $from.end($from.depth) + 1;
+
+            let tr = state.tr;
+            tr.insert(insertPos, node ?? nodeType.create());
 
             dispatch(tr.scrollIntoView());
         };
