@@ -1,9 +1,9 @@
 <template>
-  <figure class="t-imageview-figure" :class="{ 'ProseMirror-selectednode': selected }">
+  <figure class="t-imageview-container" :class="{ 'ProseMirror-selectednode': selected }">
     <div class="t-imageview-commands">
       <Button icon="pi pi-times" rounded severity="contrast" variant="text" size="small" @click="del" />
     </div>
-    <img class="t-imageview-image" :src="src" :alt="alt" />
+    <img class="t-imageview-content" :src="src" :alt="alt" />
     <figcaption v-if="node.attrs.title" class="t-imageview-caption"> {{ node.attrs.title }} </figcaption>
   </figure>
 </template>
@@ -12,13 +12,13 @@
 import { computed } from 'vue';
 import { useNodeViewContext } from '@prosemirror-adapter/vue';
 
-import { Button } from 'primevue'
+import { Button } from 'primevue';
 
-import editorState from '../editorState';
+import editorState from '../../editorState';
 
 const { node, selected, view, getPos } = useNodeViewContext();
 const alt = computed(() => {
-  return node.value.attrs.alt || src.value ? node.value.attrs.alt : "нет данных для отображения"; 
+  return node.value.attrs.alt || src.value ? node.value.attrs.alt : "<нет данных для отображения>"; 
 });
 const src = computed(() => {
   return node.value.attrs.href ? editorState.images.value.getDataByHref(node.value.attrs.href) : undefined;
@@ -36,7 +36,7 @@ function del() {
 </script>
 
 <style>
-.t-imageview-figure {
+.t-imageview-container {
   border: thin solid var(--p-content-border-color);
   width: fit-content;
   position: relative;
@@ -46,7 +46,7 @@ function del() {
   margin: 0.25rem var(--t-content-indent);
 }
 
-.t-imageview-image {
+.t-imageview-content {
   min-height: 2rem;
   min-width: 2rem;
   max-width: 100%;

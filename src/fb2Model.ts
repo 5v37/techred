@@ -286,18 +286,14 @@ function template(topNode: string, toXML: boolean): Schema {
             inlineimage: {
                 inline: true,
                 attrs: {
-                    src: {},
                     href: { default: null },
                     alt: { default: null }
                 },
                 parseDOM: [{
                     tag: inlineImageSelector,
                     getAttrs(dom) {
-                        const href = dom.getAttributeNS(xlinkns, "href")!;
-                        const binary = dom.ownerDocument.getElementById(href.slice(1))!;
                         return {
-                            src: "data:" + binary.getAttribute("content-type") + ";base64," + binary.textContent,
-                            href: href,
+                            href: dom.getAttributeNS(xlinkns, "href"),
                             alt: dom.getAttribute("alt")
                         };
                     }

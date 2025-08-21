@@ -297,6 +297,34 @@ function markPosition(state: EditorState, pos: number, markType: MarkType) {
     return { from, to, mark };
 }
 
+export function addInlineImage(image?: Node): Command {
+    return (state, dispatch) => {
+        const { $from } = state.selection;
+
+        if (state.selection instanceof NodeSelection) {
+            return false;
+        };
+
+        const currentIndex = $from.index();
+        if (!$from.parent.canReplaceWith(currentIndex, currentIndex, state.schema.nodes.inlineimage)) {
+            return false;
+        };
+
+        if (dispatch && image) {
+            let tr = state.tr;
+            if (state.selection instanceof TextSelection || state.selection instanceof AllSelection) {
+                tr.deleteSelection();
+            };
+            let startPos = tr.mapping.map($from.pos);
+            tr.insert(startPos, image);
+
+            dispatch(tr.scrollIntoView());
+        };
+
+        return true;
+    }
+}
+
 export function addNode(parentNode: Node, nodeType: NodeType, startPos: number, node?: Node): Command {
     return (state, dispatch) => {
         let pos = -1;

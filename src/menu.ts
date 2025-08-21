@@ -2,7 +2,7 @@ import { wrapItem, blockTypeItem, Dropdown, undoItem, redoItem, icons, MenuItem,
 import { EditorState, Command } from "prosemirror-state"
 import { Schema, MarkType, Attrs } from "prosemirror-model"
 import { toggleMark } from "prosemirror-commands"
-import { addNodeAfterSelection, addTextautor, addTitle, changeToSection, wrapPoem } from "./commands"
+import { addInlineImage, addNodeAfterSelection, addTextautor, addTitle, changeToSection, wrapPoem } from "./commands"
 import { addColumnAfter, addColumnBefore, addRowAfter, addRowBefore, deleteColumn, deleteRow, deleteTable, mergeCells, setCellAttr, splitCell, toggleHeaderCell, toggleHeaderColumn, toggleHeaderRow } from "prosemirror-tables"
 import { openImageDialog } from "./fileAccess"
 import editorState from "./editorState"
@@ -90,6 +90,21 @@ export function buildMenuItems(schema: Schema, dial: any) {
     const toggleSub = markItem(schema.marks.sub, { title: "Включить подстрочный", icon: { text: "Пᵢ" } });
     const toggleCode = markItem(schema.marks.code, { title: "Включить моноширинный", icon: { text: "М", css: "font-family: monospace;" } });
     const toggleLink = linkItem(schema.marks.a, dial);
+    const makeInlineImage = new MenuItem({
+        title: "Вставить изображение в текст",
+        icon: { text: "🖼" },
+        enable(state) { return addInlineImage()(state) },
+        run(state, dispatch) { 
+            openImageDialog().then(file => {
+                editorState.images.value.addAsDataURL(file.name, file.content);
+                const image = schema.nodes.inlineimage.create({ href: "#" + file.name });
+                addInlineImage(image)(state, dispatch);
+            }).catch((error) => {
+                toast.add({ severity: 'error', summary: 'Ошибка открытия файла', detail: error });
+            })
+            
+        }
+    });
 
     const insertTitle = new MenuItem({
         title: "Вставить заголовок",
@@ -183,7 +198,7 @@ export function buildMenuItems(schema: Schema, dial: any) {
         ], { label: "Выровнять" }),
         item('Удалить таблицу', deleteTableSafety()),
     ], { label: 'Таблица' });
-    const inlineMenu = [toggleStrong, toggleEmphasis, toggleStrike, toggleSup, toggleSub, toggleCode, toggleLink];
+    const inlineMenu = [toggleStrong, toggleEmphasis, toggleStrike, toggleSup, toggleSub, toggleCode, makeInlineImage, toggleLink];
 
     return [inlineMenu, [insertMenu, typeMenu, tableMenu], [undoItem, redoItem]]
 }

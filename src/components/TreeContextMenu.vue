@@ -196,5 +196,3 @@ function show(event: Event, node: TreeNode) {
 
 defineExpose({ show });
 </script>
-
-<style></style>
