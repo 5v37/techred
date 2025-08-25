@@ -10,6 +10,7 @@ import { useTemplateRef, onMounted } from 'vue'
 import LinkEditor from "./LinkEditor.vue";
 import ImageView from './views/ImageView.vue';
 import InlineImageView from './views/InlineImageView.vue';
+import SectionView from './views/SectionView.vue';
 
 import { EditorState, Transaction } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
@@ -101,6 +102,9 @@ onMounted(() => {
                 component: InlineImageView,
                 as: 'inline-image'
             }),
+            section: nodeViewFactory({
+                component: SectionView
+            })
         },
         dispatchTransaction(transaction) {
             let newState = view.state.apply(transaction);

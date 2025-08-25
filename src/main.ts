@@ -2,9 +2,8 @@ import { createApp } from "vue";
 import App from "./App.vue";
 
 import PrimeVue from 'primevue/config';
-import Tooltip from 'primevue/tooltip';
+import { ToastService, Tooltip, KeyFilter } from "primevue";
 import { ru } from "primelocale/js/ru.js";
-import { ToastService } from "primevue";
 
 import './assets/main.css'
 import { Noir } from "./assets/preset";
@@ -21,4 +20,5 @@ app.use(PrimeVue, {
 });
 app.use(ToastService);
 app.directive('tooltip', Tooltip);
+app.directive('keyfilter', KeyFilter);
 app.mount("#app");
