@@ -156,4 +156,6 @@ export function addingNodes(xmlDoc: Document, nameSpace: string) {
     return addElement;
 };
 
+export const NCNameFilter = { pattern: /^[\p{L}_][\p{L}\p{N}_.-]*$/u, validateOnly: true };
+
 export const isTauriMode = __APP_TAURI_MODE__;

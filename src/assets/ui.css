@@ -68,6 +68,10 @@
     padding-block: 0.875rem;
 }
 
+.t-ui-dialog {
+    min-width: 25rem;
+}
+
 .t-ui-texteditor {
     font-family: inherit;
     font-feature-settings: inherit;

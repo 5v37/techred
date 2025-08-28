@@ -3,7 +3,8 @@
 		<div class="t-images-panel">
 			<div v-for="(value, key) in images.items" :key="key" class="t-images-block">
 				<Image class="img" :src=value.dataURL preview width="200" />
-				<InputText v-model.lazy.trim=value.newId :invalid="!value.newId" class="t-images-caption" />
+				<InputText v-model.lazy.trim=value.newId :invalid="!value.newId" class="t-images-caption"
+					v-keyfilter=NCNameFilter />
 			</div>
 		</div>
 	</div>
@@ -18,6 +19,7 @@ import fileBroker, { documentBlocks } from "../fileBroker";
 import editorState from "../editorState";
 import { addingNodes } from "../utils";
 import { fb2ns, xlinkns } from "../fb2Model";
+import { NCNameFilter } from '../utils';
 
 const images = editorState.images;
 

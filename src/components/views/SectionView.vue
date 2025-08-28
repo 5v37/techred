@@ -5,44 +5,72 @@
       "<не установлен>" }}</span>
   </div>
 
-  <Dialog v-model:visible=idDialog modal header="Укажите новый идентификатор" :closable="false">
-    <InputText v-model.lazy.trim=newId v-keyfilter=NCNameFilter style="width: 100%;" />
+  <Dialog v-model:visible=idDialog modal :closable="false" :close-on-escape="false" class="t-ui-dialog"
+    header="Укажите новый идентификатор">
+    <InputText v-model=newId v-keyfilter=NCNameFilter :invalid="invalidId" style="width: 100%;" />
     <template #footer>
+      <Message v-if="invalidId" severity="error" variant="simple" style="margin-inline-end: auto;">Значение не
+        уникально</Message>
       <Button type="button" label="Отмена" severity="secondary" @click="closeDialog"></Button>
-      <Button type="button" label="Ок" @click="changeId"></Button>
+      <Button type="button" label="Ок" :disabled="invalidId" @click="changeId"></Button>
     </template>
   </Dialog>
 </template>
 
 <script setup lang="ts">
+import { computed, ref } from 'vue';
+import { Dialog, Button, InputText, Message } from 'primevue';
 import { useNodeViewContext } from '@prosemirror-adapter/vue';
-import { Dialog, Button, InputText } from 'primevue';
-import { ref } from 'vue';
+
+import { NCNameFilter } from '../../utils';
+import editorState from '../../editorState';
 
 const { contentRef, node, selected, view, getPos } = useNodeViewContext();
-const NCNameFilter = { pattern: /^[\p{L}_][\p{L}\p{N}_.-]*$/u, validateOnly: true };
 
+let ids: Set<string>;
 const idDialog = ref(false);
 const newId = ref("");
+const invalidId = computed(() => {
+  return newId.value !== node.value.attrs.inid && ids.has(newId.value);
+});
+
+function keyListener(event: KeyboardEvent) {
+  if (event.code === "Escape") {
+    closeDialog();
+  } else if (event.code === "Enter") {
+    changeId();
+  } else {
+    return;
+  };
+  event.preventDefault();
+}
 
 function openDialog() {
+  ids = editorState.getIds();
   newId.value = node.value.attrs.inid || "";
   view.dom.blur();
   idDialog.value = true;
+  addEventListener("keydown", keyListener);
 }
 
 function closeDialog() {
-  view.dom.focus({preventScroll: true});
+  view.dom.focus({ preventScroll: true });
   idDialog.value = false;
+  removeEventListener("keydown", keyListener);
 }
 
 function changeId() {
-  let tr = view.state.tr;
-  const pos = getPos();
-  if (pos !== undefined) {
-    tr.setNodeAttribute(pos, "inid", newId.value)
-    view.dispatch(tr);
-  }
+  if (invalidId.value) {
+    return;
+  };
+  if ((newId.value || node.value.attrs.inid) && newId.value !== node.value.attrs.inid) {
+    let tr = view.state.tr;
+    const pos = getPos();
+    if (pos !== undefined) {
+      tr.setNodeAttribute(pos, "inid", newId.value)
+      view.dispatch(tr);
+    };
+  };
   closeDialog();
 }
 </script>

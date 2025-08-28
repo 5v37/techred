@@ -14,6 +14,8 @@ class Images {
 
 	addAsDataURL(id: string, dataURL?: string) {
 		const data = parseDataURL(dataURL)
+		//проверка валидности id
+		//проверка уникальности id
 		if (data && data.base64) {
 			this.items[id] = {
 				content: data.data,

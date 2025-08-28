@@ -1,7 +1,7 @@
 <template>
     <ContextMenu ref="contextMenu" :model="contextMenuItems" />
 
-    <Dialog v-model:visible="nameDialog" modal header="Укажите новое имя раздела" :closable="false">
+    <Dialog v-model:visible="nameDialog" modal header="Укажите новое имя раздела" :closable="false" class="t-ui-dialog">
         <InputText v-model.lazy.trim=bodyName style="width: 100%;" />
         <template #footer>
             <Button type="button" label="Отмена" severity="secondary" @click="nameDialog = false"></Button>
