@@ -15,7 +15,7 @@ import SectionView from './views/SectionView.vue';
 import { EditorState, Transaction } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
 import { Node, DOMParser as pmDOMParser, DOMSerializer as pmDOMSerializer } from "prosemirror-model";
-import { ReplaceAroundStep, ReplaceStep } from "prosemirror-transform";
+import { DocAttrStep, ReplaceAroundStep, ReplaceStep } from "prosemirror-transform";
 import { undo, redo, history } from "prosemirror-history";
 import { keymap } from "prosemirror-keymap";
 import { baseKeymap, toggleMark } from "prosemirror-commands";
@@ -47,9 +47,6 @@ defineExpose({
 
 const editor = useTemplateRef('editor');
 const schema = props.annotation ? annotationSchema : bodySchema;
-const emptyDoc = props.annotation ?
-    schema.node("annotation", null, [schema.node("p")]) :
-    schema.node("body", null, [schema.node("section", { id: self.crypto.randomUUID() }, [schema.node("p")])]);
 
 let custKeymap = baseKeymap;
 custKeymap["Enter"] = splitBlock(false);
@@ -57,7 +54,7 @@ custKeymap["Shift-Enter"] = splitBlock(true);
 
 let view: EditorView;
 let state: EditorState;
-let root = emptyDoc;
+let root = emptyDoc();
 if (!props.annotation) {
     updateTOC(root);
 }
@@ -119,9 +116,10 @@ onMounted(() => {
 
 function hasContent(): boolean {
     return view.state.doc.textContent !== "";
-};
+}
 function parseContent(bodyElement: Element | undefined) {
-    root = !bodyElement || !bodyElement.textContent ? emptyDoc : pmDOMParser.fromSchema(schema).parse(bodyElement);
+    const name = !props.annotation ? bodyElement?.getAttribute("name") || "" : undefined;
+    root = !bodyElement || !bodyElement.textContent ? emptyDoc(name) : pmDOMParser.fromSchema(schema).parse(bodyElement, { topNode: emptyDoc(name) });
     if (!props.annotation) {
         updateTOC(root);
     };
@@ -129,15 +127,27 @@ function parseContent(bodyElement: Element | undefined) {
         state.doc = root;
         view.updateState(state);
     };
-};
+}
 function serializeContent(xmlDoc: Document, target: Element) {
     const schemaXML = props.annotation ? annotationSchemaXML : bodySchemaXML;
     if (props.editorId === "body0" || hasContent()) {
+        if (view.state.doc.attrs.name) {
+            target.setAttribute("name", view.state.doc.attrs.name);
+        };
         pmDOMSerializer.fromSchema(schemaXML).serializeFragment(view.state.doc.content, { document: xmlDoc }, target as HTMLElement);
     } else {
         target.remove();
     }
-};
+}
+
+function emptyDoc(name?: string) {
+    if (props.annotation) {
+        return schema.node("annotation", null, [schema.node("p")]);
+    } else {
+        const attrs = name ? { name } : (props.editorId === "body1" ? { name: "notes" } : null);
+        return schema.node("body", attrs, [schema.node("section", { id: self.crypto.randomUUID() }, [schema.node("p")])]);
+    };
+}
 
 function updateTOC(doc: Node) {
     function getTitle(node: Node) {
@@ -164,9 +174,9 @@ function updateTOC(doc: Node) {
         return TOC;
     }
 
-    editorState.bodies[props.editorId].toc.label = getTitle(doc) || editorState.bodies[props.editorId].name || "<body>";
-    editorState.bodies[props.editorId].toc.icon = 'pi pi-fw pi-bookmark-fill';
-    editorState.bodies[props.editorId].toc.children = getTOC(doc);
+    editorState.bodies[props.editorId].label = getTitle(doc) || doc.attrs.name || "<body>";    
+    editorState.bodies[props.editorId].icon = 'pi pi-fw pi-bookmark-fill';
+    editorState.bodies[props.editorId].children = getTOC(doc);
 }
 
 function needUpdateTOC(transaction: Transaction) {
@@ -199,7 +209,9 @@ function needUpdateTOC(transaction: Transaction) {
                 if (hasChange) {
                     return true;
                 };
-            };
+            } else if (step instanceof DocAttrStep && step.attr === "name") {
+                return true;
+            }
         };
     };
     return false;

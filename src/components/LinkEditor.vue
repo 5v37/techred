@@ -51,7 +51,7 @@ function showEditLink(attrs: Attrs, command: (attrs: Attrs) => void) {
 
     href.value = "";
     node.value = undefined;
-    notes = editorState.bodies.body1.toc.children!
+    notes = editorState.bodies.body1.children!
 
     if (attrs.type === "" && !noteLink.value) {
         typeLink.value = typeLinkOptions.value[1];

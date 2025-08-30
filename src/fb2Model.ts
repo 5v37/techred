@@ -1,7 +1,7 @@
 import { AttributeSpec, Node, Schema } from "prosemirror-model";
 
 const xmlTemplate =
-`<?xml version="1.0" encoding="UTF-8"?>
+    `<?xml version="1.0" encoding="UTF-8"?>
 <FictionBook xmlns="http://www.gribuser.ru/xml/fictionbook/2.0" xmlns:l="http://www.w3.org/1999/xlink">
  <description>
   <title-info><annotation/></title-info>
@@ -49,7 +49,10 @@ function template(topNode: string, toXML: boolean): Schema {
     return new Schema({
         topNode: topNode,
         nodes: {
-            body: { content: "image? title? epigraph* section+" },
+            body: {
+                attrs: { name: { default: null } },
+                content: "image? title? epigraph* section+"
+            },
 
             image: {
                 inline: false,

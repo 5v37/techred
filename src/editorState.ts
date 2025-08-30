@@ -5,7 +5,7 @@ import { TreeNode } from 'primevue/treenode';
 
 import Images from './types/images';
 
-type bodiesType = { [key: string]: { name: string, toc: TreeNode } };
+type bodiesType = { [key: string]: TreeNode };
 
 class editorState {
     private views: { [key: string]: EditorView } = {};

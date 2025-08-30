@@ -28,16 +28,14 @@ let nodeTypes: typeof view.state.schema.nodes;
 let range: SectionRange | undefined;
 let startPos = 0;
 
-let curBody = editorState.bodies[0];
-let needUpdateLabel = false;
 const bodyName = ref("");
 const nameDialog = ref(false);
 
 function changeName() {
-    curBody.name = bodyName.value;
-    if (needUpdateLabel) {
-        curBody.toc.label = bodyName.value || "<body>";
-    }
+    let tr = view.state.tr;
+    tr.setDocAttribute("name", bodyName.value)
+    view.dispatch(tr);
+
     nameDialog.value = false;
 }
 
@@ -181,9 +179,7 @@ function show(event: Event, node: TreeNode) {
             startPos = range ? range.from + 1 : 0;
             contextMenuItems.value = sectionItems();
         } else {
-            curBody = editorState.bodies[node.key];
-            bodyName.value = curBody.name;
-            needUpdateLabel = curBody.toc.label === bodyName.value || bodyName.value === "";
+            bodyName.value = view.state.doc.attrs.name;
             startPos = 0;
             contextMenuItems.value = bodyItems();
         };
