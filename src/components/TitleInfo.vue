@@ -64,8 +64,8 @@
                     <Chip v-for="genre in selectedGenres" :key="genre.mark" :label="genre.name" removable
                         @remove="genreRemove(genre.mark)" />
                     <Button type="button" icon="pi pi-plus" @click="showGenreSelector" v-tooltip="'Добавить'" />
-                    <Popover ref="genrespop">
-                        <Tree :value="genresTree" selectionMode="single" class="t-titleinfo-genrespop"
+                    <Popover ref="genrespop" class="t-titleinfo-genrespop">
+                        <Tree :value="genresTree" selectionMode="single" :pt="{ root: { style: 'padding: 0rem' } }"
                             @node-select="genreSelect" />
                     </Popover>
                 </div>
@@ -349,8 +349,7 @@ export default defineComponent({
 }
 
 .t-titleinfo-genrespop {
-    display: flex;
     height: 25rem;
-    padding: 0rem !important;
+    overflow: auto;
 }
 </style>
