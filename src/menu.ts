@@ -41,7 +41,6 @@ function linkItem(markType: MarkType, editLink: any) {
         active(state) { return markActive(state, markType) },
         enable(state) { return !state.selection.empty },
         run(state, dispatch, view) {
-            let markAttrs: Attrs = {};
             let callback = function (attrs: Attrs) {
                 // при обновлении формируется 2 транзакции, надо будет их объединить
                 if (markActive(state, markType)) {
@@ -54,10 +53,12 @@ function linkItem(markType: MarkType, editLink: any) {
             };
 
             // при обновлении, если выбрать часть ссылки, только она и обновится, надо расширять выделение на всю ссылку
-            const marks = state.selection.$head.marks();
-            const [aMark] = marks.filter(mark => mark.type === markType);
-            if (aMark) {
-                markAttrs = aMark.attrs;
+            let markAttrs: Attrs = {};
+            for (const mark of state.selection.$to.marks()) {
+                if (mark.type === markType) {
+                    markAttrs = mark.attrs;
+                    break;
+                };
             };
 
             editLink(markAttrs, callback);
@@ -94,7 +95,7 @@ export function buildMenuItems(schema: Schema, dial: any) {
         title: "Вставить изображение в текст",
         icon: { text: "🖼" },
         enable(state) { return addInlineImage()(state) },
-        run(state, dispatch) { 
+        run(state, dispatch) {
             openImageDialog().then(file => {
                 editorState.images.value.addAsDataURL(file.name, file.content);
                 const image = schema.nodes.inlineimage.create({ href: "#" + file.name });
@@ -102,7 +103,7 @@ export function buildMenuItems(schema: Schema, dial: any) {
             }).catch((error) => {
                 toast.add({ severity: 'error', summary: 'Ошибка открытия файла', detail: error });
             })
-            
+
         }
     });
 
@@ -128,7 +129,7 @@ export function buildMenuItems(schema: Schema, dial: any) {
         title: "Вставить изображение",
         label: "Изображение",
         enable(state) { return addNodeAfterSelection(schema.nodes.image)(state) },
-        run(state, dispatch) { 
+        run(state, dispatch) {
             openImageDialog().then(file => {
                 editorState.images.value.addAsDataURL(file.name, file.content);
                 const image = schema.nodes.image.create({ href: "#" + file.name });
@@ -136,7 +137,7 @@ export function buildMenuItems(schema: Schema, dial: any) {
             }).catch((error) => {
                 toast.add({ severity: 'error', summary: 'Ошибка открытия файла', detail: error });
             })
-            
+
         }
     });
     const tableTemplate = schema.nodes.table.create(null,
@@ -148,7 +149,7 @@ export function buildMenuItems(schema: Schema, dial: any) {
         enable(state) { return addNodeAfterSelection(schema.nodes.table)(state) },
         run(state, dispatch) { addNodeAfterSelection(schema.nodes.table, tableTemplate)(state, dispatch) }
     });
-    
+
     const toSubtitle = blockTypeItem(schema.nodes.subtitle, {
         title: "Обернуть в подзаголовок",
         label: "Подзаголовок",

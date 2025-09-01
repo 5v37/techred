@@ -22,8 +22,8 @@ class editorState {
         return this.views[id];
     }
 
-    getIds() {
-        const ids = new Set<string>(Object.keys(this.images.value.items));
+    getIds(noImage = false) {
+        const ids = new Set<string>(noImage ? undefined : Object.keys(this.images.value.items));
         for (const body of Object.keys(this.bodies)) {
             this.getView(body).state.doc.descendants((node) => {
                 if (node.attrs.inid) {

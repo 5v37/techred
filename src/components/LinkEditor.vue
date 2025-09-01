@@ -8,8 +8,7 @@
             <div class="t-ui-chipcontainer">
                 <label style="width: 5rem;">Значение</label>
                 <InputText v-if="!noteLink" v-model.lazy="href" class="t-ui-grow" />
-                <TreeSelect v-if="noteLink" v-model="node" :options="notes" @node-select=onNodeSelect
-                    class="t-ui-grow" />
+                <Select v-if="noteLink" v-model="selectedId" :options="notes" filter showClear class="t-ui-grow" />
             </div>
         </div>
         <template #footer>
@@ -21,71 +20,55 @@
 
 <script setup lang="ts">
 import { computed, ref } from "vue";
-
 import { Attrs } from "prosemirror-model";
+import { Dialog, SelectButton, InputText, Button, Select } from "primevue";
 
-import { Dialog, SelectButton, InputText, Button, TreeSelect } from "primevue";
-import { TreeNode } from "primevue/treenode";
 import editorState from "../editorState";
 
 const typeLinkOptions = ref(['Примечание', 'Гиперссылка']);
 const typeLink = ref(typeLinkOptions.value[0]);
 const visible = ref(false);
 const href = ref("");
-const node = ref();
-let notes: TreeNode[] = [];
+const selectedId = ref("");
 
+let notes: Array<string>;
 let callback: (attrs: Attrs) => void;
-let selectedNode: TreeNode | undefined;
 
 const noteLink = computed(() => {
     return typeLink.value === typeLinkOptions.value[0];
 })
 
-function onNodeSelect(node: TreeNode) {
-    selectedNode = node;
-}
-
 function showEditLink(attrs: Attrs, command: (attrs: Attrs) => void) {
-    visible.value = true;
-
     href.value = "";
-    node.value = undefined;
-    notes = editorState.bodies.body1.children!
+    selectedId.value = "";
+    notes = Array.from(editorState.getIds(true));
 
-    if (attrs.type === "" && !noteLink.value) {
+    if (attrs.type === "note" || !attrs.href) {
+        typeLink.value = typeLinkOptions.value[0];
+        selectedId.value = attrs.href ? attrs.href.slice(1) : "";
+    } else {
         typeLink.value = typeLinkOptions.value[1];
         href.value = attrs.href;
-    } else {
-        typeLink.value = typeLinkOptions.value[0];
-        if (attrs.href) {
-            const selectedNode = notes.find((node) => node.id === attrs.href);
-            if (selectedNode) {
-                node.value = { [selectedNode.key]: true };
-            };
-        }
-
     };
 
+    visible.value = true;
     callback = command;
 };
 
 function saveLink() {
-    visible.value = false;
-
+    let attr = {}
     if (noteLink.value) {
-        let hrefNote = "";
-        if (selectedNode) {
-            if (selectedNode.id) {
-                hrefNote = selectedNode.id
-            } else {
-                // надо создать
-            };
+        if (selectedId.value) {
+            attr = { type: "note", href: "#" + selectedId.value };
         };
-        callback({ type: "note", href: hrefNote });
     } else {
-        callback({ type: "", href: href.value });
+        if (href.value) {
+            attr = { type: "", href: href.value };
+        };
     };
+
+    visible.value = false;
+    callback(attr);
 };
 
 defineExpose({
