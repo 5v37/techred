@@ -1,5 +1,6 @@
 <template>
-    <div :id="editorId" ref="editor" :spellcheck="spellcheckOn">
+    <div :id="editorId" ref="editor" :spellcheck="spellcheckOn"
+        :class="{'highlight-emphasis': editorState.highlightEmphasisOn.value}">
         <LinkEditor ref="linkEditor" />
     </div>
 </template>
@@ -174,7 +175,7 @@ function updateTOC(doc: Node) {
         return TOC;
     }
 
-    editorState.bodies[props.editorId].label = getTitle(doc) || doc.attrs.name || "<body>";    
+    editorState.bodies[props.editorId].label = getTitle(doc) || doc.attrs.name || "<body>";
     editorState.bodies[props.editorId].icon = 'pi pi-fw pi-bookmark-fill';
     editorState.bodies[props.editorId].children = getTOC(doc);
 }

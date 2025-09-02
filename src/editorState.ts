@@ -13,6 +13,7 @@ class editorState {
     public menu = reactive<TreeNode[]>([]);
     public bodies: bodiesType = {};
     public spellCheckOn = ref(false);
+    public highlightEmphasisOn = ref(true);
 
     setView(id: string, view: EditorView) {
         this.views[id] = view;

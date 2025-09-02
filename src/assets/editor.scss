@@ -150,7 +150,6 @@
 
 	emphasis {
 		font-style: italic;
-		border: 1px solid rgb(255, 88, 88);
 	}
 
 	strikethrough {
@@ -187,6 +186,12 @@
 	th[valign="bottom"],
 	td[valign="bottom"] {
 		vertical-align: bottom;
+	}
+}
+
+.highlight-emphasis {
+	emphasis {
+		border: 1px solid rgb(255, 88, 88);
 	}
 }
 

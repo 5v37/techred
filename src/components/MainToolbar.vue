@@ -10,36 +10,34 @@
                 v-tooltip="'Сохранить как... (Ctrl+Shift+S)'" />
         </template>
         <template #end>
-            <Button icon="pi pi-pencil" text @click="toggleSpellCheck" v-tooltip="'Проверка орфографии'"
-                :severity="editorState.spellCheckOn.value ? 'contrast' : 'secondary'" />
-            <Button text severity="secondary" @click="toggleDarkMode"
-                v-tooltip="!isDarkTheme ? 'Тёмный режим' : 'Светлый режим'">
-                <i :class="['pi', { 'pi-moon': isDarkTheme, 'pi-sun': !isDarkTheme }]"></i>
-            </Button>
+            <Button icon="pi pi-cog" severity="secondary" text @click="showSettings" v-tooltip="'Настройки'" />
+            <Settings ref="settings" />
         </template>
     </Toolbar>
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref, useTemplateRef, watch } from 'vue';
 
 import { Toolbar, Button, useToast } from 'primevue';
 
 import { getCurrentWindow } from '@tauri-apps/api/window';
 import { supported as fileAPIsupported } from 'browser-fs-access';
 
+import Settings from './Settings.vue';
+import fileBroker from '../fileBroker';
 import { openInitialFictionBook, openFictionBookDialog, saveFictionBookDialog } from '../fileAccess';
 import { isTauriMode } from '../utils';
-import fileBroker from '../fileBroker';
-import editorState from '../editorState';
 
 const emit = defineEmits(['loaded']);
 const toast = useToast();
 
 const currentFilePath = ref("");
-const isDarkTheme = ref(false);
 const saveButtonAvailable = isTauriMode || fileAPIsupported;
 let fileHandle: FileSystemFileHandle | undefined = undefined;
+
+const settings = useTemplateRef<InstanceType<typeof Settings>>('settings');
+const showSettings = () => { settings.value?.show() };
 
 openInitialFictionBook().then(file => {
     if (file) {
@@ -86,7 +84,7 @@ function newFile() {
     fileBroker.reset();
     currentFilePath.value = "";
     fileHandle = undefined;
-};
+}
 function openFile() {
     openFictionBookDialog().then(file => {
         fileBroker.parse(file.content);
@@ -95,7 +93,7 @@ function openFile() {
     }).catch((error) => {
         toast.add({ severity: 'error', summary: 'Ошибка открытия файла', detail: error });
     });
-};
+}
 function saveFile() {
     if (currentFilePath) {
         saveFictionBookDialog(fileBroker.serialize(), currentFilePath.value, { fileHandle }).then(() => {
@@ -104,7 +102,7 @@ function saveFile() {
             toast.add({ severity: 'error', summary: 'Ошибка сохранения файла', detail: error });
         });
     }
-};
+}
 function saveFileAs() {
     saveFictionBookDialog(fileBroker.serialize(), currentFilePath.value).then(file => {
         currentFilePath.value = file.path;
@@ -113,15 +111,7 @@ function saveFileAs() {
     }).catch((error) => {
         toast.add({ severity: 'error', summary: 'Ошибка сохранения файла', detail: error });
     });
-};
-
-function toggleDarkMode() {
-    const element = document.querySelector('html') as HTMLElement;
-    isDarkTheme.value = element.classList.toggle('my-app-dark');
-};
-function toggleSpellCheck() {
-    editorState.spellCheckOn.value = !editorState.spellCheckOn.value;
-};
+}
 </script>
 
 <style></style>
