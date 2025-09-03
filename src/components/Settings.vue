@@ -4,28 +4,34 @@
 			<div class="t-setting-element">
 				<label>Цветовая схема</label>
 				<Select v-model="selectedMode" :options="colorModes" optionLabel="name" option-value="key"
-					@change="changeMode" />
+					@change="changeColorMode" />
 			</div>
 			<div class="t-setting-element">
 				<label>Выделять курсив</label>
-				<ToggleSwitch v-model="editorState.highlightEmphasisOn.value" />
+				<ToggleSwitch v-model="editorState.highlightEmphasisOn.value" @change="changeHighlightEmphasis" />
 			</div>
 			<div class="t-setting-element">
 				<label>Проверка орфографии</label>
-				<ToggleSwitch v-model="editorState.spellCheckOn.value" />
+				<ToggleSwitch v-model="editorState.spellCheckOn.value" @change="changeSpellCheck" />
 			</div>
 		</div>
+		<template #footer>
+			<div v-if="hasLocalStorage" style="display: flex; justify-content: center;">
+				<Button type="button" @click="resetSettings">Сбросить настройки</Button>
+			</div>
+		</template>
 	</Drawer>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue';
 
-import { Drawer, Select, ToggleSwitch } from 'primevue';
+import { Drawer, Button, Select, ToggleSwitch, useToast } from 'primevue';
 
 import editorState from '../editorState';
 
 const visibleSettings = ref(false);
+const toast = useToast();
 
 const colorModes = ref([
 	{ name: "Системная", key: "Auto" },
@@ -34,9 +40,52 @@ const colorModes = ref([
 ]);
 const selectedMode = ref(colorModes.value[0].key);
 const colorSchemeQuery = window.matchMedia('(prefers-color-scheme: dark)');
-changeMode();
 
-function changeMode() {
+const hasLocalStorage = localStorage != undefined;
+getSettings();
+addEventListener("storage", () => { getSettings() });
+
+function getSettings() {
+	if (hasLocalStorage) {
+		let localMode = localStorage.getItem("color-mode");
+		selectedMode.value = colorModes.value.find(mode => mode.key === localMode)?.key || "Auto";
+
+		editorState.highlightEmphasisOn.value = !(localStorage.getItem("highlight-emphasis") === "false");
+		editorState.spellCheckOn.value = localStorage.getItem("spell-check") === "true" || false;
+	};
+	setColorMode();
+}
+
+function changeColorMode() {
+	saveToStorage("color-mode", selectedMode.value);
+	setColorMode();
+}
+
+function changeHighlightEmphasis() {
+	saveToStorage("highlight-emphasis", editorState.highlightEmphasisOn.value);
+}
+
+function changeSpellCheck() {
+	saveToStorage("spell-check", editorState.spellCheckOn.value);
+}
+
+function saveToStorage(key: string, value: any) {
+	if (!hasLocalStorage) {
+		return;
+	};
+	try {
+		localStorage.setItem(key, String(value));
+	} catch (error) {
+		toast.add({ severity: 'error', summary: 'Ошибка сохранения настроек', detail: error });
+	};
+}
+
+function resetSettings() {
+	["color-mode", "highlight-emphasis", "spell-check"].forEach(key => localStorage.removeItem(key));
+	getSettings();
+}
+
+function setColorMode() {
 	if (selectedMode.value === "Auto") {
 		handleColorSchemeChange(colorSchemeQuery);
 		colorSchemeQuery.addEventListener("change", handleColorSchemeChange);
