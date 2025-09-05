@@ -7,6 +7,10 @@
 					@change="changeColorMode" />
 			</div>
 			<div class="t-setting-element">
+				<label>Размер шрифта</label>
+				<Select v-model="selectedSize" :options="fontSizes" checkmark @change="changeFontSize" />
+			</div>
+			<div class="t-setting-element">
 				<label>Выделять курсив</label>
 				<ToggleSwitch v-model="editorState.highlightEmphasisOn.value" @change="changeHighlightEmphasis" />
 			</div>
@@ -33,13 +37,16 @@ import editorState from '../editorState';
 const visibleSettings = ref(false);
 const toast = useToast();
 
-const colorModes = ref([
+const colorModes = [
 	{ name: "Системная", key: "Auto" },
 	{ name: "Светлая", key: "Light" },
 	{ name: "Тёмная", key: "Dark" },
-]);
-const selectedMode = ref(colorModes.value[0].key);
+];
+const selectedMode = ref(colorModes[0].key);
 const colorSchemeQuery = window.matchMedia('(prefers-color-scheme: dark)');
+
+const selectedSize = ref(12);
+const fontSizes = [8, 9, 10, 11, 12, 14, 16, 18, 20, 24, 28, 32, 36, 48, 72];
 
 const hasLocalStorage = localStorage != undefined;
 getSettings();
@@ -47,13 +54,17 @@ addEventListener("storage", () => { getSettings() });
 
 function getSettings() {
 	if (hasLocalStorage) {
-		let localMode = localStorage.getItem("color-mode");
-		selectedMode.value = colorModes.value.find(mode => mode.key === localMode)?.key || "Auto";
+		let localValue = localStorage.getItem("color-mode");
+		selectedMode.value = colorModes.find(mode => mode.key === localValue)?.key || "Auto";
+
+		localValue = localStorage.getItem("font-size");
+		selectedSize.value = fontSizes.find(size => size === Number(localValue)) || 12;
 
 		editorState.highlightEmphasisOn.value = !(localStorage.getItem("highlight-emphasis") === "false");
 		editorState.spellCheckOn.value = localStorage.getItem("spell-check") === "true" || false;
 	};
 	setColorMode();
+	setFontSize();
 }
 
 function changeColorMode() {
@@ -67,6 +78,11 @@ function changeHighlightEmphasis() {
 
 function changeSpellCheck() {
 	saveToStorage("spell-check", editorState.spellCheckOn.value);
+}
+
+function changeFontSize() {
+	saveToStorage("font-size", selectedSize.value);
+	setFontSize();
 }
 
 function saveToStorage(key: string, value: any) {
@@ -93,6 +109,10 @@ function setColorMode() {
 		colorSchemeQuery.removeEventListener("change", handleColorSchemeChange);
 		toggleColorMode(selectedMode.value === "Dark");
 	};
+}
+
+function setFontSize() {
+	document.documentElement.style.setProperty('--t-content-font-size', `${selectedSize.value}pt`);
 }
 
 function handleColorSchemeChange(mql: MediaQueryList | MediaQueryListEvent) {
