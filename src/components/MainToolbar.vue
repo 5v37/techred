@@ -19,7 +19,7 @@
 <script setup lang="ts">
 import { ref, useTemplateRef, watch } from 'vue';
 
-import { Toolbar, Button, useToast } from 'primevue';
+import { Toolbar, Button } from 'primevue';
 
 import { getCurrentWindow } from '@tauri-apps/api/window';
 import { supported as fileAPIsupported } from 'browser-fs-access';
@@ -27,10 +27,10 @@ import { supported as fileAPIsupported } from 'browser-fs-access';
 import Settings from './Settings.vue';
 import fileBroker from '../fileBroker';
 import { openInitialFictionBook, openFictionBookDialog, saveFictionBookDialog } from '../fileAccess';
+import { openFileError, saveFileError, saveFileInfo, UnexpectedError } from '../notification';
 import { isTauriMode } from '../utils';
 
 const emit = defineEmits(['loaded']);
-const toast = useToast();
 
 const currentFilePath = ref("");
 const saveButtonAvailable = isTauriMode || fileAPIsupported;
@@ -45,7 +45,7 @@ openInitialFictionBook().then(file => {
         currentFilePath.value = file.path;
     };
 }).catch((error) => {
-    toast.add({ severity: 'error', summary: 'Ошибка открытия файла', detail: error });
+    openFileError(error);
 }).then(() => {
     emit("loaded");
 });
@@ -76,9 +76,7 @@ addEventListener("keydown", (event: KeyboardEvent) => {
 
     event.preventDefault();
 });
-addEventListener("error", (event: ErrorEvent) => {
-    toast.add({ severity: 'error', summary: 'Непредвиденная ошибка', detail: event.message });
-});
+addEventListener("error", UnexpectedError);
 
 function newFile() {
     fileBroker.reset();
@@ -90,27 +88,21 @@ function openFile() {
         fileBroker.parse(file.content);
         currentFilePath.value = file.path;
         fileHandle = file.handle;
-    }).catch((error) => {
-        toast.add({ severity: 'error', summary: 'Ошибка открытия файла', detail: error });
-    });
+    }).catch((error) => openFileError(error));
 }
 function saveFile() {
     if (currentFilePath) {
         saveFictionBookDialog(fileBroker.serialize(), currentFilePath.value, { fileHandle }).then(() => {
-            toast.add({ severity: 'info', summary: 'Файл успешно сохранён', life: 3000 });
-        }).catch((error) => {
-            toast.add({ severity: 'error', summary: 'Ошибка сохранения файла', detail: error });
-        });
+            saveFileInfo();
+        }).catch((error) => saveFileError(error));
     }
 }
 function saveFileAs() {
     saveFictionBookDialog(fileBroker.serialize(), currentFilePath.value).then(file => {
         currentFilePath.value = file.path;
         fileHandle = file.handle;
-        toast.add({ severity: 'info', summary: 'Файл успешно сохранён', life: 3000 });
-    }).catch((error) => {
-        toast.add({ severity: 'error', summary: 'Ошибка сохранения файла', detail: error });
-    });
+        saveFileInfo();
+    }).catch((error) => saveFileError(error));
 }
 </script>
 

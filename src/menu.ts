@@ -6,7 +6,7 @@ import { addInlineImage, addNodeAfterSelection, addTextautor, addTitle, changeTo
 import { addColumnAfter, addColumnBefore, addRowAfter, addRowBefore, deleteColumn, deleteRow, deleteTable, mergeCells, setCellAttr, splitCell, toggleHeaderCell, toggleHeaderColumn, toggleHeaderRow } from "prosemirror-tables"
 import { openImageDialog } from "./fileAccess"
 import editorState from "./editorState"
-import { useToast } from "primevue"
+import { openFileError } from "./notification"
 
 function cmdItem(cmd: Command, options: Partial<MenuItemSpec>) {
     let passedOptions: MenuItemSpec = {
@@ -82,8 +82,6 @@ function deleteTableSafety(): Command {
 
 export function buildMenuItems(schema: Schema, dial: any) {
 
-    const toast = useToast();
-
     const toggleStrong = markItem(schema.marks.strong, { title: "Включить полужирный", icon: { text: "Ж", css: "font-weight: bold;" } });
     const toggleEmphasis = markItem(schema.marks.emphasis, { title: "Включить курсив", icon: { text: "К", css: "font-style: italic;" } });
     const toggleStrike = markItem(schema.marks.strikethrough, { title: "Включить зачеркнутый", icon: { text: "З", css: "text-decoration: line-through;" } });
@@ -102,10 +100,7 @@ export function buildMenuItems(schema: Schema, dial: any) {
                     const image = schema.nodes.inlineimage.create({ href: "#" + id });
                     addInlineImage(image)(state, dispatch);
                 };
-            }).catch((error) => {
-                toast.add({ severity: 'error', summary: 'Ошибка открытия файла', detail: error });
-            })
-
+            }).catch((error) => openFileError(error));
         }
     });
 
@@ -137,11 +132,8 @@ export function buildMenuItems(schema: Schema, dial: any) {
                 if (id) {
                     const image = schema.nodes.image.create({ href: "#" + id });
                     addNodeAfterSelection(schema.nodes.image, image)(state, dispatch);
-                };                
-            }).catch((error) => {
-                toast.add({ severity: 'error', summary: 'Ошибка открытия файла', detail: error });
-            })
-
+                };
+            }).catch((error) => openFileError(error));
         }
     });
     const tableTemplate = schema.nodes.table.create(null,

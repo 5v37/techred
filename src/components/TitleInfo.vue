@@ -95,6 +95,7 @@ import Sequences from './Sequences.vue';
 import { Panel, Chip, Button, SelectButton, Popover, Select, FloatLabel, Tree, Image, InputText, InputNumber } from 'primevue';
 import { TreeNode } from 'primevue/treenode';
 
+import { missingGenre, missingLang, openFileError, saveFileError, saveFileInfo } from '../notification';
 import { Genre, genresTree, findGenre } from '../types/genres'
 import { Language, languages, findLanguage } from '../types/languages';
 import PersonInfo from '../types/personInfo';
@@ -212,13 +213,6 @@ export default defineComponent({
                 return;
             };
 
-            const missingGenre = (badMark: string) => {
-                this.$toast.add({ severity: 'warn', summary: 'Неизвестный жанр', detail: badMark, life: 10000 });
-            };
-            const missingLang = (badCode: string) => {
-                this.$toast.add({ severity: 'warn', summary: 'Неизвестный язык', detail: badCode, life: 10000 });
-            };
-
             for (const item of descElement.children) {
                 if (item.tagName === "genre" && item.textContent) {
                     this.selectedGenres.push(findGenre(item.textContent, missingGenre));
@@ -313,18 +307,14 @@ export default defineComponent({
                 const id = editorState.images.value.addAsDataURL(file.name, file.content);
                 if (id) {
                     this.coverHref = "#" + id;
-                };                
-            }).catch((error) => {
-                this.$toast.add({ severity: 'error', summary: 'Ошибка открытия файла', detail: error });
-            });
+                };
+            }).catch((error) => openFileError(error));
         },
         saveCover() {
             if (this.hasCover && this.coverHref.startsWith("#")) {
                 saveImageDialog(this.cover, this.coverHref.slice(1)).then(() => {
-                    this.$toast.add({ severity: 'info', summary: 'Файл успешно сохранён', life: 3000 });
-                }).catch((error) => {
-                    this.$toast.add({ severity: 'error', summary: 'Ошибка сохранения файла', detail: error });
-                });
+                    saveFileInfo()
+                }).catch((error) => saveFileError(error));
             };
         },
         deleteCover() {

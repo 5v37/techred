@@ -13,7 +13,7 @@
 <script setup lang="ts">
 import { ref, useTemplateRef } from 'vue';
 
-import { ContextMenu, Dialog, Button, InputText, useToast } from 'primevue';
+import { ContextMenu, Dialog, Button, InputText } from 'primevue';
 import { MenuItem } from 'primevue/menuitem';
 import { TreeNode } from 'primevue/treenode';
 
@@ -22,6 +22,7 @@ import { EditorView } from 'prosemirror-view';
 import { SectionRange, sectionRangeByID, excludeSection, includeSection, joinSection, moveUpSection, moveDownSection, deleteSection, addNode } from '../commands';
 import { openImageDialog } from '../fileAccess';
 import editorState from '../editorState';
+import { openFileError } from '../notification';
 
 let view: EditorView;
 let nodeTypes: typeof view.state.schema.nodes;
@@ -41,7 +42,6 @@ function changeName() {
 
 const contextMenu = useTemplateRef("contextMenu");
 const contextMenuItems = ref<MenuItem[]>([]);
-const toast = useToast();
 
 const sectionItems = () => [
     {
@@ -82,9 +82,7 @@ const sectionItems = () => [
                             const image = nodeTypes.image.create({ href: "#" + id });
                             addNode(range!.node, nodeTypes.image, startPos, image)(view.state, view.dispatch);
                         };
-                    }).catch((error) => {
-                        toast.add({ severity: 'error', summary: 'Ошибка открытия файла', detail: error });
-                    })
+                    }).catch((error) => openFileError(error))
             },
             {
                 label: 'Эпиграф',
@@ -152,9 +150,7 @@ const bodyItems = () => [
                     const image = nodeTypes.image.create({ href: "#" + id });
                     addNode(view.state.doc, nodeTypes.image, startPos, image)(view.state, view.dispatch);
                 };
-            }).catch((error) => {
-                toast.add({ severity: 'error', summary: 'Ошибка открытия файла', detail: error });
-            })
+            }).catch((error) => openFileError(error))
     },
     {
         label: 'Вставить эпиграф',

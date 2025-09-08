@@ -27,9 +27,11 @@ import Sidebar from './components/Sidebar.vue';
 import Description from "./components/Description.vue";
 import Content from './components/Content.vue';
 import Images from './components/Images.vue';
+import { initNotification } from './notification';
 
 const loaded = ref(false);
 const current = ref("");
+initNotification();
 </script>
 
 <style>

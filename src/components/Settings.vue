@@ -30,12 +30,12 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 
-import { Drawer, Button, Select, ToggleSwitch, useToast } from 'primevue';
+import { Drawer, Button, Select, ToggleSwitch } from 'primevue';
 
 import editorState from '../editorState';
+import { saveSettingsError } from '../notification';
 
 const visibleSettings = ref(false);
-const toast = useToast();
 
 const colorModes = [
 	{ name: "Системная", key: "Auto" },
@@ -92,7 +92,7 @@ function saveToStorage(key: string, value: any) {
 	try {
 		localStorage.setItem(key, String(value));
 	} catch (error) {
-		toast.add({ severity: 'error', summary: 'Ошибка сохранения настроек', detail: error });
+		saveSettingsError(error)
 	};
 }
 
