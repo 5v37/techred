@@ -97,9 +97,11 @@ export function buildMenuItems(schema: Schema, dial: any) {
         enable(state) { return addInlineImage()(state) },
         run(state, dispatch) {
             openImageDialog().then(file => {
-                editorState.images.value.addAsDataURL(file.name, file.content);
-                const image = schema.nodes.inlineimage.create({ href: "#" + file.name });
-                addInlineImage(image)(state, dispatch);
+                const id = editorState.images.value.addAsDataURL(file.name, file.content);
+                if (id) {
+                    const image = schema.nodes.inlineimage.create({ href: "#" + id });
+                    addInlineImage(image)(state, dispatch);
+                };
             }).catch((error) => {
                 toast.add({ severity: 'error', summary: 'Ошибка открытия файла', detail: error });
             })
@@ -131,9 +133,11 @@ export function buildMenuItems(schema: Schema, dial: any) {
         enable(state) { return addNodeAfterSelection(schema.nodes.image)(state) },
         run(state, dispatch) {
             openImageDialog().then(file => {
-                editorState.images.value.addAsDataURL(file.name, file.content);
-                const image = schema.nodes.image.create({ href: "#" + file.name });
-                addNodeAfterSelection(schema.nodes.image, image)(state, dispatch);
+                const id = editorState.images.value.addAsDataURL(file.name, file.content);
+                if (id) {
+                    const image = schema.nodes.image.create({ href: "#" + id });
+                    addNodeAfterSelection(schema.nodes.image, image)(state, dispatch);
+                };                
             }).catch((error) => {
                 toast.add({ severity: 'error', summary: 'Ошибка открытия файла', detail: error });
             })

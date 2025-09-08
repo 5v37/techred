@@ -77,9 +77,11 @@ const sectionItems = () => [
                 disabled: !addNode(range!.node, nodeTypes.image, startPos)(view.state),
                 command: () =>
                     openImageDialog().then(file => {
-                        editorState.images.value.addAsDataURL(file.name, file.content);
-                        const image = nodeTypes.image.create({ href: "#" + file.name });
-                        addNode(range!.node, nodeTypes.image, startPos, image)(view.state, view.dispatch);
+                        const id = editorState.images.value.addAsDataURL(file.name, file.content);
+                        if (id) {
+                            const image = nodeTypes.image.create({ href: "#" + id });
+                            addNode(range!.node, nodeTypes.image, startPos, image)(view.state, view.dispatch);
+                        };
                     }).catch((error) => {
                         toast.add({ severity: 'error', summary: 'Ошибка открытия файла', detail: error });
                     })
@@ -145,9 +147,11 @@ const bodyItems = () => [
         disabled: !addNode(view.state.doc, nodeTypes.image, startPos)(view.state),
         command: () =>
             openImageDialog().then(file => {
-                editorState.images.value.addAsDataURL(file.name, file.content);
-                const image = nodeTypes.image.create({ href: "#" + file.name });
-                addNode(view.state.doc, nodeTypes.image, startPos, image)(view.state, view.dispatch);
+                const id = editorState.images.value.addAsDataURL(file.name, file.content);
+                if (id) {
+                    const image = nodeTypes.image.create({ href: "#" + id });
+                    addNode(view.state.doc, nodeTypes.image, startPos, image)(view.state, view.dispatch);
+                };
             }).catch((error) => {
                 toast.add({ severity: 'error', summary: 'Ошибка открытия файла', detail: error });
             })

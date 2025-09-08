@@ -1,4 +1,6 @@
+import editorState from "../editorState";
 import { parseDataURL } from "../utils";
+import { NCNameFilter } from '../utils';
 
 type Image = {
 	[id: string]: {
@@ -9,31 +11,47 @@ type Image = {
 	}
 }
 
+let idx = 0;
+function getValidId(id: string, mime: string) {
+	const ids = editorState.getIds();
+	if (NCNameFilter.pattern.test(id) && !ids.has(id)) {
+		return id;
+	} else {
+		const ext = mime === "image/png" ? "png" : "jpg";
+		while (ids.has(`img_${idx}.${ext}`)) {
+			idx++
+		};
+		return `img_${idx}.${ext}`;
+	};
+}
+
 class Images {
 	items: Image = Object.create(null);
 
-	addAsDataURL(id: string, dataURL?: string) {
-		const data = parseDataURL(dataURL)
-		//проверка валидности id
-		//проверка уникальности id
+	addAsDataURL(name: string, dataURL?: string) {
+		const data = parseDataURL(dataURL);
 		if (data && data.base64) {
-			this.items[id] = {
+			const validId = getValidId(name, data.mime);
+			this.items[validId] = {
 				content: data.data,
 				type: data.mime,
 				dataURL: dataURL!,
-				newId: id
+				newId: validId
 			};
+			return validId;
 		};
 	};
 
 	addAsContent(id: string, content: string | null, type: string | null) {
 		if (type && content) {
+			const validId = getValidId(id, type);
 			this.items[id] = {
 				content: content,
 				type: type,
 				dataURL: "data:" + type + ";base64," + content,
-				newId: id
+				newId: validId
 			};
+			return validId; 
 		};
 	};
 
@@ -44,6 +62,10 @@ class Images {
 			return href;
 		}
 	};
+
+	getIds() {
+		return Object.entries(this.items).map(item => item[1].newId ? item[1].newId : item[0]);
+	}
 
 	clear() {
 		this.items = Object.create(null);

@@ -213,10 +213,10 @@ export default defineComponent({
             };
 
             const missingGenre = (badMark: string) => {
-                this.$toast.add({ severity: 'warn', summary: 'Неизвестный жанр', detail: badMark, life: 5000 });
+                this.$toast.add({ severity: 'warn', summary: 'Неизвестный жанр', detail: badMark, life: 10000 });
             };
             const missingLang = (badCode: string) => {
-                this.$toast.add({ severity: 'warn', summary: 'Неизвестный язык', detail: badCode, life: 5000 });
+                this.$toast.add({ severity: 'warn', summary: 'Неизвестный язык', detail: badCode, life: 10000 });
             };
 
             for (const item of descElement.children) {
@@ -310,8 +310,10 @@ export default defineComponent({
         },
         selectCover() {
             openImageDialog().then(file => {
-                editorState.images.value.addAsDataURL(file.name, file.content);
-                this.coverHref = "#" + file.name;
+                const id = editorState.images.value.addAsDataURL(file.name, file.content);
+                if (id) {
+                    this.coverHref = "#" + id;
+                };                
             }).catch((error) => {
                 this.$toast.add({ severity: 'error', summary: 'Ошибка открытия файла', detail: error });
             });

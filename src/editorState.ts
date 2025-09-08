@@ -8,10 +8,10 @@ import Images from './types/images';
 type bodiesType = { [key: string]: TreeNode };
 
 class editorState {
-    private views: { [key: string]: EditorView } = {};
+    private views: { [key: string]: EditorView } = Object.create(null);
     public images = ref<Images>(new Images);
     public menu = reactive<TreeNode[]>([]);
-    public bodies: bodiesType = {};
+    public bodies: bodiesType = Object.create(null);
     public spellCheckOn = ref(false);
     public highlightEmphasisOn = ref(true);
 
@@ -24,7 +24,7 @@ class editorState {
     }
 
     getIds(noImage = false) {
-        const ids = new Set<string>(noImage ? undefined : Object.keys(this.images.value.items));
+        const ids = new Set<string>(noImage ? undefined : this.images.value.getIds());
         for (const body of Object.keys(this.bodies)) {
             this.getView(body).state.doc.descendants((node) => {
                 if (node.attrs.inid) {
