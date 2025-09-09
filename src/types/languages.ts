@@ -1,3 +1,5 @@
+import { missingLang } from "../notification";
+
 // ISO 639-1
 const languages: Language[] = [
     { name: "Абхазский", code: "ab" },
@@ -179,14 +181,14 @@ const languages: Language[] = [
     { name: "Японский", code: "ja" }
 ];
 
-function findLanguage(code: string, missingHandler: (badCode: string) => void): Language {
+function findLanguage(code: string): Language {
     const key = code.split("-")[0];
     for (const lang of languages) {
         if (lang.code === key) {
             return lang;
         };
     };
-    missingHandler(code);
+    missingLang(code);
     return { name: code, code: code };
 };
 

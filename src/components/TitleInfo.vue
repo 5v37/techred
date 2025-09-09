@@ -95,7 +95,7 @@ import Sequences from './Sequences.vue';
 import { Panel, Chip, Button, SelectButton, Popover, Select, FloatLabel, Tree, Image, InputText, InputNumber } from 'primevue';
 import { TreeNode } from 'primevue/treenode';
 
-import { missingGenre, missingLang, openFileError, saveFileError, saveFileInfo } from '../notification';
+import { openFileError, saveFileError, saveFileInfo } from '../notification';
 import { Genre, genresTree, findGenre } from '../types/genres'
 import { Language, languages, findLanguage } from '../types/languages';
 import PersonInfo from '../types/personInfo';
@@ -215,7 +215,7 @@ export default defineComponent({
 
             for (const item of descElement.children) {
                 if (item.tagName === "genre" && item.textContent) {
-                    this.selectedGenres.push(findGenre(item.textContent, missingGenre));
+                    this.selectedGenres.push(findGenre(item.textContent));
                 } else if (item.tagName === "author") {
                     this.authors.push(new PersonInfo(item));
                 } else if (item.tagName === "book-title" && item.textContent) {
@@ -228,9 +228,9 @@ export default defineComponent({
                 } else if (item.tagName === "coverpage" && item.children) {
                     this.coverHref = item.children[0].getAttributeNS(xlinkns, "href") ?? "";
                 } else if (item.tagName === "lang" && item.textContent) {
-                    this.selectedLang = findLanguage(item.textContent, missingLang);
+                    this.selectedLang = findLanguage(item.textContent);
                 } else if (item.tagName === "src-lang" && item.textContent) {
-                    this.selectedSrcLang = findLanguage(item.textContent, missingLang);
+                    this.selectedSrcLang = findLanguage(item.textContent);
                 } else if (item.tagName === "translator") {
                     this.translators.push(new PersonInfo(item));
                 } else if (item.tagName === "sequence") {

@@ -1,5 +1,6 @@
 import editorState from "../editorState";
-import { parseDataURL } from "../utils";
+import { invalidId } from "../notification";
+import { base64toData, imageFileType, parseDataURL } from "../utils";
 import { NCNameFilter } from '../utils';
 
 type Image = {
@@ -18,10 +19,12 @@ function getValidId(id: string, mime: string) {
 		return id;
 	} else {
 		const ext = mime === "image/png" ? "png" : "jpg";
-		while (ids.has(`img_${idx}.${ext}`)) {
-			idx++
+		let newId: string;
+		while (newId = `img_${idx}.${ext}`, ids.has(newId)) {
+			idx++;
 		};
-		return `img_${idx}.${ext}`;
+		invalidId(id, newId);
+		return newId;
 	};
 }
 
@@ -42,16 +45,17 @@ class Images {
 		};
 	};
 
-	addAsContent(id: string, content: string | null, type: string | null) {
-		if (type && content) {
-			const validId = getValidId(id, type);
+	addAsContent(id: string, content: string, type: string | null) {
+		const validType = type || imageFileType(base64toData(content.slice(0, 12)).buffer);
+		if (content && validType) {			
+			const validId = getValidId(id, validType);
 			this.items[id] = {
 				content: content,
-				type: type,
+				type: validType,
 				dataURL: "data:" + type + ";base64," + content,
 				newId: validId
 			};
-			return validId; 
+			return validId;
 		};
 	};
 

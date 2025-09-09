@@ -1,4 +1,5 @@
 import { TreeNode } from "primevue/treenode";
+import { missingGenre } from "../notification";
 
 const genresTree: TreeNode[] = [
     {
@@ -386,7 +387,7 @@ const genresTree: TreeNode[] = [
     }
 ];
 
-function findGenre(mark: string, missingHandler: (badMark: string) => void): Genre {
+function findGenre(mark: string): Genre {
     for (const group of genresTree) {
         if (group.children) {
             for (const element of group.children) {
@@ -396,7 +397,7 @@ function findGenre(mark: string, missingHandler: (badMark: string) => void): Gen
             };
         };
     };
-    missingHandler(mark);
+    missingGenre(mark);
     return { name: mark, mark: mark };
 };
 
