@@ -3,13 +3,14 @@ import { invalidId } from "../notification";
 import { base64toData, imageFileType, parseDataURL } from "../utils";
 import { NCNameFilter } from '../utils';
 
-type Image = {
-	[id: string]: {
-		type: string,
-		content: string,
-		dataURL: string,
-		newId: string
-	}
+type ImageSpec = {
+	type: string,
+	content: string,
+	dataURL: string,
+	newId: string
+}
+type ImageList = {
+	[id: string]: ImageSpec
 }
 
 let idx = 0;
@@ -29,7 +30,7 @@ function getValidId(id: string, mime: string) {
 }
 
 class Images {
-	items: Image = Object.create(null);
+	items: ImageList = Object.create(null);
 
 	addAsDataURL(name: string, dataURL?: string) {
 		const data = parseDataURL(dataURL);
@@ -47,8 +48,8 @@ class Images {
 
 	addAsContent(id: string, content: string, type: string | null) {
 		const validType = type || imageFileType(base64toData(content.slice(0, 12)).buffer);
-		if (content && validType) {			
-			const validId = getValidId(id, validType);
+		if (content && validType) {
+			const validId = id;//getValidId(id, validType);
 			this.items[id] = {
 				content: content,
 				type: validType,
@@ -77,3 +78,5 @@ class Images {
 };
 
 export default Images;
+
+export type { ImageSpec }
