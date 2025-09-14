@@ -16,7 +16,7 @@ import DocumentInfo from './DocumentInfo.vue';
 import PublishInfo from './PublishInfo.vue';
 import CustomInfo from './CustomInfo.vue';
 
-import fileBroker, { documentBlocks } from "../fileBroker";
+import fb2Mapper, { DocumentBlocks } from "../fb2Mapper";
 import editorState from '../editorState';
 
 let toTop = false;
@@ -66,14 +66,14 @@ editorState.menu.push({
     ]
 });
 
-fileBroker.addDescriber(getParts);
+fb2Mapper.addPreprocessor(getBlocks);
 
-function getParts(xmlDoc: Document, method: string) {
+function getBlocks(xmlDoc: Document, method: string) {
     toTop = method === "parse";
 
     const [desc] = xmlDoc.getElementsByTagName("description");
 
-    const parts: documentBlocks = {
+    const parts: DocumentBlocks = {
         "title-info": undefined,
         "src-title-info": undefined,
         "document-info": undefined,
@@ -102,7 +102,7 @@ function getParts(xmlDoc: Document, method: string) {
     return parts;
 };
 
-defineExpose({ getParts });
+defineExpose({ getBlocks });
 </script>
 
 <style>

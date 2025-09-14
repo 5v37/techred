@@ -20,14 +20,14 @@
 </template>
 
 <script setup lang="ts">
-import { onUpdated, useTemplateRef, ComponentPublicInstance, ref, computed, shallowReactive, reactive } from "vue";
+import { onUpdated, useTemplateRef, ComponentPublicInstance, ref, computed, shallowReactive, reactive, nextTick } from "vue";
 
 import { Splitter, SplitterPanel } from "primevue";
 import { TreeNode } from "primevue/treenode";
 
 import Editor from "./Editor.vue";
 
-import fileBroker, { documentBlocks } from "../fileBroker";
+import fb2Mapper, { DocumentBlocks } from "../fb2Mapper";
 import editorState from "../editorState";
 import { fb2ns } from "../fb2Model";
 
@@ -59,7 +59,7 @@ editorState.menu.push({
     children: children
 });
 
-fileBroker.addDescriber(getParts);
+fb2Mapper.addPreprocessor(getBlocks);
 
 function fillBodies(length = 0) {
     if (length === 0) {
@@ -74,20 +74,21 @@ function fillBodies(length = 0) {
     let count = Object.keys(editorState.bodies).length;
     while (length < count && count > 2) {
         let bodyKey = "body" + --count;
-        fileBroker.delSubscriber(bodyKey);
         delete editorState.bodies[bodyKey];
     };
 }
 
-function getParts(xmlDoc: Document, method: string) {
-    const parts: documentBlocks = {};
+function getBlocks(xmlDoc: Document, method: string) {
+    const parts: DocumentBlocks = {};
 
     if (method === "parse") {
         toTop = true;
 
         const bodyElements = xmlDoc.getElementsByTagName("body");
+        if (bodyElements.length !== children.length) {
+            fb2Mapper.setUpdateProcessor(nextTick);
+        }
         fillBodies(bodyElements.length);
-        currentTab.value = "body1";
 
         let count = 0;
         for (const element of bodyElements) {
@@ -112,7 +113,7 @@ function getParts(xmlDoc: Document, method: string) {
     return parts;
 };
 
-defineExpose({ getParts });
+defineExpose({ getBlocks });
 </script>
 
 <style>

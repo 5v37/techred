@@ -25,7 +25,7 @@ import { getCurrentWindow } from '@tauri-apps/api/window';
 import { supported as fileAPIsupported } from 'browser-fs-access';
 
 import Settings from './Settings.vue';
-import fileBroker from '../fileBroker';
+import fb2Mapper from '../fb2Mapper';
 import { openInitialFictionBook, openFictionBookDialog, saveFictionBookDialog } from '../fileAccess';
 import { openFileError, saveFileError, saveFileInfo, UnexpectedError } from '../notification';
 import { isTauriMode } from '../utils';
@@ -39,13 +39,14 @@ let fileHandle: FileSystemFileHandle | undefined = undefined;
 const settings = useTemplateRef<InstanceType<typeof Settings>>('settings');
 const showSettings = () => { settings.value?.show() };
 
-openInitialFictionBook().then(file => {
+openInitialFictionBook().then(async file => {
     if (file) {
-        fileBroker.parse(file.content);
+        await fb2Mapper.parse(file.content);
         currentFilePath.value = file.path;
     };
 }).catch((error) => {
     openFileError(error);
+    newFile();
 }).then(() => {
     emit("loaded");
 });
@@ -79,30 +80,34 @@ addEventListener("keydown", (event: KeyboardEvent) => {
 addEventListener("error", UnexpectedError);
 
 function newFile() {
-    fileBroker.reset();
-    currentFilePath.value = "";
-    fileHandle = undefined;
+    fb2Mapper.reset().then(() => {
+        currentFilePath.value = "";
+        fileHandle = undefined;
+    });
 }
 function openFile() {
-    openFictionBookDialog().then(file => {
-        fileBroker.parse(file.content);
+    openFictionBookDialog().then(async file => {
+        await fb2Mapper.parse(file.content);
         currentFilePath.value = file.path;
         fileHandle = file.handle;
-    }).catch((error) => openFileError(error));
+    }).catch((error) => {
+        openFileError(error);
+        newFile();
+    });
 }
 function saveFile() {
     if (currentFilePath) {
-        saveFictionBookDialog(fileBroker.serialize(), currentFilePath.value, { fileHandle }).then(() => {
+        saveFictionBookDialog(fb2Mapper.serialize(), currentFilePath.value, { fileHandle }).then(() => {
             saveFileInfo();
-        }).catch((error) => saveFileError(error));
-    }
+        }).catch(error => saveFileError(error));
+    };
 }
 function saveFileAs() {
-    saveFictionBookDialog(fileBroker.serialize(), currentFilePath.value).then(file => {
+    saveFictionBookDialog(fb2Mapper.serialize(), currentFilePath.value).then(file => {
         currentFilePath.value = file.path;
         fileHandle = file.handle;
         saveFileInfo();
-    }).catch((error) => saveFileError(error));
+    }).catch(error => saveFileError(error));
 }
 </script>
 

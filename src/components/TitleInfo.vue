@@ -103,7 +103,7 @@ import Series from '../types/series';
 import { openImageDialog, saveImageDialog } from '../fileAccess';
 import { addingNodes } from '../utils';
 import { fb2ns, xlinkns } from '../fb2Model';
-import fileBroker from '../fileBroker';
+import fb2Mapper from '../fb2Mapper';
 import editorState from '../editorState';
 
 interface StateDescription {
@@ -177,7 +177,7 @@ export default defineComponent({
         return initialStateDescription();
     },
     created() {
-        fileBroker.addSubscriber(this.parseContent, this.serializeContent, this.$props.tag);
+        fb2Mapper.addProcessor(this.parseContent, this.serializeContent, this.$props.tag);
     },
     computed: {
         hasCover() {

@@ -75,7 +75,7 @@ import { Panel, Chip, Button, SelectButton, Popover, Select, FloatLabel, Tree, I
 import PersonInfo from '../types/personInfo';
 import { addingNodes } from '../utils';
 import { fb2ns } from '../fb2Model';
-import fileBroker from '../fileBroker';
+import fb2Mapper from '../fb2Mapper';
 
 interface StateDescription {
     fileAuthors: PersonInfo[],
@@ -138,7 +138,7 @@ export default defineComponent({
         return initialStateDescription();
     },
     created() {
-        fileBroker.addSubscriber(this.parseContent, this.serializeContent, this.$props.tag);
+        fb2Mapper.addProcessor(this.parseContent, this.serializeContent, this.$props.tag);
     },
     methods: {
         addSrcURL() {

@@ -50,7 +50,7 @@ import { Panel, InputText, DatePicker } from 'primevue';
 import { addingNodes } from '../utils';
 import { fb2ns } from '../fb2Model';
 import Series from '../types/series';
-import fileBroker from '../fileBroker';
+import fb2Mapper from '../fb2Mapper';
 
 interface StateDescription {
     bookName: string,
@@ -96,7 +96,7 @@ export default defineComponent({
         return initialStateDescription();
     },
     created() {
-        fileBroker.addSubscriber(this.parseContent, this.serializeContent, this.$props.tag);
+        fb2Mapper.addProcessor(this.parseContent, this.serializeContent, this.$props.tag);
     },
     methods: {
         parseContent(descElement: Element | undefined) {

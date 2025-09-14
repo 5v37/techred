@@ -15,7 +15,7 @@ import { onUpdated, useTemplateRef } from 'vue';
 
 import { Image, InputText } from 'primevue';
 
-import fileBroker, { documentBlocks } from "../fileBroker";
+import fb2Mapper, { DocumentBlocks } from "../fb2Mapper";
 import editorState from "../editorState";
 import { addingNodes } from "../utils";
 import { fb2ns, xlinkns } from "../fb2Model";
@@ -38,21 +38,21 @@ editorState.menu.push({
 	icon: 'pi pi-fw pi-images'
 });
 
-fileBroker.addDescriber(getParts);
+fb2Mapper.addPreprocessor(getBlocks);
 
-function getParts(xmlDoc: Document, method: string) {
+function getBlocks(xmlDoc: Document, method: string) {
 	toTop = method === "parse";
 
 	const [fb2] = xmlDoc.getElementsByTagName("FictionBook");
 
-	const parts: documentBlocks = {
+	const parts: DocumentBlocks = {
 		"fiction-book": fb2
 	};
 
 	return parts;
 };
 
-fileBroker.addSubscriber(parseContent, serializeContent, "fiction-book");
+fb2Mapper.addProcessor(parseContent, serializeContent, "fiction-book", 2);
 
 function parseContent(descElements: Element | undefined) {
 	images.value.clear();
@@ -97,7 +97,7 @@ function serializeContent(xmlDoc: Document, target: Element) {
 	});
 };
 
-defineExpose({ getParts, parseContent, serializeContent, });
+defineExpose({ getBlocks, parseContent, serializeContent, });
 </script>
 
 <style>

@@ -6,7 +6,7 @@
 </template>
 
 <script setup lang="ts">
-import { useTemplateRef, onMounted } from 'vue'
+import { useTemplateRef, onMounted, onUnmounted } from 'vue'
 
 import LinkEditor from "./LinkEditor.vue";
 import ImageView from './views/ImageView.vue';
@@ -30,7 +30,7 @@ import { useNodeViewFactory } from '@prosemirror-adapter/vue';
 import { annotationSchemaXML, annotationSchema, bodySchemaXML, bodySchema } from "../fb2Model";
 import { buildMenuItems } from "../menu";
 import { splitBlock } from "../commands";
-import fileBroker from '../fileBroker';
+import fb2Mapper from '../fb2Mapper';
 import editorState from '../editorState';
 
 const spellcheckOn = editorState.spellCheckOn;
@@ -60,7 +60,7 @@ if (!props.annotation) {
     updateTOC(root);
 }
 
-fileBroker.addSubscriber(parseContent, serializeContent, props.editorId);
+fb2Mapper.addProcessor(parseContent, serializeContent, props.editorId, 1);
 
 onMounted(() => {
     state = EditorState.create({
@@ -114,6 +114,11 @@ onMounted(() => {
     });
     editorState.setView(props.editorId, view);
 });
+
+onUnmounted(() => {
+    fb2Mapper.delProcessor(props.editorId);
+    editorState.delView(props.editorId);
+})
 
 function hasContent(): boolean {
     return view.state.doc.textContent !== "";

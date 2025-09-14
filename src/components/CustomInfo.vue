@@ -27,7 +27,7 @@ import { Panel, Chip, Textarea, InputText, Button } from 'primevue';
 import Customs from '../types/customs';
 import { addingNodes } from '../utils';
 import { fb2ns } from '../fb2Model';
-import fileBroker from '../fileBroker';
+import fb2Mapper from '../fb2Mapper';
 
 const model = ref<Customs[]>([]);
 const props = defineProps<{
@@ -42,7 +42,7 @@ function del(index: number) {
     model.value.splice(index, 1);
 };
 
-fileBroker.addSubscriber(parseContent, serializeContent, "description");
+fb2Mapper.addProcessor(parseContent, serializeContent, "description");
 
 function parseContent(descElements: Element | undefined) {
     model.value = [];

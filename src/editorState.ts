@@ -23,6 +23,10 @@ class editorState {
         return this.views[id];
     }
 
+    delView(id: string) {
+        delete this.views[id];
+    }
+
     getIds(noImage = false) {
         const ids = new Set<string>(noImage ? undefined : this.images.value.getIds());
         for (const body of Object.keys(this.bodies)) {

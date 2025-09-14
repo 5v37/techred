@@ -1,9 +1,9 @@
 <template>
     <Toast />
 
-    <MainToolbar @loaded="loaded = true" />
+    <MainToolbar v-show="loaded" @loaded="loaded = true" />
     <ProsemirrorAdapterProvider>
-        <Splitter v-if="loaded" layout="horizontal" class="t-app-main">
+        <Splitter v-show="loaded" layout="horizontal" class="t-app-main">
             <SplitterPanel :size="15" :minSize="10" class="t-ui-container">
                 <Sidebar @switch="current = $event" />
             </SplitterPanel>
