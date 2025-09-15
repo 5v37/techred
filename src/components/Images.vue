@@ -2,26 +2,62 @@
 	<div ref="binary" class="t-images-container">
 		<div class="t-images-panel">
 			<div v-for="(value, key) in images.items" :key="key" class="t-images-block">
-				<Image class="img" :src=value.dataURL preview width="200" />
-				<InputText v-model.lazy.trim=value.newId :invalid="!value.newId" class="t-images-caption"
-					v-keyfilter=NCNameFilter />
+				<div class="t-images-errorwrapper">
+					<Image class="img" :src=value.dataURL preview width="200" />
+					<Message v-if="hasErrorId(value.newId, key)" severity="error" icon="pi pi-times-circle"
+						class="t-images-errorId">{{ errorMessage }}</Message>
+				</div>
+				<InputText v-model.lazy.trim=value.newId v-keyfilter=NCNameFilter class="t-images-caption"
+					@focus="getContext(value.newId, key)" @change="validateId(value, key)" />
 			</div>
 		</div>
 	</div>
 </template>
 
 <script setup lang="ts">
-import { onUpdated, useTemplateRef } from 'vue';
+import { onUpdated, ref, useTemplateRef } from 'vue';
 
-import { Image, InputText } from 'primevue';
+import { Image, InputText, Message } from 'primevue';
 
 import fb2Mapper, { DocumentBlocks } from "../fb2Mapper";
 import editorState from "../editorState";
 import { addingNodes } from "../utils";
 import { fb2ns, xlinkns } from "../fb2Model";
 import { NCNameFilter } from '../utils';
+import { ImageSpec } from '../types/images';
 
 const images = editorState.images;
+const errorMessage = ref("");
+
+let currentKey: string | number;
+let oldId: string;
+let ids: Set<string>
+
+function getContext(id: string, key: string | number) {
+	currentKey = key;
+	oldId = id;
+	ids = editorState.getIds();
+}
+
+function validateId(image: ImageSpec, key: string | number) {
+	if (hasErrorId(image.newId, key)) {
+		image.newId = oldId;
+	};
+}
+
+function hasErrorId(id: string, key: string | number) {
+	if (key === currentKey && id !== oldId) {
+		if (!id || !NCNameFilter.pattern.test(id)) {
+			errorMessage.value = "Значение некорректно";
+			return true;
+		};
+		if (ids.has(id)) {
+			errorMessage.value = "Значение не уникально";
+			return true;
+		};
+	}
+	return false;
+}
 
 let toTop = false;
 const binary = useTemplateRef('binary');
@@ -61,11 +97,16 @@ function parseContent(descElements: Element | undefined) {
 		return;
 	};
 
+	ids = editorState.getIds();
+	let id, newId = undefined;
 	for (const item of descElements.children) {
 		if (item.tagName === "binary") {
-			const id = item.getAttribute("id");
+			id = item.getAttribute("id");
 			if (id && item.textContent) {
-				images.value.addAsContent(id, item.textContent.replace(/[\n\r]/g, ""), item.getAttribute("content-type"));
+				newId = images.value.addAsContent(id, item.textContent.replace(/[\n\r]/g, ""), item.getAttribute("content-type"), ids);
+				if (newId) {
+					ids.add(newId);
+				};
 			};
 		};
 	};
@@ -73,7 +114,7 @@ function parseContent(descElements: Element | undefined) {
 function serializeContent(xmlDoc: Document, target: Element) {
 	const addElement = addingNodes(xmlDoc, fb2ns);
 
-	let image = undefined, id = undefined;
+	let image, id = undefined;
 	let idToSave: Set<string> = new Set;
 	xmlDoc.querySelectorAll("image, inlineimage").forEach(element => {
 		id = element.getAttributeNS(xlinkns, "href")?.slice(1);
@@ -130,5 +171,16 @@ defineExpose({ getBlocks, parseContent, serializeContent, });
 
 .t-images-caption {
 	margin-top: 0.5rem;
+}
+
+.t-images-errorwrapper {
+	display: flex;
+	position: relative;
+}
+
+.t-images-errorId {
+	position: absolute;
+	bottom: 0;
+	width: 100%;
 }
 </style>

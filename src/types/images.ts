@@ -14,8 +14,8 @@ type ImageList = {
 }
 
 let idx = 0;
-function getValidId(id: string, mime: string) {
-	const ids = editorState.getIds();
+function getValidId(id: string, mime: string, ids?: Set<string>) {
+	ids ??= editorState.getIds();
 	if (NCNameFilter.pattern.test(id) && !ids.has(id)) {
 		return id;
 	} else {
@@ -32,10 +32,10 @@ function getValidId(id: string, mime: string) {
 class Images {
 	items: ImageList = Object.create(null);
 
-	addAsDataURL(name: string, dataURL?: string) {
+	addAsDataURL(name: string, dataURL?: string, ids?: Set<string>) {
 		const data = parseDataURL(dataURL);
 		if (data && data.base64) {
-			const validId = getValidId(name, data.mime);
+			const validId = getValidId(name, data.mime, ids);
 			this.items[validId] = {
 				content: data.data,
 				type: data.mime,
@@ -46,10 +46,10 @@ class Images {
 		};
 	};
 
-	addAsContent(id: string, content: string, type: string | null) {
+	addAsContent(id: string, content: string, type?: string | null, ids?: Set<string>) {
 		const validType = type || imageFileType(base64toData(content.slice(0, 12)).buffer);
 		if (content && validType) {
-			const validId = id;//getValidId(id, validType);
+			const validId = getValidId(id, validType, ids);
 			this.items[id] = {
 				content: content,
 				type: validType,
