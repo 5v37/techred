@@ -5,6 +5,7 @@
 
 :root {
 	--t-content-indent: 1.4em;
+	--t-content-font: "PT Serif";
 	--t-content-font-size: 12pt;
 }
 
@@ -32,7 +33,7 @@
 	padding-block: var(--p-inputtext-padding-y);
 	padding-inline: var(--p-inputtext-padding-x);
 	font-size: var(--t-content-font-size);
-	font-family: "PT Serif", serif;
+	font-family: var(--t-content-font), serif;
 	line-height: 1.3;
 	outline: none;
 

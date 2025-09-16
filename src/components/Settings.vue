@@ -7,6 +7,10 @@
 					@change="changeColorMode" />
 			</div>
 			<div class="t-setting-element">
+				<label>Шрифт</label>
+				<Select v-model="selectedFont" :options="fonts" checkmark @change="changeFont" />
+			</div>
+			<div class="t-setting-element">
 				<label>Размер шрифта</label>
 				<Select v-model="selectedSize" :options="fontSizes" checkmark @change="changeFontSize" />
 			</div>
@@ -34,16 +38,24 @@ import { Drawer, Button, Select, ToggleSwitch } from 'primevue';
 
 import editorState from '../editorState';
 import { saveSettingsError } from '../notification';
+import { isMac } from '../utils';
 
 const visibleSettings = ref(false);
 
+const selectedMode = ref("Auto");
 const colorModes = [
 	{ name: "Системная", key: "Auto" },
 	{ name: "Светлая", key: "Light" },
 	{ name: "Тёмная", key: "Dark" },
 ];
-const selectedMode = ref(colorModes[0].key);
 const colorSchemeQuery = window.matchMedia('(prefers-color-scheme: dark)');
+
+const selectedFont = ref("PT Serif");
+let fonts = !isMac() ?
+	["Arial", "Comic Sans MS", "Courier New", "Georgia", "Impact", "Lucida Console", "Lucida Sans Unicode",
+		"Palatino Linotype", "MS Sans Serif", "MS Serif", "PT Serif", "Tahoma", "Times New Roman", "Trebuchet MS", "Verdana"] :
+	["Arial", "Comic Sans MS", "Courier New", "Geneva", "Georgia", "Charcoal", "Monaco", "Lucida Grande",
+		"Palatino", "MS Sans Serif", "MS Serif", "PT Serif", "New York", "Times", "Trebuchet MS", "Verdana"];
 
 const selectedSize = ref(12);
 const fontSizes = [8, 9, 10, 11, 12, 14, 16, 18, 20, 24, 28, 32, 36, 48, 72];
@@ -57,6 +69,9 @@ function getSettings() {
 		let localValue = localStorage.getItem("color-mode");
 		selectedMode.value = colorModes.find(mode => mode.key === localValue)?.key || "Auto";
 
+		localValue = localStorage.getItem("font");
+		selectedFont.value = fonts.find(font => font === localValue) || "PT Serif";
+
 		localValue = localStorage.getItem("font-size");
 		selectedSize.value = fontSizes.find(size => size === Number(localValue)) || 12;
 
@@ -64,6 +79,7 @@ function getSettings() {
 		editorState.spellCheckOn.value = localStorage.getItem("spell-check") === "true" || false;
 	};
 	setColorMode();
+	setFont();
 	setFontSize();
 }
 
@@ -72,17 +88,22 @@ function changeColorMode() {
 	setColorMode();
 }
 
+function changeFont() {
+	saveToStorage("font", selectedFont.value);
+	setFont();
+}
+
+function changeFontSize() {
+	saveToStorage("font-size", selectedSize.value);
+	setFontSize();
+}
+
 function changeHighlightEmphasis() {
 	saveToStorage("highlight-emphasis", editorState.highlightEmphasisOn.value);
 }
 
 function changeSpellCheck() {
 	saveToStorage("spell-check", editorState.spellCheckOn.value);
-}
-
-function changeFontSize() {
-	saveToStorage("font-size", selectedSize.value);
-	setFontSize();
 }
 
 function saveToStorage(key: string, value: any) {
@@ -97,7 +118,7 @@ function saveToStorage(key: string, value: any) {
 }
 
 function resetSettings() {
-	["color-mode", "highlight-emphasis", "spell-check"].forEach(key => localStorage.removeItem(key));
+	["color-mode", "font", "font-size", "highlight-emphasis", "spell-check"].forEach(key => localStorage.removeItem(key));
 	getSettings();
 }
 
@@ -109,6 +130,10 @@ function setColorMode() {
 		colorSchemeQuery.removeEventListener("change", handleColorSchemeChange);
 		toggleColorMode(selectedMode.value === "Dark");
 	};
+}
+
+function setFont() {
+	document.documentElement.style.setProperty('--t-content-font', `${selectedFont.value}`);
 }
 
 function setFontSize() {

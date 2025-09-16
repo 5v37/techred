@@ -156,6 +156,12 @@ export function addingNodes(xmlDoc: Document, nameSpace: string) {
     return addElement;
 };
 
+export function isMac() {
+    return typeof navigator != "undefined" ? /Mac|iP(hone|[oa]d)/.test(navigator.platform)
+        // @ts-ignore
+        : typeof os != "undefined" && os.platform ? os.platform() == "darwin" : false;
+}
+
 export const NCNameFilter = { pattern: /^[\p{L}_][\p{L}\p{N}_.-]*$/u, validateOnly: true };
 
 export const isTauriMode = __APP_TAURI_MODE__;
