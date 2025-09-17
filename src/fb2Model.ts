@@ -186,7 +186,7 @@ function template(topNode: string, toXML: boolean): Schema {
                         return { id: dom.getAttribute("id") };
                     }
                 }],
-                toDOM(node) { return [defaultNameSpace + "v", defaultNameSpace && !node.firstChild ? " " : 0] }
+                toDOM(node) { return [defaultNameSpace + "v", node.attrs, defaultNameSpace && !node.firstChild ? " " : 0] }
             },
             date: {
                 attrs: {

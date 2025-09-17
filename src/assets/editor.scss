@@ -129,6 +129,13 @@
 		text-indent: var(--t-content-indent);
 	}
 
+	p[id]::after,
+	v[id]::after {
+		content: " #" attr(id);
+		color: var(--p-text-muted-color);
+		font-size: small;
+	}
+
 	a[type=note] {
 		vertical-align: baseline;
 		position: relative;
