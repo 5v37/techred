@@ -8,29 +8,18 @@ import Images from './types/images';
 type bodiesType = { [key: string]: TreeNode };
 
 class editorState {
-    private views: { [key: string]: EditorView } = Object.create(null);
+    public views: { [key: string]: EditorView } = Object.create(null);
+    public cancelEditorScroll = false;
     public images = ref<Images>(new Images);
     public menu = reactive<TreeNode[]>([]);
     public bodies: bodiesType = Object.create(null);
     public spellCheckOn = ref(false);
     public highlightEmphasisOn = ref(true);
 
-    setView(id: string, view: EditorView) {
-        this.views[id] = view;
-    }
-
-    getView(id: string) {
-        return this.views[id];
-    }
-
-    delView(id: string) {
-        delete this.views[id];
-    }
-
     getIds(noImage = false) {
         const ids = new Set<string>(noImage ? undefined : this.images.value.getIds());
         for (const body of Object.keys(this.bodies)) {
-            this.getView(body).state.doc.descendants((node) => {
+            this.views[body].state.doc.descendants((node) => {
                 if (node.attrs.inid) {
                     ids.add(node.attrs.inid);
                 };

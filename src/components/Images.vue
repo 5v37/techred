@@ -7,7 +7,7 @@
 					<Message v-if="hasErrorId(value.newId, key)" severity="error" icon="pi pi-times-circle"
 						class="t-images-errorId">{{ errorMessage }}</Message>
 				</div>
-				<InputText v-model.lazy.trim=value.newId v-keyfilter=NCNameFilter class="t-images-caption"
+				<InputText v-model.lazy=value.newId v-keyfilter=NCNameFilter class="t-images-caption"
 					@focus="getContext(value.newId, key)" @change="validateId(value, key)" />
 			</div>
 		</div>

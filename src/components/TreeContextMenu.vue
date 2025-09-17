@@ -170,7 +170,7 @@ const bodyItems = () => [
 ];
 
 function show(event: Event, node: TreeNode) {
-    const target = editorState.getView(node.data || node.key);
+    const target = editorState.views[node.data || node.key];
     if (target) {
         view = target;
         nodeTypes = view.state.schema.nodes;

@@ -1,6 +1,6 @@
 <template>
     <div :id="editorId" ref="editor" :spellcheck="spellcheckOn"
-        :class="{'highlight-emphasis': editorState.highlightEmphasisOn.value}">
+        :class="{ 'highlight-emphasis': editorState.highlightEmphasisOn.value }">
         <LinkEditor ref="linkEditor" />
     </div>
 </template>
@@ -91,6 +91,14 @@ onMounted(() => {
     });
     view = new EditorView(editor.value, {
         state: state,
+        handleScrollToSelection: () => {
+            if (editorState.cancelEditorScroll) {
+                editorState.cancelEditorScroll = false;
+                return true;
+            } else {
+                return false;
+            }
+        },
         nodeViews: {
             image: nodeViewFactory({
                 component: ImageView,
@@ -112,12 +120,12 @@ onMounted(() => {
             };
         }
     });
-    editorState.setView(props.editorId, view);
+    editorState.views[props.editorId] = view;
 });
 
 onUnmounted(() => {
     fb2Mapper.delProcessor(props.editorId);
-    editorState.delView(props.editorId);
+    delete editorState.views[props.editorId];
 })
 
 function hasContent(): boolean {
