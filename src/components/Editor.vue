@@ -29,7 +29,7 @@ import { useNodeViewFactory } from '@prosemirror-adapter/vue';
 
 import { annotationSchemaXML, annotationSchema, bodySchemaXML, bodySchema } from "../fb2Model";
 import { buildMenuItems } from "../menu";
-import { splitBlock } from "../commands";
+import { setId, splitBlock } from "../commands";
 import fb2Mapper from '../fb2Mapper';
 import editorState from '../editorState';
 
@@ -71,13 +71,14 @@ onMounted(() => {
             keymap({
                 "Mod-z": undo,
                 "Mod-y": redo,
-                "Ctrl-b": toggleMark(schema.marks.strong),
-                "Ctrl-i": toggleMark(schema.marks.emphasis),
-                "Ctrl-k": toggleMark(schema.marks.a),
-                "Ctrl-,": toggleMark(schema.marks.sub),
-                "Ctrl-.": toggleMark(schema.marks.sup),
-                "Ctrl-Shift-x": toggleMark(schema.marks.strikethrough),
-                "Ctrl-Shift-m": toggleMark(schema.marks.code),
+                "Mod-b": toggleMark(schema.marks.strong),
+                "Mod-i": toggleMark(schema.marks.emphasis),
+                "Mod-k": toggleMark(schema.marks.a),
+                "Mod-,": toggleMark(schema.marks.sub),
+                "Mod-.": toggleMark(schema.marks.sup),
+                "Mod-Shift-x": toggleMark(schema.marks.strikethrough),
+                "Mod-Shift-m": toggleMark(schema.marks.code),
+                "Mod-;": setId(),
                 "Tab": goToNextCell(1),
                 "Shift-Tab": goToNextCell(-1),
             }),

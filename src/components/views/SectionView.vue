@@ -3,24 +3,19 @@
     <section :ref="contentRef" :id=node.attrs.id :class="{ 'ProseMirror-selectednode': selected }" />
     <span @click="openDialog" @mousedown.prevent contenteditable="false" class="t-sectionview-id">#{{ node.attrs.inid ||
       "<не установлен>" }}</span>
-  </div>
-
-  <IdInputDialog ref="inputDialog"/>
+  </div>  
 </template>
 
 <script setup lang="ts">
-import { useTemplateRef } from 'vue';
 import { useNodeViewContext } from '@prosemirror-adapter/vue';
-
-import IdInputDialog from '../IdInputDialog.vue';
+import ui from '../../ui';
 
 const { contentRef, node, selected, view, getPos } = useNodeViewContext();
-const inputDialog = useTemplateRef('inputDialog');
 
 function openDialog() {
-  let pos = getPos();
-  if (pos !== undefined && inputDialog.value) {
-    inputDialog.value.openDialog(view, pos, node.value.attrs.inid)
+  const pos = getPos();
+  if (pos !== undefined) {
+    ui.openIdInputDialog(view.state, view.dispatch, pos, node.value.attrs.inid, "inid")
   };  
 }
 </script>

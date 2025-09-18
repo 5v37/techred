@@ -2,7 +2,7 @@ import { wrapItem, blockTypeItem, Dropdown, undoItem, redoItem, icons, MenuItem,
 import { EditorState, Command } from "prosemirror-state"
 import { Schema, MarkType, Attrs } from "prosemirror-model"
 import { toggleMark } from "prosemirror-commands"
-import { addInlineImage, addNodeAfterSelection, addTextautor, addTitle, changeToSection, wrapPoem } from "./commands"
+import { addInlineImage, addNodeAfterSelection, addTextautor, addTitle, changeToSection, setId, wrapPoem } from "./commands"
 import { addColumnAfter, addColumnBefore, addRowAfter, addRowBefore, deleteColumn, deleteRow, deleteTable, mergeCells, setCellAttr, splitCell, toggleHeaderCell, toggleHeaderColumn, toggleHeaderRow } from "prosemirror-tables"
 import { openImageDialog } from "./fileAccess"
 import editorState from "./editorState"
@@ -103,6 +103,12 @@ export function buildMenuItems(schema: Schema, dial: any) {
             }).catch((error) => openFileError(error));
         }
     });
+    const makeId = new MenuItem({
+        title: "Установить идентификатор",
+        icon: { text: "#" },
+        enable(state) { return setId()(state) },
+        run(state, dispatch) { setId()(state, dispatch) }
+    });
 
     const insertTitle = new MenuItem({
         title: "Вставить заголовок",
@@ -195,7 +201,7 @@ export function buildMenuItems(schema: Schema, dial: any) {
         ], { label: "Выровнять" }),
         item('Удалить таблицу', deleteTableSafety()),
     ], { label: 'Таблица' });
-    const inlineMenu = [toggleStrong, toggleEmphasis, toggleStrike, toggleSup, toggleSub, toggleCode, makeInlineImage, toggleLink];
+    const inlineMenu = [toggleStrong, toggleEmphasis, toggleStrike, toggleSup, toggleSub, toggleCode, makeInlineImage, toggleLink, makeId];
 
     return [inlineMenu, [insertMenu, typeMenu, tableMenu], [undoItem, redoItem]]
 }

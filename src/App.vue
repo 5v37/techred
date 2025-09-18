@@ -14,6 +14,8 @@
             </SplitterPanel>
         </Splitter>
     </ProsemirrorAdapterProvider>
+
+    <IdInputDialog />
 </template>
 
 <script setup lang="ts">
@@ -27,6 +29,7 @@ import Sidebar from './components/Sidebar.vue';
 import Description from "./components/Description.vue";
 import Content from './components/Content.vue';
 import Images from './components/Images.vue';
+import IdInputDialog from './components/IdInputDialog.vue';
 import { initNotification } from './notification';
 
 const loaded = ref(false);

@@ -15,14 +15,21 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { Dialog, Button, InputText, Message } from 'primevue';
+import { EditorState, Transaction } from 'prosemirror-state';
 import { EditorView } from 'prosemirror-view';
 
 import { NCNameFilter } from '../utils';
 import editorState from '../editorState';
+import ui from '../ui';
 
-let docView: EditorView, curView: EditorView | undefined;
-let posNode: number;
-let oldId: string;
+let params: {
+	state: EditorState,
+	dispatch: (tr: Transaction) => void,
+	pos: number,
+	id: string,
+	key: string
+};
+let view: EditorView | undefined;
 let ids: Set<string>;
 
 const idDialog = ref(false);
@@ -33,12 +40,14 @@ const invalidId = computed(() => {
 		errorMessage.value = "Значение некорректно";
 		return true;
 	};
-	if (newId.value !== oldId && ids.has(newId.value)) {
+	if (newId.value !== params.id && ids.has(newId.value)) {
 		errorMessage.value = "Значение не уникально";
 		return true;
 	};
 	return false;
 });
+
+ui.openIdInputDialog = openDialog;
 
 function keyListener(event: KeyboardEvent) {
 	if (event.code === "Escape") {
@@ -51,25 +60,23 @@ function keyListener(event: KeyboardEvent) {
 	event.preventDefault();
 }
 
-function openDialog(view: EditorView, pos: number, id: string) {
-	docView = view;
-	posNode = pos;
-	oldId = id;
-	newId.value = id;
+function openDialog(state: EditorState, dispatch: (tr: Transaction) => void, pos: number, id: string, key = "id") {
+	params = { state, dispatch, pos, id, key };
+	newId.value = params.id;
 	ids = editorState.getIds();
 
-	curView = docView.hasFocus() ? docView : findFocusedView();
-	if (curView) {
-		curView.dom.blur();
+	view = findFocusedView();
+	if (view) {
+		view.dom.blur();
 	};
 	idDialog.value = true;
 	addEventListener("keydown", keyListener);
 }
 
 function closeDialog() {
-	if (curView) {
+	if (view) {
 		editorState.cancelEditorScroll = true;
-		curView.dom.focus({ preventScroll: true });
+		view.dom.focus({ preventScroll: true });
 	};
 	idDialog.value = false;
 	removeEventListener("keydown", keyListener);
@@ -79,19 +86,15 @@ function changeId() {
 	if (invalidId.value) {
 		return;
 	};
-	if ((newId.value || oldId) && newId.value !== oldId) {
-		let tr = docView.state.tr;
-		const pos = posNode;
-		if (pos !== undefined) {
-			tr.setNodeAttribute(pos, "inid", newId.value)
-			docView.dispatch(tr);
-		};
+	if ((newId.value || params.id) && newId.value !== params.id) {
+		let tr = params.state.tr;
+		tr.setNodeAttribute(params.pos, params.key, newId.value || undefined)
+		params.dispatch(tr);
 	};
 	closeDialog();
 }
 
 function findFocusedView() {
-	console.log(Object.keys(editorState.bodies));
 	for (const body of Object.keys(editorState.bodies)) {
 		if (editorState.views[body].hasFocus()) {
 			return editorState.views[body];

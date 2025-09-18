@@ -1,6 +1,7 @@
 import { Attrs, Fragment, MarkType, Node, NodeType } from "prosemirror-model";
 import { Command, Selection, AllSelection, NodeSelection, TextSelection, EditorState } from "prosemirror-state";
 import { canSplit, findWrapping } from 'prosemirror-transform';
+import ui from "./ui";
 
 export function splitBlock(shift: boolean): Command {
     return (state, dispatch) => {
@@ -319,6 +320,27 @@ export function addInlineImage(image?: Node): Command {
             tr.insert(startPos, image);
 
             dispatch(tr.scrollIntoView());
+        };
+
+        return true;
+    }
+}
+
+export function setId(): Command {
+    return (state, dispatch) => {
+        const { $from } = state.selection;
+
+        if (state.selection instanceof NodeSelection) {
+            return false;
+        };
+
+        const node = $from.node();
+        if (!node.type.spec.attrs || !("id" in node.type.spec.attrs) || !node.textContent) {
+            return false;
+        };
+
+        if (dispatch) {
+            ui.openIdInputDialog(state, dispatch, $from.start() - 1, node.attrs.id);
         };
 
         return true;
