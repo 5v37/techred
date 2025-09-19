@@ -2,6 +2,7 @@ import { Attrs, Fragment, MarkType, Node, NodeType } from "prosemirror-model";
 import { Command, Selection, AllSelection, NodeSelection, TextSelection, EditorState } from "prosemirror-state";
 import { canSplit, findWrapping } from 'prosemirror-transform';
 import ui from "./ui";
+import editorState from "./editorState";
 
 export function splitBlock(shift: boolean): Command {
     return (state, dispatch) => {
@@ -42,7 +43,11 @@ export function splitBlock(shift: boolean): Command {
             };
 
             const type = grandParent.type;
-            const attrs = type === sectionType ? { id: self.crypto.randomUUID() } : {};
+            let attrs = {};
+            if (type === sectionType) {
+                const inid = grandParent.attrs.inid ? incrementId(grandParent.attrs.inid) : undefined;
+                attrs = { id: self.crypto.randomUUID(), inid };
+            };
             types.unshift({ type, attrs });
         };
 
@@ -68,6 +73,29 @@ export function splitBlock(shift: boolean): Command {
         return true;
     };
 };
+
+function incrementId(input: string): string | undefined {
+    const match = input.match(/(\d+)$/);
+    if (!match) return undefined;
+
+    const ids = editorState.getIds();
+    const prefix = input.slice(0, match.index);
+    const numberStr = match[0];
+
+    let num = BigInt(numberStr);
+    let newNumberStr: string, newId: string;
+    do {
+        num = num + 1n;
+        newNumberStr = num.toString();
+        
+        if (newNumberStr.length < numberStr.length) {
+            newNumberStr = newNumberStr.padStart(numberStr.length, '0');
+        };
+        newId = prefix + newNumberStr;
+    } while (ids.has(newId))
+
+    return newId;
+}
 
 export function updateMark(markType: MarkType, attrs: Attrs): Command {
     return (state, dispatch) => {
