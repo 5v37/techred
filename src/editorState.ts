@@ -20,8 +20,8 @@ class editorState {
         const ids = new Set<string>(noImage ? undefined : this.images.value.getIds());
         for (const body of Object.keys(this.bodies)) {
             this.views[body].state.doc.descendants((node) => {
-                if (node.attrs.inid) {
-                    ids.add(node.attrs.inid);
+                if (node.attrs.id) {
+                    ids.add(node.attrs.id);
                 };
             });
         };

@@ -38,7 +38,7 @@ function onNodeSelect(node: TreeNode) {
 
     if (node.data) {
         queueMicrotask(() => {
-            const element = document.getElementById(node.key);
+            const element = document.querySelector(`[uid="${node.key}"]`);
             if (element) {
                 element.scrollIntoView();
             };

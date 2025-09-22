@@ -45,8 +45,8 @@ export function splitBlock(shift: boolean): Command {
             const type = grandParent.type;
             let attrs = {};
             if (type === sectionType) {
-                const inid = grandParent.attrs.inid ? incrementId(grandParent.attrs.inid) : undefined;
-                attrs = { id: self.crypto.randomUUID(), inid };
+                const id = grandParent.attrs.id ? incrementId(grandParent.attrs.id) : undefined;
+                attrs = { uid: self.crypto.randomUUID(), id };
             };
             types.unshift({ type, attrs });
         };
@@ -261,7 +261,7 @@ export function changeToSection(): Command {
         if (dispatch) {
             let tr = state.tr;
 
-            const section = sectionType.create({ id: self.crypto.randomUUID() }, parentNode.children[nodeIndex].children);
+            const section = sectionType.create({ uid: self.crypto.randomUUID() }, parentNode.children[nodeIndex].children);
             tr.replaceWith($from.start($from.depth - 1) - 1, $from.end($from.depth - 1) + 1, section);
 
             dispatch(tr);
@@ -446,9 +446,9 @@ export type SectionRange = {
     parentEnd: number
 }
 
-function sectionRangeByID(id: string, state: EditorState) {
+function sectionRangeByUID(uid: string, state: EditorState) {
     const sectionType = state.schema.nodes.section;
-    function getSectionRange(id: string, root: readonly Node[], pos: number): SectionRange | undefined {
+    function getSectionRange(uid: string, root: readonly Node[], pos: number): SectionRange | undefined {
         let result: SectionRange | undefined = undefined;
         let nodeBefore: Node | undefined = undefined;
         for (const node of root) {
@@ -456,7 +456,7 @@ function sectionRangeByID(id: string, state: EditorState) {
                 result.after += node.nodeSize;
                 return result;
             };
-            if (node.attrs.id && node.attrs.id === id) {
+            if (node.attrs.uid && node.attrs.uid === uid) {
                 result = {
                     from: pos,
                     to: pos + node.nodeSize,
@@ -469,7 +469,7 @@ function sectionRangeByID(id: string, state: EditorState) {
                 };
             } else if (node.type === sectionType) {
                 if (node.childCount > 0) {
-                    const target = getSectionRange(id, node.children, pos + 1);
+                    const target = getSectionRange(uid, node.children, pos + 1);
                     if (target) {
                         if (!target.parent) {
                             target.parent = node;
@@ -486,7 +486,7 @@ function sectionRangeByID(id: string, state: EditorState) {
         return result;
     };
 
-    return getSectionRange(id, state.doc.children, 0);
+    return getSectionRange(uid, state.doc.children, 0);
 }
 
 function excludeSection(range?: SectionRange): Command {
@@ -540,7 +540,7 @@ function includeSection(range?: SectionRange): Command {
             } else {
                 if (hasContent) {
                     const blockRange = state.doc.resolve(startPoint).blockRange(state.doc.resolve(endPoint));
-                    const wrapping = blockRange && findWrapping(blockRange, sectionType, { id: self.crypto.randomUUID() });
+                    const wrapping = blockRange && findWrapping(blockRange, sectionType, { uid: self.crypto.randomUUID() });
                     if (wrapping) {
                         tr.wrap(blockRange, wrapping);
                         tr.insert(endPoint, range.node);
@@ -641,4 +641,4 @@ function deleteSection(range?: SectionRange): Command {
     };
 };
 
-export { sectionRangeByID, excludeSection, includeSection, joinSection, moveUpSection, moveDownSection, deleteSection }
+export { sectionRangeByUID, excludeSection, includeSection, joinSection, moveUpSection, moveDownSection, deleteSection }

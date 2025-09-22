@@ -19,7 +19,7 @@ import { TreeNode } from 'primevue/treenode';
 
 import { EditorView } from 'prosemirror-view';
 
-import { SectionRange, sectionRangeByID, excludeSection, includeSection, joinSection, moveUpSection, moveDownSection, deleteSection, addNode } from '../commands';
+import { SectionRange, sectionRangeByUID, excludeSection, includeSection, joinSection, moveUpSection, moveDownSection, deleteSection, addNode } from '../commands';
 import { openImageDialog } from '../fileAccess';
 import editorState from '../editorState';
 import { openFileError } from '../notification';
@@ -98,7 +98,7 @@ const sectionItems = () => [
                 label: 'Секцию',
                 disabled: !addNode(range!.node, nodeTypes.section, startPos)(view.state),
                 command: () => {
-                    const section = nodeTypes.section.create({ id: self.crypto.randomUUID() }, nodeTypes.p.create());
+                    const section = nodeTypes.section.create({ uid: self.crypto.randomUUID() }, nodeTypes.p.create());
                     addNode(range!.node, nodeTypes.section, startPos, section)(view.state, view.dispatch);
                 }
             },
@@ -163,7 +163,7 @@ const bodyItems = () => [
         icon: 'pi pi-plus-circle',
         disabled: !addNode(view.state.doc, nodeTypes.section, startPos)(view.state),
         command: () => {
-            const section = nodeTypes.section.create({ id: self.crypto.randomUUID() }, nodeTypes.p.create());
+            const section = nodeTypes.section.create({ uid: self.crypto.randomUUID() }, nodeTypes.p.create());
             addNode(view.state.doc, nodeTypes.section, startPos, section)(view.state, view.dispatch);
         }
     },
@@ -175,7 +175,7 @@ function show(event: Event, node: TreeNode) {
         view = target;
         nodeTypes = view.state.schema.nodes;
         if (node.data) {
-            range = sectionRangeByID(node.key, view.state);
+            range = sectionRangeByUID(node.key, view.state);
             startPos = range ? range.from + 1 : 0;
             contextMenuItems.value = sectionItems();
         } else {

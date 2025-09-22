@@ -1,7 +1,7 @@
 <template>
   <div style="position: relative;">
-    <section :ref="contentRef" :id=node.attrs.id :class="{ 'ProseMirror-selectednode': selected }" />
-    <span @click="openDialog" @mousedown.prevent contenteditable="false" class="t-sectionview-id">#{{ node.attrs.inid ||
+    <section :ref="contentRef" :uid=node.attrs.uid :class="{ 'ProseMirror-selectednode': selected }" />
+    <span @click="openDialog" @mousedown.prevent contenteditable="false" class="t-sectionview-id">#{{ node.attrs.id ||
       "<не установлен>" }}</span>
   </div>  
 </template>
@@ -15,7 +15,7 @@ const { contentRef, node, selected, view, getPos } = useNodeViewContext();
 function openDialog() {
   const pos = getPos();
   if (pos !== undefined) {
-    ui.openIdInputDialog(view.state, view.dispatch, pos, node.value.attrs.inid, "inid")
+    ui.openIdInputDialog(view.state, view.dispatch, pos, node.value.attrs.id);
   };  
 }
 </script>

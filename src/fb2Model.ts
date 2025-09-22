@@ -110,20 +110,20 @@ function template(topNode: string, toXML: boolean): Schema {
                 content: "title? epigraph* image? annotation? (section+ | ((p | poem | subtitle | cite | table)? (p | image | poem | subtitle | cite | table)*))",
                 attrs: {
                     id: { default: null },
-                    inid: { default: null }
+                    uid: { default: null }
                 },
                 parseDOM: [{
                     tag: "section",
                     getAttrs(dom) {
                         return {
-                            id: self.crypto.randomUUID(),
-                            inid: dom.getAttribute("id")
+                            id: dom.getAttribute("id"),
+                            uid: self.crypto.randomUUID()
                         };
                     }
                 }],
                 toDOM(node) {
                     if (defaultNameSpace) {
-                        return [defaultNameSpace + "section", { id: node.attrs.inid }, 0];
+                        return [defaultNameSpace + "section", { id: node.attrs.id }, 0];
                     } else {
                         return ["section", node.attrs, 0];
                     }

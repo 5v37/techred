@@ -160,7 +160,7 @@ function emptyDoc(name?: string) {
         return schema.node("annotation", null, [schema.node("p")]);
     } else {
         const attrs = name ? { name } : (props.editorId === "body1" ? { name: "notes" } : null);
-        return schema.node("body", attrs, [schema.node("section", { id: self.crypto.randomUUID() }, [schema.node("p")])]);
+        return schema.node("body", attrs, [schema.node("section", { uid: self.crypto.randomUUID() }, [schema.node("p")])]);
     };
 }
 
@@ -181,9 +181,9 @@ function updateTOC(doc: Node) {
     function getTOC(Node: Node) {
         let TOC: TreeNode[] = [];
         Node.forEach(node => {
-            if (node.attrs.id) {
+            if (node.attrs.uid) {
                 const titleName = getTitle(node) || "<section>";
-                TOC.push({ key: node.attrs.id, label: titleName, icon: 'pi pi-fw pi-bookmark', data: props.editorId, children: getTOC(node) });
+                TOC.push({ key: node.attrs.uid, label: titleName, icon: 'pi pi-fw pi-bookmark', data: props.editorId, children: getTOC(node) });
             };
         });
         return TOC;
@@ -200,14 +200,14 @@ function needUpdateTOC(transaction: Transaction) {
         for (const step of transaction.steps) {
             if (step instanceof ReplaceStep || step instanceof ReplaceAroundStep) {
                 step.slice.content.forEach(node => {
-                    if (node.attrs.id || node.type === schema.nodes.title && node.textContent !== "") {
+                    if (node.attrs.uid || node.type === schema.nodes.title && node.textContent !== "") {
                         hasChange = true;
                         return;
                     };
                 });
                 if (!hasChange && step.slice.size === 0) {
                     transaction.before.slice(step.from, step.to).content.forEach(node => {
-                        if (node.attrs.id || node.type === schema.nodes.title && node.textContent !== "") {
+                        if (node.attrs.uid || node.type === schema.nodes.title && node.textContent !== "") {
                             hasChange = true;
                             return;
                         }
