@@ -226,13 +226,13 @@ function template(topNode: string, toXML: boolean): Schema {
                         return { id: dom.getAttribute("id") };
                     }
                 }],
-                toDOM() { return [defaultNameSpace + "subtitle", 0] }
+                toDOM(node) { return [defaultNameSpace + "subtitle", node.attrs, 0] }
             },
             annotation: {
+                content: "(p | poem | cite | subtitle | table)+",
                 attrs: {
                     id: { default: null }
                 },
-                content: "(p | poem | cite | subtitle | table)+",
                 parseDOM: [{
                     tag: "annotation",
                     getAttrs(dom) {
@@ -242,10 +242,10 @@ function template(topNode: string, toXML: boolean): Schema {
                 toDOM(node) { return [defaultNameSpace + "annotation", node.attrs, 0] }
             },
             table: {
+                content: "tr+",
                 attrs: {
                     id: { default: null }
                 },
-                content: "tr+",
                 tableRole: "table",
                 isolating: true,
                 parseDOM: [{
@@ -257,10 +257,10 @@ function template(topNode: string, toXML: boolean): Schema {
                 toDOM(node) { return [defaultNameSpace + "table", node.attrs, 0] },
             },
             tr: {
+                content: "(th | td)+",
                 attrs: {
                     align: { default: null }
                 },
-                content: "(th | td)+",
                 tableRole: "row",
                 parseDOM: [{
                     tag: "tr",

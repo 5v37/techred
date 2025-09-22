@@ -130,10 +130,23 @@
 	}
 
 	p[id]::after,
-	v[id]::after {
+	v[id]::after,
+	th[id]::after,
+	td[id]::after {
 		content: " #" attr(id);
 		color: var(--p-text-muted-color);
 		font-size: small;
+	}
+
+	subtitle[id]::before {
+		content: "#" attr(id);
+		position: absolute;
+		line-height: 1rem;
+		top: -0.5rem;
+		left: 1rem;
+		font-size: small;
+		color: var(--p-text-muted-color);
+		background: var(--p-content-background);
 	}
 
 	a[type=note] {
