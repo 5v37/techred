@@ -1,7 +1,7 @@
 import { invoke } from "@tauri-apps/api/core";
 import { open as openDialog, OpenDialogOptions, save as saveDialog, SaveDialogOptions } from "@tauri-apps/plugin-dialog";
 import { readFile, writeFile } from '@tauri-apps/plugin-fs';
-import { fileOpen, fileSave, FirstFileOpenOptions, FirstFileSaveOptions } from "browser-fs-access";
+import { fileOpen, fileSave, FirstFileOpenOptions, FirstFileSaveOptions, supported } from "browser-fs-access";
 
 import { base64toData, decodeXML, imageFileType, isTauriMode, parseDataURL } from "./utils";
 import { unpack, pack } from "./zip";
@@ -174,18 +174,47 @@ export function saveFictionBookDialog(content: string, filePath: string, saveDir
                 excludeAcceptAllOption: true
             };
 
-            fileSave(blob, options, saveDirectly?.fileHandle).then((handle) => {
-                if (handle) {
-                    resolve({ path: handle.name, handle });
-                };
-            }).catch((error) => {
-                if (error.name !== 'AbortError') {
-                    reject(error);
-                };
-            });
+            if (supported && saveDirectly?.fileHandle) {
+                verifyPermission(saveDirectly?.fileHandle).then(value => {
+                    if (value) {
+                        fileSave(blob, options, saveDirectly?.fileHandle).then((handle) => {
+                            if (handle) {
+                                resolve({ path: handle.name, handle });
+                            };
+                        }).catch((error) => {
+                            if (error.name !== 'AbortError') {
+                                reject(error);
+                            };
+                        });
+                    };
+                });
+            } else {
+                fileSave(blob, options, saveDirectly?.fileHandle).then((handle) => {
+                    if (handle) {
+                        resolve({ path: handle.name, handle });
+                    };
+                }).catch((error) => {
+                    if (error.name !== 'AbortError') {
+                        reject(error);
+                    };
+                });
+            };
         }
     });
 };
+
+async function verifyPermission(fileHandle: any) {
+    const opts = { mode: "readwrite" };
+    if ((await fileHandle.queryPermission(opts)) === "granted") {
+        return true;
+    };
+
+    if ((await fileHandle.requestPermission(opts)) === "granted") {
+        return true;
+    }
+
+    return false;
+}
 
 export function saveImageDialog(content: string, filePath: string) {
     return new Promise<{ path: string, handle?: FileSystemFileHandle }>((resolve, reject) => {
