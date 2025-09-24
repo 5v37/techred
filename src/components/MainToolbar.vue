@@ -51,12 +51,14 @@ openInitialFictionBook().then(async file => {
     emit("loaded");
 });
 
-if (isTauriMode) {
-    watch(currentFilePath, (newPath) => {
-        const fileName = !newPath ? "Новый" : newPath;
-        getCurrentWindow().setTitle(`${fileName} - Техред`);
-    });
-};
+watch(currentFilePath, (newPath) => {
+    const title = `${!newPath ? "Новый" : newPath} - Техред`;
+    if (isTauriMode) {
+        getCurrentWindow().setTitle(title);
+    } else {
+        document.title = title;
+    };
+});
 
 addEventListener("keydown", (event: KeyboardEvent) => {
     if (event.defaultPrevented || !(event.ctrlKey || event.metaKey) || event.altKey) {
@@ -67,7 +69,7 @@ addEventListener("keydown", (event: KeyboardEvent) => {
         newFile();
     } else if (!event.shiftKey && event.code === "KeyO") {
         openFile();
-    } else if (!event.shiftKey && event.code === "KeyS" && saveButtonAvailable) {
+    } else if (!event.shiftKey && event.code === "KeyS") {
         saveFile();
     } else if (event.shiftKey && event.code === "KeyS") {
         saveFileAs();
@@ -96,14 +98,14 @@ function openFile() {
     });
 }
 function saveFile() {
-    if (currentFilePath) {
+    if (currentFilePath.value && saveButtonAvailable) {
         saveFictionBookDialog(fb2Mapper.serialize(), currentFilePath.value, { fileHandle }).then(() => {
             saveFileInfo();
         }).catch(error => saveFileError(error));
     };
 }
 function saveFileAs() {
-    saveFictionBookDialog(fb2Mapper.serialize(), currentFilePath.value).then(file => {
+    saveFictionBookDialog(fb2Mapper.serialize(), currentFilePath.value || "Новый").then(file => {
         currentFilePath.value = file.path;
         fileHandle = file.handle;
         saveFileInfo();

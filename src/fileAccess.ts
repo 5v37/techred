@@ -1,7 +1,7 @@
 import { invoke } from "@tauri-apps/api/core";
 import { open as openDialog, OpenDialogOptions, save as saveDialog, SaveDialogOptions } from "@tauri-apps/plugin-dialog";
 import { readFile, writeFile } from '@tauri-apps/plugin-fs';
-import { fileOpen, fileSave, FirstFileOpenOptions, FirstFileSaveOptions, supported } from "browser-fs-access";
+import { fileOpen, fileSave, FirstFileOpenOptions, FirstFileSaveOptions, supported as fileAPIsupported } from "browser-fs-access";
 
 import { base64toData, decodeXML, imageFileType, isTauriMode, parseDataURL } from "./utils";
 import { unpack, pack } from "./zip";
@@ -160,61 +160,55 @@ export function saveFictionBookDialog(content: string, filePath: string, saveDir
                 reject(error);
             });
         } else {
-            let blob: Blob | Promise<Blob>;
-            if (saveDirectly?.fileHandle && !filePath.endsWith(".fb2")) {
-                blob = encode(content, filePath).then(fileData => new Blob([fileData], { type: 'application/zip' }));
-            } else {
-                blob = new Blob([content], { type: 'application/fb2' });
-            };
+            if (fileAPIsupported) {
+                const options: SaveFilePickerOptions = {
+                    suggestedName: filePath,
+                    types: [{
+                        description: "FictionBook",
+                        accept: {
+                            "application/fb2": [".fb2"],
+                            "application/fb2+zip": [".fbz", ".fb2.zip"]
+                        },
+                    }],
+                    excludeAcceptAllOption: true
+                };
 
-            const options: FirstFileSaveOptions = {
-                fileName: filePath.endsWith(".fb2") ? filePath : filePath.slice(0, - 4) + (filePath.endsWith(".fbz") ? ".fb2" : ""),
-                description: 'FictionBook',
-                extensions: ['.fb2'],
-                excludeAcceptAllOption: true
-            };
-
-            if (supported && saveDirectly?.fileHandle) {
-                verifyPermission(saveDirectly?.fileHandle).then(value => {
-                    if (value) {
-                        fileSave(blob, options, saveDirectly?.fileHandle).then((handle) => {
-                            if (handle) {
-                                resolve({ path: handle.name, handle });
-                            };
-                        }).catch((error) => {
-                            if (error.name !== 'AbortError') {
-                                reject(error);
-                            };
-                        });
-                    };
-                });
-            } else {
-                fileSave(blob, options, saveDirectly?.fileHandle).then((handle) => {
-                    if (handle) {
-                        resolve({ path: handle.name, handle });
-                    };
+                const method = saveDirectly?.fileHandle ? Promise.resolve(saveDirectly.fileHandle) : showSaveFilePicker(options);
+                method.then(async handle => {
+                    const writableStream = await handle.createWritable();
+                    await writableStream.write(await encode(content, handle.name));
+                    await writableStream.close();
+                    resolve({ path: handle.name, handle });
                 }).catch((error) => {
                     if (error.name !== 'AbortError') {
                         reject(error);
                     };
                 });
+            } else {
+                const blob = new Blob([content], { type: 'application/fb2' });
+                
+                let ext = filePath.slice(-4).toLowerCase();
+                let fileName = filePath;
+                if (ext === ".zip" || ext === ".fbz") {
+                    fileName = fileName.slice(0, - 4);
+                    ext = fileName.slice(-4).toLowerCase();
+                };
+                const options: FirstFileSaveOptions = {
+                    fileName: ext === ".fb2" ? fileName : fileName + ".fb2",
+                    description: 'FictionBook',
+                    extensions: ['.fb2'],
+                    excludeAcceptAllOption: true
+                };
+
+                fileSave(blob, options).then((handle) => {
+                    if (handle) {
+                        resolve({ path: handle.name, handle });
+                    };
+                }).catch(error => reject(error));
             };
-        }
+        };
     });
 };
-
-async function verifyPermission(fileHandle: any) {
-    const opts = { mode: "readwrite" };
-    if ((await fileHandle.queryPermission(opts)) === "granted") {
-        return true;
-    };
-
-    if ((await fileHandle.requestPermission(opts)) === "granted") {
-        return true;
-    }
-
-    return false;
-}
 
 export function saveImageDialog(content: string, filePath: string) {
     return new Promise<{ path: string, handle?: FileSystemFileHandle }>((resolve, reject) => {
