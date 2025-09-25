@@ -13,13 +13,22 @@ type ImageList = {
 	[id: string]: ImageSpec
 }
 
+function getExt(mime: string) {
+	if (mime === "image/png") 
+		return "png";
+	else if (mime === "image/jpeg" || mime === "image/jpg") 
+		return "jpg";		
+	else if (mime === "image/gif")
+		return "gif";
+}
+
 let idx = 0;
 function getValidId(id: string, mime: string, ids?: Set<string>) {
 	ids ??= editorState.getIds();
 	if (NCNameFilter.pattern.test(id) && !ids.has(id)) {
 		return id;
 	} else {
-		const ext = mime === "image/png" ? "png" : "jpg";
+		const ext = getExt(mime) || id.split(".").pop();
 		let newId: string;
 		while (newId = `img_${idx}.${ext}`, ids.has(newId)) {
 			idx++;

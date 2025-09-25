@@ -55,7 +55,7 @@ let fonts = !isMac() ?
 	["Arial", "Comic Sans MS", "Courier New", "Georgia", "Impact", "Lucida Console", "Lucida Sans Unicode",
 		"Palatino Linotype", "MS Sans Serif", "MS Serif", "PT Serif", "Tahoma", "Times New Roman", "Trebuchet MS", "Verdana"] :
 	["Arial", "Comic Sans MS", "Courier New", "Geneva", "Georgia", "Charcoal", "Monaco", "Lucida Grande",
-		"Palatino", "MS Sans Serif", "MS Serif", "PT Serif", "New York", "Times", "Trebuchet MS", "Verdana"];
+		"Palatino", "PT Serif", "New York", "Times", "Trebuchet MS", "Verdana"];
 
 const selectedSize = ref(12);
 const fontSizes = [8, 9, 10, 11, 12, 14, 16, 18, 20, 24, 28, 32, 36, 48, 72];

@@ -42,8 +42,10 @@ class fb2Mapper {
         };
 
         const parts = this.getBlocks(xmlDoc, "parse");
-        await this.updateProcessors?.();
-        this.updateProcessors = undefined;
+        if (this.updateProcessors) {
+            await this.updateProcessors();
+            this.updateProcessors = undefined;
+        };
         this.processors.sort((s1, s2) => s1.order - s2.order);
         for (const proc of this.processors) {
             proc.parseHandler(parts[proc.elementId]);
