@@ -31,37 +31,37 @@ onUpdated(() => {
 editorState.menu.push({
     key: 'description',
     label: 'Описание',
-    icon: 'pi pi-fw pi-hashtag',
+    icon: 'pi pi-fw pi-pen-to-square',
     children: [
         {
             key: 'description-1',
             label: 'Сведения',
             data: 'title-info',
-            icon: 'pi pi-fw pi-hashtag'
+            icon: 'pi pi-fw pi-list'
         },
         {
             key: 'description-2',
             label: 'Сведения на оригинальном языке',
             data: 'src-title-info',
-            icon: 'pi pi-fw pi-hashtag'
+            icon: 'pi pi-fw pi-list'
         },
         {
             key: 'description-3',
             label: 'Информация о файле',
             data: 'document-info',
-            icon: 'pi pi-fw pi-hashtag'
+            icon: 'pi pi-fw pi-list'
         },
         {
             key: 'description-4',
             label: 'Выходные данные',
             data: 'publish-info',
-            icon: 'pi pi-fw pi-hashtag'
+            icon: 'pi pi-fw pi-list'
         },
         {
             key: 'description-5',
             label: 'Дополнительно',
             data: 'custom-info',
-            icon: 'pi pi-fw pi-hashtag'
+            icon: 'pi pi-fw pi-list'
         }
     ]
 });

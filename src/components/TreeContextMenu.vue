@@ -23,6 +23,7 @@ import { SectionRange, sectionRangeByUID, excludeSection, includeSection, joinSe
 import { openImageDialog } from '../fileAccess';
 import editorState from '../editorState';
 import { openFileError } from '../notification';
+import ui from '../ui';
 
 let view: EditorView;
 let nodeTypes: typeof view.state.schema.nodes;
@@ -44,6 +45,19 @@ const contextMenu = useTemplateRef("contextMenu");
 const contextMenuItems = ref<MenuItem[]>([]);
 
 const sectionItems = () => [
+    {
+        label: 'Указать идентификатор',
+        icon: 'pi pi-hashtag',
+        disabled: range === undefined,
+        command: () => {
+            if (range) {
+                ui.openIdInputDialog(view.state, view.dispatch, range.from, range.node.attrs.id);
+            };
+        }
+    },
+    {
+        separator: true
+    },
     {
         label: 'Исключить',
         icon: 'pi pi-angle-double-left',
@@ -132,6 +146,9 @@ const bodyItems = () => [
         label: 'Указать имя',
         icon: 'pi pi-tag',
         command: () => nameDialog.value = true
+    },
+    {
+        separator: true
     },
     {
         label: 'Вставить заголовок',
