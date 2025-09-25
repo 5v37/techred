@@ -4,7 +4,8 @@
             oncontextmenu: (event: Event) => onContextRightClick(event, context.node)
         }),
         wrapper: { style: 'overflow-x: hidden' },
-        nodeIcon: { style: 'flex-shrink: 0' }
+        nodeIcon: { style: 'flex-shrink: 0' },
+        root: { style: 'padding: 0.75rem' }
     }" />
 
     <TreeContextMenu ref="contextMenu" />
@@ -30,7 +31,7 @@ emit("switch", "description");
 function onNodeSelect(node: TreeNode) {
     if (node.key === "images") {
         emit("switch", "images");
-    } else if (node.key.startsWith("description")) {
+    } else if (node.key === "description" || node.data === "description") {
         emit("switch", "description");
     } else {
         emit("switch", "content");

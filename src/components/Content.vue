@@ -55,7 +55,6 @@ editorState.menu.push({
     key: 'content',
     label: 'Содержание',
     icon: 'pi pi-fw pi-book',
-    isRoot: true,
     children: children
 });
 

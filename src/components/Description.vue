@@ -34,33 +34,33 @@ editorState.menu.push({
     icon: 'pi pi-fw pi-pen-to-square',
     children: [
         {
-            key: 'description-1',
+            key: 'title-info',            
             label: 'Сведения',
-            data: 'title-info',
+            data: 'description',
             icon: 'pi pi-fw pi-list'
         },
         {
-            key: 'description-2',
+            key: 'src-title-info',
             label: 'Сведения на оригинальном языке',
-            data: 'src-title-info',
+            data: 'description',
             icon: 'pi pi-fw pi-list'
         },
         {
-            key: 'description-3',
+            key: 'document-info',
             label: 'Информация о файле',
-            data: 'document-info',
+            data: 'description',
             icon: 'pi pi-fw pi-list'
         },
         {
-            key: 'description-4',
+            key: 'publish-info',
             label: 'Выходные данные',
-            data: 'publish-info',
+            data: 'description',
             icon: 'pi pi-fw pi-list'
         },
         {
-            key: 'description-5',
+            key: 'custom-info',
             label: 'Дополнительно',
-            data: 'custom-info',
+            data: 'description',
             icon: 'pi pi-fw pi-list'
         }
     ]

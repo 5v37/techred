@@ -1,7 +1,7 @@
 <template>
     <Panel toggleable>
         <template #header>
-            <div :id=tag class="t-ui-panelheader">{{ header }}</div>
+            <div :uid=tag class="t-ui-panelheader">{{ header }}</div>
         </template>
 
         <div class="t-ui-long-chipcontainer">
