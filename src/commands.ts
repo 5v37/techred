@@ -87,7 +87,7 @@ function incrementId(input: string): string | undefined {
     do {
         num = num + 1n;
         newNumberStr = num.toString();
-        
+
         if (newNumberStr.length < numberStr.length) {
             newNumberStr = newNumberStr.padStart(numberStr.length, '0');
         };
@@ -101,13 +101,13 @@ export function updateMark(markType: MarkType, attrs: Attrs): Command {
     return (state, dispatch) => {
         const position = markPosition(state, state.selection.head, markType);
         if (position) {
-            const { from, to, mark } = position;
-            const tr = state.tr;
-
-            tr.removeMark(from, to, mark);
-            tr.addMark(from, to, markType.create(attrs));
-
             if (dispatch) {
+                const { from, to, mark } = position;
+                const tr = state.tr;
+
+                tr.removeMark(from, to, mark);
+                tr.addMark(from, to, markType.create(attrs));
+
                 dispatch(tr);
             };
 
@@ -301,7 +301,7 @@ function getTextFromSelection(selection: Selection, textType: NodeType) {
     };
 };
 
-function markPosition(state: EditorState, pos: number, markType: MarkType) {
+export function markPosition(state: EditorState, pos: number, markType: MarkType) {
     const $pos = state.doc.resolve(pos);
 
     const { parent, parentOffset } = $pos;

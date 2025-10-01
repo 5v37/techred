@@ -34,7 +34,8 @@
 	padding-inline: var(--p-inputtext-padding-x);
 	font-size: var(--t-content-font-size);
 	font-family: var(--t-content-font), serif;
-	line-height: 1.3;
+	overflow-wrap: anywhere;
+	line-height: 1.4;
 	outline: none;
 
 	section {
@@ -149,25 +150,18 @@
 		background: var(--p-content-background);
 	}
 
-	a[type=note] {
-		vertical-align: baseline;
-		position: relative;
-		top: -0.4em;
+	note {
+		display: inline;
+		line-height: 0;
+		vertical-align: super;
 		font-size: smaller;
+		color: var(--p-blue-600);
+		margin-inline-start: 0.1em;
 	}
 
-	sup {
-		vertical-align: baseline;
-		position: relative;
-		top: -0.4em;
-		//line-height: 0;
-	}
-
+	sup,
 	sub {
-		vertical-align: baseline;
-		position: relative;
-		bottom: -0.4em;
-		//line-height: 0;
+		line-height: 0;
 	}
 
 	emphasis {

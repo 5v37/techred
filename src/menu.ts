@@ -1,6 +1,6 @@
 import { wrapItem, blockTypeItem, Dropdown, undoItem, redoItem, icons, MenuItem, MenuItemSpec, DropdownSubmenu } from "prosemirror-menu"
 import { EditorState, Command } from "prosemirror-state"
-import { Schema, MarkType, Attrs } from "prosemirror-model"
+import { Schema, MarkType } from "prosemirror-model"
 import { toggleMark } from "prosemirror-commands"
 import { addInlineImage, addNodeAfterSelection, addTextautor, addTitle, changeToSection, setId, wrapPoem } from "./commands"
 import { addColumnAfter, addColumnBefore, addRowAfter, addRowBefore, deleteColumn, deleteRow, deleteTable, mergeCells, setCellAttr, splitCell, toggleHeaderCell, toggleHeaderColumn, toggleHeaderRow } from "prosemirror-tables"
@@ -28,40 +28,29 @@ function markActive(state: EditorState, type: MarkType) {
 
 function markItem(markType: MarkType, options: Partial<MenuItemSpec>) {
     let passedOptions: Partial<MenuItemSpec> = {
-        active(state) { return markActive(state, markType) }
+        active(state) { return markActive(state, markType) },
+        enable(state) { return !state.selection.empty },
     }
     for (let prop in options) (passedOptions as any)[prop] = (options as any)[prop]
     return cmdItem(toggleMark(markType), passedOptions)
 }
 
-function linkItem(markType: MarkType, editLink: any) {
+function linkItem(linkType: MarkType, noteType: MarkType, editLink: any) {
     return new MenuItem({
         title: "Установить ссылку",
         icon: icons.link,
-        active(state) { return markActive(state, markType) },
-        enable(state) { return !state.selection.empty },
-        run(state, dispatch, view) {
-            let callback = function (attrs: Attrs) {
-                // при обновлении формируется 2 транзакции, надо будет их объединить
-                if (markActive(state, markType)) {
-                    toggleMark(markType)(state, dispatch);
-                };
-                if (attrs.href) {
-                    toggleMark(markType, attrs)(view.state, view.dispatch)
-                }
-                view.focus();
-            };
-
-            // при обновлении, если выбрать часть ссылки, только она и обновится, надо расширять выделение на всю ссылку
-            let markAttrs: Attrs = {};
+        active(state) { return markActive(state, linkType) || markActive(state, noteType) },
+        enable(state) { return !state.selection.empty || markActive(state, linkType) || markActive(state, noteType) },
+        run(state, dispatch) {
+            let selectedMark = noteType.create({});
             for (const mark of state.selection.$to.marks()) {
-                if (mark.type === markType) {
-                    markAttrs = mark.attrs;
+                if (mark.type === linkType || mark.type === noteType) {
+                    selectedMark = mark;
                     break;
                 };
             };
 
-            editLink(markAttrs, callback);
+            editLink(state, dispatch, selectedMark);
         }
     })
 }
@@ -88,7 +77,7 @@ export function buildMenuItems(schema: Schema, dial: any) {
     const toggleSup = markItem(schema.marks.sup, { title: "Включить надстрочный", icon: { text: "Нⁱ" } });
     const toggleSub = markItem(schema.marks.sub, { title: "Включить подстрочный", icon: { text: "Пᵢ" } });
     const toggleCode = markItem(schema.marks.code, { title: "Включить моноширинный", icon: { text: "М", css: "font-family: monospace;" } });
-    const toggleLink = linkItem(schema.marks.a, dial);
+    const toggleLink = linkItem(schema.marks.a, schema.marks.note, dial);
     const makeInlineImage = new MenuItem({
         title: "Вставить изображение в текст",
         icon: { text: "🖼" },

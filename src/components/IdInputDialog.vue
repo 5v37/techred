@@ -1,5 +1,5 @@
 <template>
-	<Dialog v-model:visible=idDialog modal :closable="false" :close-on-escape="false" class="t-ui-dialog"
+	<Dialog v-model:visible=visible modal :closable="false" :close-on-escape="false" class="t-ui-dialog"
 		header="Укажите новый идентификатор">
 		<InputText v-model.lazy=newId v-keyfilter=NCNameFilter autofocus style="width: 100%;" />
 		<template #footer>
@@ -16,7 +16,6 @@
 import { computed, ref } from 'vue';
 import { Dialog, Button, InputText, Message } from 'primevue';
 import { EditorState, Transaction } from 'prosemirror-state';
-import { EditorView } from 'prosemirror-view';
 
 import { NCNameFilter } from '../utils';
 import editorState from '../editorState';
@@ -29,10 +28,9 @@ let params: {
 	id: string,
 	key: string
 };
-let view: EditorView | undefined;
 let ids: Set<string>;
 
-const idDialog = ref(false);
+const visible = ref(false);
 const newId = ref("");
 const errorMessage = ref("");
 const invalidId = computed(() => {
@@ -65,20 +63,14 @@ function openDialog(state: EditorState, dispatch: (tr: Transaction) => void, pos
 	newId.value = params.id;
 	ids = editorState.getIds();
 
-	view = findFocusedView();
-	if (view) {
-		view.dom.blur();
-	};
-	idDialog.value = true;
+	editorState.saveViewFocus();
+	visible.value = true;
 	addEventListener("keydown", keyListener);
 }
 
 function closeDialog() {
-	if (view) {
-		editorState.cancelEditorScroll = true;
-		view.dom.focus({ preventScroll: true });
-	};
-	idDialog.value = false;
+	editorState.restoreViewFocus();
+	visible.value = false;
 	removeEventListener("keydown", keyListener);
 }
 
@@ -92,14 +84,6 @@ function changeId() {
 		params.dispatch(tr);
 	};
 	closeDialog();
-}
-
-function findFocusedView() {
-	for (const body of Object.keys(editorState.bodies)) {
-		if (editorState.views[body].hasFocus()) {
-			return editorState.views[body];
-		}
-	};
 }
 
 defineExpose({ openDialog });

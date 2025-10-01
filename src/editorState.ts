@@ -15,6 +15,7 @@ class editorState {
     public bodies: bodiesType = Object.create(null);
     public spellCheckOn = ref(false);
     public highlightEmphasisOn = ref(true);
+    private focusedView?: EditorView;
 
     getIds(noImage = false) {
         const ids = new Set<string>(noImage ? undefined : this.images.value.getIds());
@@ -26,6 +27,25 @@ class editorState {
             });
         };
         return ids;
+    }
+
+    saveViewFocus() {
+        for (const body in this.bodies) {
+            if (this.views[body].hasFocus()) {
+                this.focusedView = this.views[body];
+                this.focusedView.dom.blur();
+                return;
+            }
+        };
+        this.focusedView = undefined;
+    }
+
+    restoreViewFocus() {
+        if (this.focusedView) {
+            this.cancelEditorScroll = true;
+            this.focusedView.dom.focus({ preventScroll: true });
+            this.focusedView = undefined;
+        };
     }
 };
 

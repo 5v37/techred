@@ -315,22 +315,17 @@ function template(topNode: string, toXML: boolean): Schema {
             },
             text: { inline: true }
         },
-        marks: {
-            code: {
-                parseDOM: [{ tag: "code" }],
-                toDOM() { return [defaultNameSpace + "code"]; }
-            },
-            a: {
+        marks: {            
+            note: {
                 attrs: {
-                    href: { default: null },
-                    type: { default: null }
+                    href: { default: null }
                 },
+                excludes: "sub sup a",
                 parseDOM: [{
-                    tag: "a",
+                    tag: "a[type=note]",
                     getAttrs(dom) {
                         return {
-                            href: dom.getAttributeNS(xlinkns, "href"),
-                            type: dom.getAttribute("type")
+                            href: dom.getAttributeNS(xlinkns, "href")
                         };
                     }
                 }],
@@ -338,12 +333,39 @@ function template(topNode: string, toXML: boolean): Schema {
                     if (defaultNameSpace) {
                         return [defaultNameSpace + "a", {
                             [xlinkns + " href"]: node.attrs.href,
-                            type: node.attrs.type
+                            type: "note"
+                        }]
+                    } else {
+                        return ["note", node.attrs];
+                    }
+                }
+            },
+            a: {
+                attrs: {
+                    href: { default: null }
+                },
+                excludes: "note",
+                parseDOM: [{
+                    tag: "a:not([type=note])",
+                    getAttrs(dom) {
+                        return {
+                            href: dom.getAttributeNS(xlinkns, "href")
+                        };
+                    }
+                }],
+                toDOM(node) {
+                    if (defaultNameSpace) {
+                        return [defaultNameSpace + "a", {
+                            [xlinkns + " href"]: node.attrs.href
                         }]
                     } else {
                         return ["a", node.attrs];
                     }
                 }
+            },
+            code: {
+                parseDOM: [{ tag: "code" }],
+                toDOM() { return [defaultNameSpace + "code"]; }
             },
             emphasis: {
                 parseDOM: [{ tag: "emphasis" }],
