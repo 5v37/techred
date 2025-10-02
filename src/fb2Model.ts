@@ -320,7 +320,7 @@ function template(topNode: string, toXML: boolean): Schema {
                 attrs: {
                     href: { default: null }
                 },
-                excludes: "sub sup a",
+                excludes: "sub sup a note",
                 parseDOM: [{
                     tag: "a[type=note]",
                     getAttrs(dom) {
@@ -344,7 +344,7 @@ function template(topNode: string, toXML: boolean): Schema {
                 attrs: {
                     href: { default: null }
                 },
-                excludes: "note",
+                excludes: "a note",
                 parseDOM: [{
                     tag: "a:not([type=note])",
                     getAttrs(dom) {
@@ -380,12 +380,12 @@ function template(topNode: string, toXML: boolean): Schema {
                 toDOM() { return [defaultNameSpace + "strikethrough"]; }
             },
             sup: {
-                excludes: "sub",
+                excludes: "sub sup",
                 parseDOM: [{ tag: "sup" }],
                 toDOM() { return [defaultNameSpace + "sup"]; }
             },
             sub: {
-                excludes: "sup",
+                excludes: "sub sup",
                 parseDOM: [{ tag: "sub" }],
                 toDOM() { return [defaultNameSpace + "sub"]; }
             }

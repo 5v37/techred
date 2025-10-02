@@ -1,4 +1,4 @@
-import { Attrs, Fragment, MarkType, Node, NodeType } from "prosemirror-model";
+import { Attrs, Fragment, MarkType, Node, NodeType, ResolvedPos } from "prosemirror-model";
 import { Command, Selection, AllSelection, NodeSelection, TextSelection, EditorState } from "prosemirror-state";
 import { canSplit, findWrapping } from 'prosemirror-transform';
 import ui from "./ui";
@@ -72,49 +72,47 @@ export function splitBlock(shift: boolean): Command {
 
         return true;
     };
-};
-
-function incrementId(input: string): string | undefined {
-    const match = input.match(/(\d+)$/);
-    if (!match) return undefined;
-
-    const ids = editorState.getIds();
-    const prefix = input.slice(0, match.index);
-    const numberStr = match[0];
-
-    let num = BigInt(numberStr);
-    let newNumberStr: string, newId: string;
-    do {
-        num = num + 1n;
-        newNumberStr = num.toString();
-
-        if (newNumberStr.length < numberStr.length) {
-            newNumberStr = newNumberStr.padStart(numberStr.length, '0');
-        };
-        newId = prefix + newNumberStr;
-    } while (ids.has(newId))
-
-    return newId;
 }
 
-export function updateMark(markType: MarkType, attrs: Attrs): Command {
+export function updateLink(newMarkType?: MarkType, oldMarkType?: MarkType, attrs?: Attrs): Command {
     return (state, dispatch) => {
-        const position = markPosition(state, state.selection.head, markType);
-        if (position) {
+        if (!oldMarkType) {
+            if (state.selection.empty || !newMarkType) {
+                return false;
+            };
+
+            if (dispatch) {
+                const { from, to, } = trimSelection(state.selection);
+                const tr = state.tr;
+
+                tr.addMark(from, to, newMarkType.create(attrs));
+
+                dispatch(tr);
+                return true;
+            };
+
+            return true;
+        } else {
+            const position = markPosition(state.selection.$to, oldMarkType);
+            if (!position) {
+                return false;
+            };
+
             if (dispatch) {
                 const { from, to, mark } = position;
                 const tr = state.tr;
 
                 tr.removeMark(from, to, mark);
-                tr.addMark(from, to, markType.create(attrs));
+                if (newMarkType) {
+                    tr.addMark(from, to, newMarkType.create(attrs));
+                };
 
                 dispatch(tr);
             };
-
-            return true;
         };
 
-        return false;
+        return true;
+
     };
 }
 
@@ -151,7 +149,7 @@ export function addTitle(): Command {
 
         return true;
     };
-};
+}
 
 export function addTextautor(): Command {
     return (state, dispatch) => {
@@ -187,7 +185,7 @@ export function addTextautor(): Command {
 
         return true;
     };
-};
+}
 
 export function wrapPoem(): Command {
     return (state, dispatch) => {
@@ -240,7 +238,7 @@ export function wrapPoem(): Command {
 
         return true;
     };
-};
+}
 
 export function changeToSection(): Command {
     return (state, dispatch) => {
@@ -269,61 +267,6 @@ export function changeToSection(): Command {
 
         return true;
     };
-};
-
-function getTextFromSelection(selection: Selection, textType: NodeType) {
-    const content = selection.content();
-    if (content.size) {
-        function getText(text: Fragment, parts: Node[]) {
-            if (text.size) {
-                let textNodes: Node[] = [];
-                for (const node of text.content) {
-                    if (node.isText) {
-                        textNodes.push(node);
-                    } else {
-                        getText(node.content, parts)
-                    };
-                };
-                if (textNodes.length) {
-                    parts.push(textType.create(null, textNodes));
-                };
-            } else {
-                parts.push(textType.create());
-            };
-        };
-
-        let parts: Node[] = [];
-        getText(content.content, parts);
-
-        return parts;
-    } else {
-        return [textType.create()];
-    };
-};
-
-export function markPosition(state: EditorState, pos: number, markType: MarkType) {
-    const $pos = state.doc.resolve(pos);
-
-    const { parent, parentOffset } = $pos;
-    const start = parent.childAfter(parentOffset);
-    if (!start.node) return;
-
-    const mark = start.node.marks.find((mark) => mark.type === markType);
-    if (!mark) return;
-
-    let startIndex = $pos.index();
-    let from = $pos.start() + start.offset;
-    let endIndex = startIndex + 1;
-    let to = from + start.node.nodeSize;
-    while (startIndex > 0 && mark.isInSet(parent.child(startIndex - 1).marks)) {
-        startIndex -= 1;
-        from -= parent.child(startIndex).nodeSize;
-    }
-    while (endIndex < parent.childCount && mark.isInSet(parent.child(endIndex).marks)) {
-        to += parent.child(endIndex).nodeSize;
-        endIndex += 1;
-    }
-    return { from, to, mark };
 }
 
 export function addInlineImage(image?: Node): Command {
@@ -348,6 +291,36 @@ export function addInlineImage(image?: Node): Command {
             tr.insert(startPos, image);
 
             dispatch(tr.scrollIntoView());
+        };
+
+        return true;
+    }
+}
+
+export function setLink(): Command {
+    return (state, dispatch) => {
+        const { $from, $to, empty } = state.selection;
+
+        if (state.selection instanceof NodeSelection) {
+            return false;
+        }; 
+
+        let linkMark;
+        for (const mark of $to.marks()) {
+            if (mark.type === state.schema.marks.note || mark.type === state.schema.marks.a) {
+                if (empty || mark.isInSet($from.nodeAfter!.marks)) {
+                    linkMark = mark;
+                };
+                break;
+            };
+        };
+
+        if (!linkMark && empty) {
+            return false;
+        }
+
+        if (dispatch) {
+            ui.openLinkEditorDialog(state, dispatch, linkMark);
         };
 
         return true;
@@ -400,8 +373,7 @@ export function addNode(parentNode: Node, nodeType: NodeType, startPos: number, 
 
         return true;
     };
-};
-
+}
 
 export function addNodeAfterSelection(nodeType: NodeType, node?: Node): Command {
     return (state, dispatch) => {
@@ -432,7 +404,96 @@ export function addNodeAfterSelection(nodeType: NodeType, node?: Node): Command 
 
         return true;
     };
-};
+}
+
+function getTextFromSelection(selection: Selection, textType: NodeType) {
+    const content = selection.content();
+    if (content.size) {
+        function getText(text: Fragment, parts: Node[]) {
+            if (text.size) {
+                let textNodes: Node[] = [];
+                for (const node of text.content) {
+                    if (node.isText) {
+                        textNodes.push(node);
+                    } else {
+                        getText(node.content, parts)
+                    };
+                };
+                if (textNodes.length) {
+                    parts.push(textType.create(null, textNodes));
+                };
+            } else {
+                parts.push(textType.create());
+            };
+        };
+
+        let parts: Node[] = [];
+        getText(content.content, parts);
+
+        return parts;
+    } else {
+        return [textType.create()];
+    };
+}
+
+function trimSelection(selection: Selection) {
+    const { $from, $to, } = selection;
+
+    let from = $from.pos, to = $to.pos, start = $from.nodeAfter, end = $to.nodeBefore;
+    let spaceStart = start && start.isText ? /^\s*/.exec(start.text!)![0].length : 0;
+    let spaceEnd = end && end.isText ? /\s*$/.exec(end.text!)![0].length : 0;
+    if (from + spaceStart < to) {
+        from += spaceStart;
+        to -= spaceEnd;
+    }
+    return { from, to }
+}
+
+function markPosition(pos: ResolvedPos, markType: MarkType) {
+    const { parent, parentOffset } = pos;
+    const start = parentOffset === 0 ? parent.childAfter(parentOffset) : parent.childBefore(parentOffset);
+    if (!start.node) return;
+
+    const mark = start.node.marks.find((mark) => mark.type === markType);
+    if (!mark) return;
+
+    let startIndex = start.index;
+    let from = pos.start() + start.offset;
+    let endIndex = startIndex + 1;
+    let to = from + start.node.nodeSize;
+    while (startIndex > 0 && mark.isInSet(parent.child(startIndex - 1).marks)) {
+        startIndex -= 1;
+        from -= parent.child(startIndex).nodeSize;
+    }
+    while (endIndex < parent.childCount && mark.isInSet(parent.child(endIndex).marks)) {
+        to += parent.child(endIndex).nodeSize;
+        endIndex += 1;
+    }
+    return { from, to, mark };
+}
+
+function incrementId(input: string): string | undefined {
+    const match = input.match(/(\d+)$/);
+    if (!match) return undefined;
+
+    const ids = editorState.getIds();
+    const prefix = input.slice(0, match.index);
+    const numberStr = match[0];
+
+    let num = BigInt(numberStr);
+    let newNumberStr: string, newId: string;
+    do {
+        num = num + 1n;
+        newNumberStr = num.toString();
+
+        if (newNumberStr.length < numberStr.length) {
+            newNumberStr = newNumberStr.padStart(numberStr.length, '0');
+        };
+        newId = prefix + newNumberStr;
+    } while (ids.has(newId))
+
+    return newId;
+}
 
 export type SectionRange = {
     from: number,
@@ -511,7 +572,7 @@ function excludeSection(range?: SectionRange): Command {
         };
         return true;
     };
-};
+}
 
 function includeSection(range?: SectionRange): Command {
     return (state, dispatch) => {
@@ -554,7 +615,7 @@ function includeSection(range?: SectionRange): Command {
         };
         return true;
     };
-};
+}
 
 function joinSection(range?: SectionRange): Command {
     return (state, dispatch) => {
@@ -588,7 +649,7 @@ function joinSection(range?: SectionRange): Command {
         };
         return true;
     };
-};
+}
 
 function moveUpSection(range?: SectionRange): Command {
     return (state, dispatch) => {
@@ -604,7 +665,7 @@ function moveUpSection(range?: SectionRange): Command {
         };
         return true;
     };
-};
+}
 
 function moveDownSection(range?: SectionRange): Command {
     return (state, dispatch) => {
@@ -620,7 +681,7 @@ function moveDownSection(range?: SectionRange): Command {
         };
         return true;
     };
-};
+}
 
 function deleteSection(range?: SectionRange): Command {
     return (state, dispatch) => {
@@ -639,6 +700,6 @@ function deleteSection(range?: SectionRange): Command {
         };
         return true;
     };
-};
+}
 
 export { sectionRangeByUID, excludeSection, includeSection, joinSection, moveUpSection, moveDownSection, deleteSection }

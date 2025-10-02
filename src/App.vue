@@ -16,6 +16,7 @@
     </ProsemirrorAdapterProvider>
 
     <IdInputDialog />
+    <LinkEditorDialog />
 </template>
 
 <script setup lang="ts">
@@ -30,6 +31,7 @@ import Description from "./components/Description.vue";
 import Content from './components/Content.vue';
 import Images from './components/Images.vue';
 import IdInputDialog from './components/IdInputDialog.vue';
+import LinkEditorDialog from './components/LinkEditorDialog.vue';
 import { initNotification } from './notification';
 
 const loaded = ref(false);

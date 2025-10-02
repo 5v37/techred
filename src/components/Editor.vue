@@ -1,14 +1,13 @@
 <template>
     <div :id="editorId" ref="editor" :spellcheck="spellcheckOn"
         :class="{ 'highlight-emphasis': editorState.highlightEmphasisOn.value }">
-        <LinkEditor ref="linkEditor" />
     </div>
 </template>
 
 <script setup lang="ts">
 import { useTemplateRef, onMounted, onUnmounted } from 'vue'
 
-import LinkEditor from "./LinkEditor.vue";
+
 import ImageView from './views/ImageView.vue';
 import InlineImageView from './views/InlineImageView.vue';
 import SectionView from './views/SectionView.vue';
@@ -29,13 +28,12 @@ import { useNodeViewFactory } from '@prosemirror-adapter/vue';
 
 import { annotationSchemaXML, annotationSchema, bodySchemaXML, bodySchema } from "../fb2Model";
 import { buildMenuItems } from "../menu";
-import { setId, splitBlock } from "../commands";
+import { setId, setLink, splitBlock } from "../commands";
 import fb2Mapper from '../fb2Mapper';
 import editorState from '../editorState';
 
 const spellcheckOn = editorState.spellCheckOn;
 const nodeViewFactory = useNodeViewFactory();
-const linkEditor = useTemplateRef('linkEditor');
 const props = defineProps<{
     editorId: string,
     annotation?: boolean
@@ -73,11 +71,11 @@ onMounted(() => {
                 "Mod-y": redo,
                 "Mod-b": toggleMark(schema.marks.strong),
                 "Mod-i": toggleMark(schema.marks.emphasis),
-                "Mod-k": toggleMark(schema.marks.a),
                 "Mod-,": toggleMark(schema.marks.sub),
                 "Mod-.": toggleMark(schema.marks.sup),
                 "Mod-Shift-x": toggleMark(schema.marks.strikethrough),
                 "Mod-Shift-m": toggleMark(schema.marks.code),
+                "Mod-k": setLink(),
                 "Mod-;": setId(),
                 "Tab": goToNextCell(1),
                 "Shift-Tab": goToNextCell(-1),
@@ -86,7 +84,7 @@ onMounted(() => {
             dropCursor(),
             menuBar({
                 floating: !props.annotation,
-                content: buildMenuItems(schema, linkEditor.value?.showEditLink)
+                content: buildMenuItems(schema)
             }),
         ]
     });

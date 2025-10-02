@@ -9,7 +9,7 @@
             <div class="t-ui-chipcontainer">
                 <label style="width: 5rem;">Значение</label>
                 <InputText v-if="!noteLink" v-model.lazy="href" class="t-ui-grow" />
-                <Select v-if="noteLink" v-model="selectedId" :options="notes" filter showClear class="t-ui-grow" />
+                <Select v-if="noteLink" v-model="selectedId" :options="notes" filter autoFilterFocus showClear class="t-ui-grow" />
             </div>
         </div>
         <template #footer>
@@ -23,13 +23,12 @@
 import { computed, ref } from "vue";
 import { Dialog, SelectButton, InputText, Button, Select } from "primevue";
 
-import { Attrs, Mark } from "prosemirror-model";
-import { toggleMark } from "prosemirror-commands";
-import { EditorState, TextSelection, Transaction } from "prosemirror-state";
+import { Mark } from "prosemirror-model";
+import { EditorState, Transaction } from "prosemirror-state";
 
 import editorState from "../editorState";
-import { bodySchema } from "../fb2Model";
-import { markPosition, updateMark } from "../commands";
+import { updateLink } from "../commands";
+import ui from "../ui";
 
 const typeLinkOptions = ref(['Примечание', 'Гиперссылка']);
 const typeLink = ref(typeLinkOptions.value[0]);
@@ -40,15 +39,21 @@ const selectedId = ref("");
 let params: {
     state: EditorState,
     dispatch: (tr: Transaction) => void,
-    mark: Mark
+    mark?: Mark
 };
 let notes: Array<string>;
 
 const noteLink = computed(() => {
     return typeLink.value === typeLinkOptions.value[0];
-})
+});
+
+ui.openLinkEditorDialog = openDialog;
 
 function keyListener(event: KeyboardEvent) {
+    if (event.defaultPrevented) {
+        return;
+    };
+
     if (event.code === "Escape") {
         closeDialog();
     } else if (event.code === "Enter") {
@@ -59,18 +64,20 @@ function keyListener(event: KeyboardEvent) {
     event.preventDefault();
 }
 
-function showEditLink(state: EditorState, dispatch: (tr: Transaction) => void, mark: Mark) {
+function openDialog(state: EditorState, dispatch: (tr: Transaction) => void, mark?: Mark) {
     params = { state, dispatch, mark };
     notes = Array.from(editorState.getIds(true));
+    href.value = "";
+    selectedId.value = "";
 
-    if (mark.type === bodySchema.marks.note) {
-        typeLink.value = typeLinkOptions.value[0];
-        href.value = "";
-        selectedId.value = mark.attrs.href ? mark.attrs.href.slice(1) : "";
-    } else {
+    if (mark && mark.type === state.schema.marks.a) {
         typeLink.value = typeLinkOptions.value[1];
         href.value = mark.attrs.href;
         selectedId.value = "";
+    } else {
+        typeLink.value = typeLinkOptions.value[0];
+        href.value = "";
+        selectedId.value = mark && mark.attrs.href ? mark.attrs.href.slice(1) : "";
     };
 
     editorState.saveViewFocus();
@@ -85,33 +92,22 @@ function closeDialog() {
 }
 
 function saveLink() {
-    let attr: Attrs = {}, linkType = bodySchema.marks.a;
+    let attr, linkType;
     if (noteLink.value) {
         if (selectedId.value) {
             attr = { href: "#" + selectedId.value };
-            linkType = bodySchema.marks.note;
+            linkType = params.state.schema.marks.note;
         };
     } else {
         if (href.value) {
             attr = { href: href.value };
-            linkType = bodySchema.marks.a;
+            linkType = params.state.schema.marks.a;
         };
     };
 
-    if (!updateMark(linkType, attr)(params.state, params.dispatch)) {
-        const position = markPosition(params.state, params.state.selection.head, linkType === bodySchema.marks.note ? bodySchema.marks.a : bodySchema.marks.note);
-        if (position) { // если изменили тип ссылки
-            params.state.selection = TextSelection.create(params.state.doc, position.from, position.to);
-        };        
-        toggleMark(linkType, attr)(params.state, params.dispatch)
-    };
-
+    updateLink(linkType, params.mark?.type, attr)(params.state, params.dispatch);
     closeDialog();
 };
-
-defineExpose({
-    showEditLink,
-});
 </script>
 
 <style></style>

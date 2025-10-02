@@ -48,6 +48,10 @@ const invalidId = computed(() => {
 ui.openIdInputDialog = openDialog;
 
 function keyListener(event: KeyboardEvent) {
+	if (event.defaultPrevented) {
+        return;
+    };
+
 	if (event.code === "Escape") {
 		closeDialog();
 	} else if (event.code === "Enter") {
@@ -85,8 +89,6 @@ function changeId() {
 	};
 	closeDialog();
 }
-
-defineExpose({ openDialog });
 </script>
 
 <style></style>

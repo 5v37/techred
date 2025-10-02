@@ -2,7 +2,7 @@ import { wrapItem, blockTypeItem, Dropdown, undoItem, redoItem, icons, MenuItem,
 import { EditorState, Command } from "prosemirror-state"
 import { Schema, MarkType } from "prosemirror-model"
 import { toggleMark } from "prosemirror-commands"
-import { addInlineImage, addNodeAfterSelection, addTextautor, addTitle, changeToSection, setId, wrapPoem } from "./commands"
+import { addInlineImage, addNodeAfterSelection, addTextautor, addTitle, changeToSection, setId, setLink, wrapPoem } from "./commands"
 import { addColumnAfter, addColumnBefore, addRowAfter, addRowBefore, deleteColumn, deleteRow, deleteTable, mergeCells, setCellAttr, splitCell, toggleHeaderCell, toggleHeaderColumn, toggleHeaderRow } from "prosemirror-tables"
 import { openImageDialog } from "./fileAccess"
 import editorState from "./editorState"
@@ -35,29 +35,19 @@ function markItem(markType: MarkType, options: Partial<MenuItemSpec>) {
     return cmdItem(toggleMark(markType), passedOptions)
 }
 
-function linkItem(linkType: MarkType, noteType: MarkType, editLink: any) {
+function linkItem(linkType: MarkType, noteType: MarkType) {
     return new MenuItem({
         title: "Установить ссылку",
         icon: icons.link,
         active(state) { return markActive(state, linkType) || markActive(state, noteType) },
-        enable(state) { return !state.selection.empty || markActive(state, linkType) || markActive(state, noteType) },
-        run(state, dispatch) {
-            let selectedMark = noteType.create({});
-            for (const mark of state.selection.$to.marks()) {
-                if (mark.type === linkType || mark.type === noteType) {
-                    selectedMark = mark;
-                    break;
-                };
-            };
-
-            editLink(state, dispatch, selectedMark);
-        }
+        enable(state) { return setLink()(state) },
+        run(state, dispatch) { setLink()(state, dispatch) }
     })
 }
 
 function item(label: string, cmd: (state: EditorState) => boolean) {
     return new MenuItem({ label, select: cmd, run: cmd });
-};
+}
 
 function deleteTableSafety(): Command {
     return (state, dispatch) => {
@@ -67,9 +57,9 @@ function deleteTableSafety(): Command {
         }
         return false;
     };
-};
+}
 
-export function buildMenuItems(schema: Schema, dial: any) {
+export function buildMenuItems(schema: Schema) {
 
     const toggleStrong = markItem(schema.marks.strong, { title: "Включить полужирный", icon: { text: "Ж", css: "font-weight: bold;" } });
     const toggleEmphasis = markItem(schema.marks.emphasis, { title: "Включить курсив", icon: { text: "К", css: "font-style: italic;" } });
@@ -77,7 +67,7 @@ export function buildMenuItems(schema: Schema, dial: any) {
     const toggleSup = markItem(schema.marks.sup, { title: "Включить надстрочный", icon: { text: "Нⁱ" } });
     const toggleSub = markItem(schema.marks.sub, { title: "Включить подстрочный", icon: { text: "Пᵢ" } });
     const toggleCode = markItem(schema.marks.code, { title: "Включить моноширинный", icon: { text: "М", css: "font-family: monospace;" } });
-    const toggleLink = linkItem(schema.marks.a, schema.marks.note, dial);
+    const toggleLink = linkItem(schema.marks.a, schema.marks.note);
     const makeInlineImage = new MenuItem({
         title: "Вставить изображение в текст",
         icon: { text: "🖼" },
