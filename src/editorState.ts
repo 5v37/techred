@@ -30,12 +30,12 @@ class editorState {
     }
 
     saveViewFocus() {
-        for (const body in this.bodies) {
-            if (this.views[body].hasFocus()) {
-                this.focusedView = this.views[body];
+        for (const view of Object.values(this.views)) {
+            if (view.hasFocus()) {
+                this.focusedView = view;
                 this.focusedView.dom.blur();
                 return;
-            }
+            };
         };
         this.focusedView = undefined;
     }

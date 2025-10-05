@@ -15,7 +15,7 @@
 				<Select v-model="selectedSize" :options="fontSizes" checkmark @change="changeFontSize" />
 			</div>
 			<div class="t-setting-element">
-				<label>Выделять курсив</label>
+				<label>Выделять границы курсива</label>
 				<ToggleSwitch v-model="editorState.highlightEmphasisOn.value" @change="changeHighlightEmphasis" />
 			</div>
 			<div class="t-setting-element">

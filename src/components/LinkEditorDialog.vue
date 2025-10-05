@@ -8,8 +8,9 @@
             </div>
             <div class="t-ui-chipcontainer">
                 <label style="width: 5rem;">Значение</label>
-                <InputText v-if="!noteLink" v-model.lazy="href" class="t-ui-grow" />
-                <Select v-if="noteLink" v-model="selectedId" :options="notes" filter autoFilterFocus showClear class="t-ui-grow" />
+                <InputText v-if="!noteLink" v-model.lazy="href" autofocus class="t-ui-grow" />
+                <Select v-if="noteLink" v-model="selectedId" :options="notes" filter autoFilterFocus showClear
+                    :pt="{ label: { autofocus: true } }" class="t-ui-grow" />
             </div>
         </div>
         <template #footer>
