@@ -7,10 +7,9 @@
 <script setup lang="ts">
 import { useTemplateRef, onMounted, onUnmounted } from 'vue'
 
-
 import ImageView from './views/ImageView.vue';
 import InlineImageView from './views/InlineImageView.vue';
-import SectionView from './views/SectionView.vue';
+import BlockView from '../views/blockView';
 
 import { EditorState, Transaction } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
@@ -107,9 +106,11 @@ onMounted(() => {
                 component: InlineImageView,
                 as: 'inline-image'
             }),
-            section: nodeViewFactory({
-                component: SectionView
-            })
+            annotation: (node, view, getPos) => new BlockView(node, view, getPos),
+            epigraph: (node, view, getPos) => new BlockView(node, view, getPos),
+            section: (node, view, getPos) => new BlockView(node, view, getPos),
+            poem: (node, view, getPos) => new BlockView(node, view, getPos),
+            cite: (node, view, getPos) => new BlockView(node, view, getPos)
         },
         dispatchTransaction(transaction) {
             let newState = view.state.apply(transaction);

@@ -20,6 +20,16 @@
 	background: var(--p-content-background);
 }
 
+@mixin before() {
+	position: absolute;
+	line-height: 1rem;
+	top: -0.5rem;
+	left: 1rem;
+	font-size: small;
+	color: var(--p-text-muted-color);
+	background: var(--p-content-background);
+}
+
 @mixin block($color: rgb(0, 0, 0)) {
 	display: block;
 	border: thin solid $color;
@@ -140,14 +150,8 @@
 	}
 
 	subtitle[id]::before {
+		@include before();
 		content: "#" attr(id);
-		position: absolute;
-		line-height: 1rem;
-		top: -0.5rem;
-		left: 1rem;
-		font-size: small;
-		color: var(--p-text-muted-color);
-		background: var(--p-content-background);
 	}
 
 	note {
@@ -170,6 +174,10 @@
 
 	strikethrough {
 		text-decoration: line-through;
+	}
+
+	code {
+		background-color: var(--p-content-hover-background);
 	}
 
 	image {
@@ -202,6 +210,12 @@
 	th[valign="bottom"],
 	td[valign="bottom"] {
 		vertical-align: bottom;
+	}
+
+	id-label {
+		@include before();
+		user-select: none;
+		cursor: pointer;
 	}
 }
 
