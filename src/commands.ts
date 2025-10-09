@@ -327,21 +327,22 @@ export function setLink(): Command {
     }
 }
 
-export function setId(): Command {
+export function setId(block: boolean): Command {
     return (state, dispatch) => {
         const { $from } = state.selection;
 
-        if (state.selection instanceof NodeSelection) {
+        if (block && !$from.depth || state.selection instanceof NodeSelection) {
             return false;
         };
 
-        const node = $from.node();
+        const depth = block ? $from.depth - 1 : $from.depth;
+        const node = $from.node(depth);
         if (!node.type.spec.attrs || !("id" in node.type.spec.attrs) || !node.textContent) {
             return false;
         };
 
         if (dispatch) {
-            ui.openIdInputDialog(state, dispatch, $from.start() - 1, node.attrs.id);
+            ui.openIdInputDialog(state, dispatch, $from.start(depth) - 1, node.attrs.id);
         };
 
         return true;

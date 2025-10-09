@@ -17,7 +17,7 @@ import { Node, DOMParser as pmDOMParser, DOMSerializer as pmDOMSerializer } from
 import { DocAttrStep, ReplaceAroundStep, ReplaceStep } from "prosemirror-transform";
 import { undo, redo, history } from "prosemirror-history";
 import { keymap } from "prosemirror-keymap";
-import { baseKeymap, toggleMark } from "prosemirror-commands";
+import { baseKeymap, toggleMark, chainCommands } from "prosemirror-commands";
 import { menuBar } from "prosemirror-menu";
 import { goToNextCell, tableEditing } from "prosemirror-tables";
 import { dropCursor } from "prosemirror-dropcursor";
@@ -74,8 +74,9 @@ onMounted(() => {
                 "Mod-.": toggleMark(schema.marks.sup),
                 "Mod-Shift-x": toggleMark(schema.marks.strikethrough),
                 "Mod-Shift-m": toggleMark(schema.marks.code),
-                "Mod-k": setLink(),
-                "Mod-;": setId(),
+                "Mod-k": chainCommands(setLink(), () => true),
+                "Mod-;": chainCommands(setId(false), () => true),
+                "Mod-Shift-;": chainCommands(setId(true), () => true),
                 "Tab": goToNextCell(1),
                 "Shift-Tab": goToNextCell(-1),
             }),

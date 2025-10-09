@@ -85,8 +85,8 @@ export function buildMenuItems(schema: Schema) {
     const makeId = new MenuItem({
         title: "Установить идентификатор",
         icon: { text: "#" },
-        enable(state) { return setId()(state) },
-        run(state, dispatch) { setId()(state, dispatch) }
+        enable(state) { return setId(false)(state) },
+        run(state, dispatch) { setId(false)(state, dispatch) }
     });
 
     const insertTitle = new MenuItem({
