@@ -72,10 +72,10 @@ import ComplexDatePicker from './ComplexDatePicker.vue';
 
 import { Panel, Chip, Button, SelectButton, Popover, Select, FloatLabel, Tree, Image, InputText, InputNumber } from 'primevue';
 
-import PersonInfo from '../types/personInfo';
-import { addingNodes } from '../utils';
-import { fb2ns } from '../fb2Model';
-import fb2Mapper from '../fb2Mapper';
+import PersonInfo from '@/types/personInfo';
+import { addingNodes } from '@/modules/utils';
+import { fb2ns } from '@/modules/fb2Model';
+import fb2Mapper from '@/modules/fb2Mapper';
 
 interface StateDescription {
     fileAuthors: PersonInfo[],

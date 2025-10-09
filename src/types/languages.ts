@@ -1,4 +1,4 @@
-import { missingLang } from "../notification";
+import { missingLang } from "@/modules/notifications";
 
 // ISO 639-1
 const languages: Language[] = [

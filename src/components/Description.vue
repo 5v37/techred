@@ -16,8 +16,8 @@ import DocumentInfo from './DocumentInfo.vue';
 import PublishInfo from './PublishInfo.vue';
 import CustomInfo from './CustomInfo.vue';
 
-import fb2Mapper, { DocumentBlocks } from "../fb2Mapper";
-import editorState from '../editorState';
+import fb2Mapper, { DocumentBlocks } from "@/modules/fb2Mapper";
+import editorState from '@/modules/editorState';
 
 let toTop = false;
 const description = useTemplateRef('description');

@@ -6,7 +6,7 @@
 import { computed } from 'vue';
 import { useNodeViewContext } from '@prosemirror-adapter/vue';
 
-import editorState from '../../editorState';
+import editorState from '@/modules/editorState';
 
 const { node, selected } = useNodeViewContext();
 const alt = computed(() => {

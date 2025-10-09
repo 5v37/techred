@@ -27,9 +27,9 @@ import { Dialog, SelectButton, InputText, Button, Select } from "primevue";
 import { Mark } from "prosemirror-model";
 import { EditorState, Transaction } from "prosemirror-state";
 
-import editorState from "../editorState";
-import { updateLink } from "../commands";
-import ui from "../ui";
+import editorState from "@/modules/editorState";
+import { updateLink } from "@/modules/commands";
+import ui from "@/modules/ui";
 
 const typeLinkOptions = ref(['Примечание', 'Гиперссылка']);
 const typeLink = ref(typeLinkOptions.value[0]);

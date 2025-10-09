@@ -2,11 +2,11 @@ import { wrapItem, blockTypeItem, Dropdown, undoItem, redoItem, icons, MenuItem,
 import { EditorState, Command } from "prosemirror-state"
 import { Schema, MarkType } from "prosemirror-model"
 import { toggleMark } from "prosemirror-commands"
-import { addInlineImage, addNodeAfterSelection, addTextautor, addTitle, changeToSection, setId, setLink, wrapPoem } from "./commands"
+import { addInlineImage, addNodeAfterSelection, addTextautor, addTitle, changeToSection, setId, setLink, wrapPoem } from "@/modules/commands"
 import { addColumnAfter, addColumnBefore, addRowAfter, addRowBefore, deleteColumn, deleteRow, deleteTable, mergeCells, setCellAttr, splitCell, toggleHeaderCell, toggleHeaderColumn, toggleHeaderRow } from "prosemirror-tables"
-import { openImageDialog } from "./fileAccess"
-import editorState from "./editorState"
-import { openFileError } from "./notification"
+import { openImageDialog } from "@/modules/fileAccess"
+import editorState from "@/modules/editorState"
+import { openFileError } from "@/modules/notifications"
 
 function cmdItem(cmd: Command, options: Partial<MenuItemSpec>) {
     let passedOptions: MenuItemSpec = {

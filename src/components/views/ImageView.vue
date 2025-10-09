@@ -14,7 +14,7 @@ import { useNodeViewContext } from '@prosemirror-adapter/vue';
 
 import { Button } from 'primevue';
 
-import editorState from '../../editorState';
+import editorState from '@/modules/editorState';
 
 const { node, selected, view, getPos } = useNodeViewContext();
 const alt = computed(() => {

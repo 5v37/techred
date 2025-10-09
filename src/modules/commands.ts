@@ -1,8 +1,8 @@
 import { Attrs, Fragment, MarkType, Node, NodeType, ResolvedPos } from "prosemirror-model";
 import { Command, Selection, AllSelection, NodeSelection, TextSelection, EditorState } from "prosemirror-state";
 import { canSplit, findWrapping } from 'prosemirror-transform';
-import ui from "./ui";
-import editorState from "./editorState";
+import ui from "@/modules/ui";
+import editorState from "@/modules/editorState";
 
 export function splitBlock(shift: boolean): Command {
     return (state, dispatch) => {

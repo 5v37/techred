@@ -25,11 +25,11 @@ import { dropCursor } from "prosemirror-dropcursor";
 import type { TreeNode } from "primevue/treenode";
 import { useNodeViewFactory } from '@prosemirror-adapter/vue';
 
-import { annotationSchemaXML, annotationSchema, bodySchemaXML, bodySchema } from "../fb2Model";
-import { buildMenuItems } from "../menu";
-import { setId, setLink, splitBlock } from "../commands";
-import fb2Mapper from '../fb2Mapper';
-import editorState from '../editorState';
+import { annotationSchemaXML, annotationSchema, bodySchemaXML, bodySchema } from "@/modules/fb2Model";
+import { buildMenuItems } from "@/modules/menu";
+import { setId, setLink, splitBlock } from "@/modules/commands";
+import fb2Mapper from '@/modules/fb2Mapper';
+import editorState from '@/modules/editorState';
 
 const spellcheckOn = editorState.spellCheckOn;
 const nodeViewFactory = useNodeViewFactory();

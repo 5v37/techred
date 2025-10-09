@@ -25,11 +25,11 @@ import { onUpdated, useTemplateRef, ComponentPublicInstance, ref, computed, shal
 import { Splitter, SplitterPanel } from "primevue";
 import { TreeNode } from "primevue/treenode";
 
-import Editor from "./Editor.vue";
+import Editor from "@/components/Editor.vue";
 
-import fb2Mapper, { DocumentBlocks } from "../fb2Mapper";
-import editorState from "../editorState";
-import { fb2ns } from "../fb2Model";
+import fb2Mapper, { DocumentBlocks } from "@/modules/fb2Mapper";
+import editorState from "@/modules/editorState";
+import { fb2ns } from "@/modules/fb2Model";
 
 let toTop = false;
 const content = useTemplateRef('content');

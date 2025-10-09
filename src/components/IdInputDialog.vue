@@ -17,9 +17,9 @@ import { computed, ref } from 'vue';
 import { Dialog, Button, InputText, Message } from 'primevue';
 import { EditorState, Transaction } from 'prosemirror-state';
 
-import { NCNameFilter } from '../utils';
-import editorState from '../editorState';
-import ui from '../ui';
+import { NCNameFilter } from '@/modules/utils';
+import editorState from '@/modules/editorState';
+import ui from '@/modules/ui';
 
 let params: {
 	state: EditorState,

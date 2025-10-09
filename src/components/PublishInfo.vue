@@ -47,10 +47,10 @@ import Sequences from './Sequences.vue'
 
 import { Panel, InputText, DatePicker } from 'primevue';
 
-import { addingNodes } from '../utils';
-import { fb2ns } from '../fb2Model';
-import Series from '../types/series';
-import fb2Mapper from '../fb2Mapper';
+import { addingNodes } from '@/modules/utils';
+import { fb2ns } from '@/modules/fb2Model';
+import Series from '@/types/series';
+import fb2Mapper from '@/modules/fb2Mapper';
 
 interface StateDescription {
     bookName: string,

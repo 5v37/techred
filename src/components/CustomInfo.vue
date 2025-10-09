@@ -24,10 +24,10 @@ import { ref } from 'vue';
 
 import { Panel, Chip, Textarea, InputText, Button } from 'primevue';
 
-import Customs from '../types/customs';
-import { addingNodes } from '../utils';
-import { fb2ns } from '../fb2Model';
-import fb2Mapper from '../fb2Mapper';
+import Customs from '@/types/customs';
+import { addingNodes } from '@/modules/utils';
+import { fb2ns } from '@/modules/fb2Model';
+import fb2Mapper from '@/modules/fb2Mapper';
 
 const model = ref<Customs[]>([]);
 const props = defineProps<{

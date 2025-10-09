@@ -19,12 +19,12 @@ import { onUpdated, ref, useTemplateRef } from 'vue';
 
 import { Image, InputText, Message } from 'primevue';
 
-import fb2Mapper, { DocumentBlocks } from "../fb2Mapper";
-import editorState from "../editorState";
-import { addingNodes } from "../utils";
-import { fb2ns, xlinkns } from "../fb2Model";
-import { NCNameFilter } from '../utils';
-import { ImageSpec } from '../types/images';
+import fb2Mapper, { DocumentBlocks } from "@/modules/fb2Mapper";
+import editorState from "@/modules/editorState";
+import { addingNodes } from "@/modules/utils";
+import { fb2ns, xlinkns } from "@/modules/fb2Model";
+import { NCNameFilter } from '@/modules/utils';
+import { ImageSpec } from '@/types/images';
 
 const images = editorState.images;
 const errorMessage = ref("");

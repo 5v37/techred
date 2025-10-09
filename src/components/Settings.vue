@@ -36,9 +36,9 @@ import { ref } from 'vue';
 
 import { Drawer, Button, Select, ToggleSwitch } from 'primevue';
 
-import editorState from '../editorState';
-import { saveSettingsError } from '../notification';
-import { isMac } from '../utils';
+import editorState from '@/modules/editorState';
+import { saveSettingsError } from '@/modules/notifications';
+import { isMac } from '@/modules/utils';
 
 const visibleSettings = ref(false);
 

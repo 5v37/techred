@@ -1,7 +1,7 @@
-import editorState from "../editorState";
-import { invalidId } from "../notification";
-import { base64toData, imageFileType, parseDataURL } from "../utils";
-import { NCNameFilter } from '../utils';
+import editorState from "@/modules/editorState";
+import { invalidId } from "@/modules/notifications";
+import { base64toData, imageFileType, parseDataURL } from "@/modules/utils";
+import { NCNameFilter } from '@/modules/utils';
 
 type ImageSpec = {
 	type: string,
@@ -59,7 +59,7 @@ class Images {
 		const validType = type || imageFileType(base64toData(content.slice(0, 12)).buffer);
 		if (content && validType) {
 			const validId = getValidId(id, validType, ids);
-			this.items[id] = {
+			this.items[ids && ids.has(id) ? validId : id] = {
 				content: content,
 				type: validType,
 				dataURL: "data:" + type + ";base64," + content,

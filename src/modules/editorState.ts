@@ -3,7 +3,7 @@ import { ref, reactive } from 'vue';
 import { EditorView } from "prosemirror-view";
 import { TreeNode } from 'primevue/treenode';
 
-import Images from './types/images';
+import Images from '@/types/images';
 
 type bodiesType = { [key: string]: TreeNode };
 

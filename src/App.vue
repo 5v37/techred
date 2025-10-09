@@ -25,14 +25,14 @@ import { ref } from 'vue'
 import { SplitterPanel, Splitter, Toast } from 'primevue';
 import { ProsemirrorAdapterProvider } from '@prosemirror-adapter/vue';
 
-import MainToolbar from './components/MainToolbar.vue';
-import Sidebar from './components/Sidebar.vue';
-import Description from "./components/Description.vue";
-import Content from './components/Content.vue';
-import Images from './components/Images.vue';
-import IdInputDialog from './components/IdInputDialog.vue';
-import LinkEditorDialog from './components/LinkEditorDialog.vue';
-import { initNotification } from './notification';
+import MainToolbar from '@/components/MainToolbar.vue';
+import Sidebar from '@/components/Sidebar.vue';
+import Description from "@/components/Description.vue";
+import Content from '@/components/Content.vue';
+import Images from '@/components/Images.vue';
+import IdInputDialog from '@/components/IdInputDialog.vue';
+import LinkEditorDialog from '@/components/LinkEditorDialog.vue';
+import { initNotification } from '@/modules/notifications';
 
 const loaded = ref(false);
 const current = ref("");

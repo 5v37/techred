@@ -1,5 +1,5 @@
-import { formatXML } from './utils';
-import { textBlocks, markBlocks, xmlTemplate } from './fb2Model';
+import { formatXML } from '@/modules/utils';
+import { textBlocks, markBlocks, xmlTemplate } from '@/modules/fb2Model';
 
 type DocumentBlocks = { [key: string]: Element | undefined }
 type ParseHandler = (source: Element | undefined) => void;

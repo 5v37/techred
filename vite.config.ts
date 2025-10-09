@@ -1,8 +1,8 @@
 import { defineConfig } from "vite";
+import { fileURLToPath, URL } from "url";
 import vue from "@vitejs/plugin-vue";
-import {version} from './package.json';
+import { version } from "./package.json";
 
-// @ts-expect-error process is a nodejs global
 const host = process.env.TAURI_DEV_HOST;
 
 // https://vitejs.dev/config/
@@ -10,6 +10,11 @@ export default defineConfig(async ({ mode }) => ({
   define: {
     __APP_TAURI_MODE__: mode === "tauri",
     __APP_VERSION__: JSON.stringify(version)
+  },
+  resolve: {
+    alias: [
+      { find: '@', replacement: fileURLToPath(new URL('./src', import.meta.url)) }
+    ]
   },
   plugins: [
     vue()

@@ -3,8 +3,8 @@ import { open as openDialog, OpenDialogOptions, save as saveDialog, SaveDialogOp
 import { readFile, writeFile } from '@tauri-apps/plugin-fs';
 import { fileOpen, fileSave, FirstFileOpenOptions, FirstFileSaveOptions, supported as fileAPIsupported } from "browser-fs-access";
 
-import { base64toData, decodeXML, imageFileType, isTauriMode, parseDataURL } from "./utils";
-import { unpack, pack } from "./zip";
+import { base64toData, decodeXML, imageFileType, isTauriMode, parseDataURL } from "@/modules/utils";
+import { unpack, pack } from "@/modules/zip";
 
 async function encode(content: string, filePath: string) {
     let fileData = new TextEncoder().encode(content);

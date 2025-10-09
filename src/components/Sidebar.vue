@@ -17,8 +17,8 @@ import { useTemplateRef } from 'vue';
 import { Tree } from 'primevue';
 import { TreeNode } from 'primevue/treenode';
 
-import TreeContextMenu from './TreeContextMenu.vue';
-import editorState from '../editorState';
+import TreeContextMenu from '@/components/TreeContextMenu.vue';
+import editorState from '@/modules/editorState';
 
 const contentMenu = useTemplateRef<InstanceType<typeof TreeContextMenu>>('contextMenu');
 function onContextRightClick(event: Event, node: TreeNode) {

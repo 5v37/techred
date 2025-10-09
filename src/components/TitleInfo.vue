@@ -87,24 +87,24 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 
-import Persons from './Persons.vue';
-import Editor from './Editor.vue';
-import ComplexDatePicker from './ComplexDatePicker.vue';
-import Sequences from './Sequences.vue';
+import Persons from '@/components/Persons.vue';
+import Editor from '@/components/Editor.vue';
+import ComplexDatePicker from '@/components/ComplexDatePicker.vue';
+import Sequences from '@/components/Sequences.vue';
 
 import { Panel, Chip, Button, SelectButton, Popover, Select, FloatLabel, Tree, Image, InputText, InputNumber } from 'primevue';
 import { TreeNode } from 'primevue/treenode';
 
-import { openFileError, saveFileError, saveFileInfo } from '../notification';
-import { Genre, genresTree, findGenre } from '../types/genres'
-import { Language, languages, findLanguage } from '../types/languages';
-import PersonInfo from '../types/personInfo';
-import Series from '../types/series';
-import { openImageDialog, saveImageDialog } from '../fileAccess';
-import { addingNodes } from '../utils';
-import { fb2ns, xlinkns } from '../fb2Model';
-import fb2Mapper from '../fb2Mapper';
-import editorState from '../editorState';
+import { openFileError, saveFileError, saveFileInfo } from '@/modules/notifications';
+import { Genre, genresTree, findGenre } from '@/types/genres'
+import { Language, languages, findLanguage } from '@/types/languages';
+import PersonInfo from '@/types/personInfo';
+import Series from '@/types/series';
+import { openImageDialog, saveImageDialog } from '@/modules/fileAccess';
+import { addingNodes } from '@/modules/utils';
+import { fb2ns, xlinkns } from '@/modules/fb2Model';
+import fb2Mapper from '@/modules/fb2Mapper';
+import editorState from '@/modules/editorState';
 
 interface StateDescription {
     bookTitle: string,

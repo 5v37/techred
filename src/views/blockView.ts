@@ -1,6 +1,6 @@
 import { NodeView, EditorView } from 'prosemirror-view';
 import { Node as ProseMirrorNode } from 'prosemirror-model';
-import ui from '../ui';
+import ui from '@/modules/ui';
 
 class BlockView implements NodeView {
 	node: ProseMirrorNode;

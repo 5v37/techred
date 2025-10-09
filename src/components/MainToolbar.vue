@@ -24,11 +24,11 @@ import { Toolbar, Button } from 'primevue';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 import { supported as fileAPIsupported } from 'browser-fs-access';
 
-import Settings from './Settings.vue';
-import fb2Mapper from '../fb2Mapper';
-import { openInitialFictionBook, openFictionBookDialog, saveFictionBookDialog } from '../fileAccess';
-import { openFileError, saveFileError, saveFileInfo, UnexpectedError } from '../notification';
-import { isTauriMode } from '../utils';
+import Settings from '@/components/Settings.vue';
+import fb2Mapper from '@/modules/fb2Mapper';
+import { openInitialFictionBook, openFictionBookDialog, saveFictionBookDialog } from '@/modules/fileAccess';
+import { openFileError, saveFileError, saveFileInfo, UnexpectedError } from '@/modules/notifications';
+import { isTauriMode } from '@/modules/utils';
 
 const emit = defineEmits(['loaded']);
 
