@@ -19,7 +19,7 @@ import { TreeNode } from 'primevue/treenode';
 
 import { EditorView } from 'prosemirror-view';
 
-import { SectionRange, sectionRangeByUID, excludeSection, includeSection, joinSection, moveUpSection, moveDownSection, deleteSection, addNode } from '@/modules/commands';
+import { SectionRange, sectionRangeByUID, excludeSection, includeSection, joinSection, moveUpSection, moveDownSection, deleteSection, addNode } from '@/modules/pm/commands';
 import { openImageDialog } from '@/modules/fileAccess';
 import editorState from '@/modules/editorState';
 import { openFileError } from '@/modules/notifications';

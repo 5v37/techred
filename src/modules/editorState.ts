@@ -13,8 +13,10 @@ class editorState {
     public images = ref<Images>(new Images);
     public menu = reactive<TreeNode[]>([]);
     public bodies: bodiesType = Object.create(null);
+    public currentBody = ref("");
     public spellCheckOn = ref(false);
     public highlightEmphasisOn = ref(true);
+
     private focusedView?: EditorView;
 
     getIds(noImage = false) {
@@ -46,6 +48,18 @@ class editorState {
             this.focusedView.dom.focus({ preventScroll: true });
             this.focusedView = undefined;
         };
+    }
+
+    setBody(key: string) {
+        if (key !== "body0" && key !== this.currentBody.value) {
+            this.currentBody.value = key;
+        };
+    }
+
+    focusView(view: EditorView) {
+        if (!view.hasFocus()) {
+            view.dom.focus({ preventScroll: true });
+        }
     }
 };
 

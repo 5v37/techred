@@ -9,7 +9,6 @@ import { useTemplateRef, onMounted, onUnmounted } from 'vue'
 
 import ImageView from './views/ImageView.vue';
 import InlineImageView from './views/InlineImageView.vue';
-import BlockView from '../views/blockView';
 
 import { EditorState, Transaction } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
@@ -27,9 +26,11 @@ import { useNodeViewFactory } from '@prosemirror-adapter/vue';
 
 import { annotationSchemaXML, annotationSchema, bodySchemaXML, bodySchema } from "@/modules/fb2Model";
 import { buildMenuItems } from "@/modules/menu";
-import { setId, setLink, splitBlock } from "@/modules/commands";
+import { setId, setLink, splitBlock } from "@/modules/pm/commands";
 import fb2Mapper from '@/modules/fb2Mapper';
 import editorState from '@/modules/editorState';
+import { sharedHistory, sharedRedo, sharedUndo } from '@/modules/pm/sharedHistory';
+import BlockView from '@/modules/pm/blockView';
 
 const spellcheckOn = editorState.spellCheckOn;
 const nodeViewFactory = useNodeViewFactory();
@@ -63,11 +64,11 @@ onMounted(() => {
     state = EditorState.create({
         doc: root,
         plugins: [
-            history(),
+            props.annotation ? history() : sharedHistory(props.editorId),
             keymap(custKeymap),
             keymap({
-                "Mod-z": undo,
-                "Mod-y": redo,
+                "Mod-z": props.annotation ? undo : sharedUndo,
+                "Mod-y": props.annotation ? redo : sharedRedo,
                 "Mod-b": toggleMark(schema.marks.strong),
                 "Mod-i": toggleMark(schema.marks.emphasis),
                 "Mod-,": toggleMark(schema.marks.sub),

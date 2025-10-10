@@ -1,12 +1,14 @@
-import { wrapItem, blockTypeItem, Dropdown, undoItem, redoItem, icons, MenuItem, MenuItemSpec, DropdownSubmenu } from "prosemirror-menu"
+import { wrapItem, blockTypeItem, Dropdown, icons, MenuItem, MenuItemSpec, DropdownSubmenu } from "prosemirror-menu"
 import { EditorState, Command } from "prosemirror-state"
 import { Schema, MarkType } from "prosemirror-model"
 import { toggleMark } from "prosemirror-commands"
-import { addInlineImage, addNodeAfterSelection, addTextautor, addTitle, changeToSection, setId, setLink, wrapPoem } from "@/modules/commands"
+import { addInlineImage, addNodeAfterSelection, addTextautor, addTitle, changeToSection, setId, setLink, wrapPoem } from "@/modules/pm/commands"
 import { addColumnAfter, addColumnBefore, addRowAfter, addRowBefore, deleteColumn, deleteRow, deleteTable, mergeCells, setCellAttr, splitCell, toggleHeaderCell, toggleHeaderColumn, toggleHeaderRow } from "prosemirror-tables"
 import { openImageDialog } from "@/modules/fileAccess"
 import editorState from "@/modules/editorState"
 import { openFileError } from "@/modules/notifications"
+import { redo as localRedo, undo as localUndo } from "prosemirror-history"
+import { sharedRedo, sharedUndo } from "@/modules/pm/sharedHistory"
 
 function cmdItem(cmd: Command, options: Partial<MenuItemSpec>) {
     let passedOptions: MenuItemSpec = {
@@ -181,6 +183,23 @@ export function buildMenuItems(schema: Schema) {
         item('Удалить таблицу', deleteTableSafety()),
     ], { label: 'Таблица' });
     const inlineMenu = [toggleStrong, toggleEmphasis, toggleStrike, toggleSup, toggleSub, toggleCode, makeInlineImage, toggleLink, makeId];
+
+    const sh = schema.topNodeType !== schema.nodes.annotation;
+    const undo = sh ? sharedUndo : localUndo;
+    const redo = sh ? sharedRedo : localRedo;
+    const undoItem = new MenuItem({
+        title: "Отменить последнее изменение",
+        enable(state) { return undo(state) },
+        run(state, dispatch) { undo(state, dispatch) },
+        icon: icons.undo
+    });
+    
+    const redoItem = new MenuItem({
+        title: "Повторить последнее отмененное изменение",
+        enable(state) { return redo(state) },
+        run(state, dispatch) { redo(state, dispatch) },
+        icon: icons.redo
+    });
 
     return [inlineMenu, [insertMenu, typeMenu, tableMenu], [undoItem, redoItem]]
 }

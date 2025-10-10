@@ -20,7 +20,7 @@
 </template>
 
 <script setup lang="ts">
-import { onUpdated, useTemplateRef, ComponentPublicInstance, ref, computed, shallowReactive, reactive, nextTick } from "vue";
+import { onUpdated, useTemplateRef, ComponentPublicInstance, computed, shallowReactive, reactive, nextTick } from "vue";
 
 import { Splitter, SplitterPanel } from "primevue";
 import { TreeNode } from "primevue/treenode";
@@ -30,6 +30,7 @@ import Editor from "@/components/Editor.vue";
 import fb2Mapper, { DocumentBlocks } from "@/modules/fb2Mapper";
 import editorState from "@/modules/editorState";
 import { fb2ns } from "@/modules/fb2Model";
+import { resetSharedHistory } from "@/modules/pm/sharedHistory";
 
 let toTop = false;
 const content = useTemplateRef('content');
@@ -43,7 +44,7 @@ onUpdated(() => {
     }
 });
 
-let currentTab = ref("");
+const currentTab = editorState.currentBody;
 fillBodies();
 
 const children = reactive<TreeNode[]>([]);
@@ -82,7 +83,7 @@ function getBlocks(xmlDoc: Document, method: string) {
 
     if (method === "parse") {
         toTop = true;
-
+        
         const bodyElements = xmlDoc.getElementsByTagName("body");
         if (bodyElements.length !== children.length) {
             fb2Mapper.setUpdateProcessor(nextTick);
@@ -100,6 +101,7 @@ function getBlocks(xmlDoc: Document, method: string) {
         for (const element of Object.values(editorState.bodies)) {
             children.push(element);
         }
+        resetSharedHistory();
     } else if (method === "serialize") {
         const [fb2] = xmlDoc.getElementsByTagName("FictionBook");
         for (const key in editorState.bodies) {

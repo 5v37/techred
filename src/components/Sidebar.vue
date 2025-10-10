@@ -38,6 +38,7 @@ function onNodeSelect(node: TreeNode) {
     };
 
     if (node.data) {
+        editorState.setBody(node.data);
         queueMicrotask(() => {
             const element = document.querySelector(`[uid="${node.key}"]`);
             if (element) {

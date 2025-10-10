@@ -28,7 +28,7 @@ import { Mark } from "prosemirror-model";
 import { EditorState, Transaction } from "prosemirror-state";
 
 import editorState from "@/modules/editorState";
-import { updateLink } from "@/modules/commands";
+import { updateLink } from "@/modules/pm/commands";
 import ui from "@/modules/ui";
 
 const typeLinkOptions = ref(['Примечание', 'Гиперссылка']);
