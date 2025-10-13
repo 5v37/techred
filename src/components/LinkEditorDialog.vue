@@ -1,16 +1,16 @@
 <template>
-    <Dialog v-model:visible="visible" modal :closable="false" :close-on-escape="false" lass="t-ui-dialog"
+    <Dialog v-model:visible="visible" modal :closable="false" :close-on-escape="false" class="t-ui-dialog"
         header="Редактирование ссылки">
         <div class="t-ui-container">
-            <div class="t-ui-chipcontainer">
-                <label style="width: 5rem;">Тип</label>
-                <SelectButton v-model="typeLink" :options="typeLinkOptions" @change="href = ''" class="t-ui-grow" />
+            <div class="t-linkeditordialog-container">
+                <label class="t-linkeditordialog-label">Тип</label>
+                <SelectButton v-model="typeLink" :options="typeLinkOptions" @change="href = ''" fluid />
             </div>
-            <div class="t-ui-chipcontainer">
-                <label style="width: 5rem;">Значение</label>
-                <InputText v-if="!noteLink" v-model.lazy="href" autofocus class="t-ui-grow" />
+            <div class="t-linkeditordialog-container">
+                <label class="t-linkeditordialog-label">Значение</label>
+                <InputText v-if="!noteLink" v-model.lazy="href" autofocus fluid />
                 <Select v-if="noteLink" v-model="selectedId" :options="notes" filter autoFilterFocus showClear
-                    :pt="{ label: { autofocus: true } }" class="t-ui-grow" />
+                    :pt="{ label: { autofocus: true } }" fluid />
             </div>
         </div>
         <template #footer>
@@ -31,7 +31,7 @@ import editorState from "@/modules/editorState";
 import { updateLink } from "@/modules/pm/commands";
 import ui from "@/modules/ui";
 
-const typeLinkOptions = ref(['Примечание', 'Гиперссылка']);
+const typeLinkOptions = ref(['Сноска', 'Гиперссылка']);
 const typeLink = ref(typeLinkOptions.value[0]);
 const visible = ref(false);
 const href = ref("");
@@ -111,4 +111,16 @@ function saveLink() {
 };
 </script>
 
-<style></style>
+<style>
+.t-linkeditordialog-container {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 1rem;
+}
+
+.t-linkeditordialog-label {
+    width: 5rem;
+    flex-shrink: 0;
+}
+</style>
