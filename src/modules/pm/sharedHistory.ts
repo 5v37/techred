@@ -1,49 +1,48 @@
 import { Command, Plugin } from "prosemirror-state";
 import { undo, redo, history } from "prosemirror-history";
+import { RingBuffer } from "@toolbuilder/ring-buffer";
 import editorState from "@/modules/editorState";
 
-function createUndo(): Command {
+function createCommand(isUndo: boolean): Command {
 	return (_state, dispatch) => {
-		const undoList = historyTrace.undo;
-		if (undoList.length) {
-			const body = undoList[undoList.length - 1];
-			const view = editorState.views[body];
-
+		const list = isUndo ? historyTrace.undo : historyTrace.redo;
+		if (list.length) {
 			if (dispatch) {
-				editorState.setBody(body);
-				editorState.focusView(view);
-				return undo(view.state, view.dispatch);
-			} else {
-				return undo(view.state);
+				const command = isUndo ? undo : redo;
+
+				const lastValue = list.back();
+				let groupSize = 1;
+				if (typeof lastValue === "number") {
+					groupSize = lastValue;
+					list.pop();
+				};
+				let focusGroup = isUndo ? groupSize - 1 : 0;
+
+				let body, view;
+				startHistoryGroup();
+				while (groupSize > 0) {
+					body = list.back() as string;
+					view = editorState.views[body];
+
+					groupSize--;
+					if (groupSize === focusGroup) {
+						editorState.setBody(body);
+						editorState.focusView(view); // !!! надо дождаться смены вкладки для правильной фокусировки
+					};
+
+					command(view.state, view.dispatch);
+				};
+				endHistoryGroup();
 			};
+			return true;
 		} else {
 			return false;
 		};
 	};
 }
 
-function createRedo(): Command {
-	return (_state, dispatch) => {
-		const redoList = historyTrace.redo;
-		if (redoList.length) {
-			const body = redoList[redoList.length - 1];
-			const view = editorState.views[body];
-
-			if (dispatch) {
-				editorState.setBody(body);
-				editorState.focusView(view);
-				return redo(view.state, view.dispatch);
-			} else {
-				return redo(view.state);
-			};
-		} else {
-			return false;
-		};
-	};
-}
-
-function sharedHistory(editorId: string, config = {}) {
-	let historyPlugin = history(config);
+function sharedHistory(editorId: string, newGroupDelay = 500) {
+	let historyPlugin = history({ depth: traceDepth, newGroupDelay: newGroupDelay });
 	return new Plugin({
 		key: historyPlugin.spec.key,
 		state: {
@@ -54,24 +53,26 @@ function sharedHistory(editorId: string, config = {}) {
 
 				const result = historyPlugin.spec.state!.apply(tr, hist, state, newState);
 
-				const newUndoCtx = result.done.eventCount
+				const newUndoCtx = result.done.eventCount;
 				if (newUndoCtx > undoCtx) {
 					let id = editorId;
 					if (redoCtx - 1 === result.undone.eventCount) {
-						id = historyTrace.redo.pop()!;
+						id = historyTrace.redo.pop() as string;
 					} else {
-						historyTrace.redo = [];
+						historyTrace.redo.clear();
 					};
 					historyTrace.undo.push(id);
+					if (isGroup) groupIdx++;
 				} else if (newUndoCtx < undoCtx) {
-					const id = historyTrace.undo.pop()!;
+					const id = historyTrace.undo.pop() as string;
 					historyTrace.redo.push(id);
+					if (isGroup) groupIdx--;
 				};
 
 				return result;
 			}
 		},
-		config,
+		config: historyPlugin.spec.config,
 		props: {
 			handleDOMEvents: {
 				beforeinput(view, e) {
@@ -88,12 +89,34 @@ function sharedHistory(editorId: string, config = {}) {
 }
 
 function resetSharedHistory() {
-	historyTrace.undo = [];
-	historyTrace.redo = [];
+	historyTrace.undo.clear();
+	historyTrace.redo.clear();
 }
 
-const sharedUndo = createUndo();
-const sharedRedo = createRedo();
-const historyTrace: { undo: Array<string>, redo: Array<string> } = { undo: [], redo: [] };
+let groupIdx = 0, isGroup = false;
+function startHistoryGroup() {
+	if (isGroup) {
+		throw "Группировка истории изменений уже начата";
+	}
+	isGroup = true;
+	groupIdx = 0;
+}
 
-export { sharedUndo, sharedRedo, sharedHistory, resetSharedHistory }
+function endHistoryGroup() {
+	isGroup = false;
+	if (Math.abs(groupIdx) > 1) {
+		if (groupIdx > 0) {
+			historyTrace.undo.push(groupIdx);
+		} else {
+			historyTrace.redo.push(-groupIdx);
+		};
+		groupIdx = 0;
+	};
+}
+
+const traceDepth = 100;
+const sharedUndo = createCommand(true);
+const sharedRedo = createCommand(false);
+const historyTrace: { undo: RingBuffer, redo: RingBuffer } = { undo: new RingBuffer(traceDepth), redo: new RingBuffer(traceDepth) };
+
+export { sharedUndo, sharedRedo, sharedHistory, resetSharedHistory, startHistoryGroup, endHistoryGroup }

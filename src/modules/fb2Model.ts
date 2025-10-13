@@ -50,7 +50,10 @@ function template(topNode: string, toXML: boolean): Schema {
         topNode: topNode,
         nodes: {
             body: {
-                attrs: { name: { default: null } },
+                attrs: {
+                    name: { default: null },
+                    body: { default: null },
+                },
                 content: "image? title? epigraph* section+"
             },
 
@@ -315,7 +318,7 @@ function template(topNode: string, toXML: boolean): Schema {
             },
             text: { inline: true }
         },
-        marks: {            
+        marks: {
             note: {
                 attrs: {
                     href: { default: null }

@@ -17,6 +17,7 @@ import { computed, ref } from 'vue';
 import { Dialog, Button, InputText, Message } from 'primevue';
 import { EditorState, Transaction } from 'prosemirror-state';
 
+import { endHistoryGroup, startHistoryGroup } from '@/modules/pm/sharedHistory';
 import { NCNameFilter } from '@/modules/utils';
 import editorState from '@/modules/editorState';
 import ui from '@/modules/ui';
@@ -49,8 +50,8 @@ ui.openIdInputDialog = openDialog;
 
 function keyListener(event: KeyboardEvent) {
 	if (event.defaultPrevented) {
-        return;
-    };
+		return;
+	};
 
 	if (event.code === "Escape") {
 		closeDialog();
@@ -83,11 +84,50 @@ function changeId() {
 		return;
 	};
 	if ((newId.value || params.id) && newId.value !== params.id) {
+		startHistoryGroup();
 		let tr = params.state.tr;
-		tr.setNodeAttribute(params.pos, params.key, newId.value || undefined)
+		tr.setNodeAttribute(params.pos, params.key, newId.value || undefined);
+
+		const bodyKey = params.state.doc.attrs.body;
+		if (bodyKey && params.id) {
+			const oldHref = "#" + params.id, newHref = "#" + newId.value;
+			replaceLinkHrefs(params.state, tr, oldHref, newHref);
+
+			for (let view of Object.values(editorState.views)) {
+				const relatedBodyKey = view.state.doc.attrs.body;
+				if (relatedBodyKey && relatedBodyKey !== bodyKey) {
+					let relatedTr = view.state.tr;
+					if (replaceLinkHrefs(view.state, relatedTr, oldHref, newHref)) {
+						view.dispatch(relatedTr);
+					};
+				};
+			};
+		};
+
 		params.dispatch(tr);
+		endHistoryGroup();
 	};
 	closeDialog();
+}
+
+function replaceLinkHrefs(state: EditorState, tr: Transaction, oldHref: string, newHref: string) {
+	const noteMarkType = state.schema.marks.note;
+	const linkMarkType = state.schema.marks.a;
+
+	let found = false;
+	state.doc.descendants((node, pos) => {
+		if (node.marks.length === 0) return;
+
+		for (const mark of node.marks) {
+			if ((mark.type === linkMarkType || mark.type === noteMarkType) && mark.attrs.href === oldHref) {
+				tr.removeMark(pos, pos + node.nodeSize, mark);
+				tr.addMark(pos, pos + node.nodeSize, mark.type.create({ ...mark.attrs, href: newHref }))
+				found = true;
+			}
+		};
+	});
+
+	return found;
 }
 </script>
 

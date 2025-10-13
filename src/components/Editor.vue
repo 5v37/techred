@@ -160,7 +160,10 @@ function emptyDoc(name?: string) {
     if (props.annotation) {
         return schema.node("annotation", null, [schema.node("p")]);
     } else {
-        const attrs = name ? { name } : (props.editorId === "body1" ? { name: "notes" } : null);
+        const attrs = {
+            name: name ?? (props.editorId === "body1" ? "notes" : ""),
+            body: props.editorId
+        }
         return schema.node("body", attrs, [schema.node("section", { uid: self.crypto.randomUUID() }, [schema.node("p")])]);
     };
 }
