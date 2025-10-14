@@ -23,7 +23,7 @@
 import { onUpdated, useTemplateRef, ComponentPublicInstance, computed, shallowReactive, reactive, nextTick } from "vue";
 
 import { Splitter, SplitterPanel } from "primevue";
-import { TreeNode } from "primevue/treenode";
+import type { TreeNode } from "primevue/treenode";
 
 import Editor from "@/components/Editor.vue";
 

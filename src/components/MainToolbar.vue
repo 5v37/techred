@@ -34,7 +34,7 @@ const emit = defineEmits(['loaded']);
 
 const currentFilePath = ref("");
 const saveButtonAvailable = isTauriMode || fileAPIsupported;
-let fileHandle: FileSystemFileHandle | undefined = undefined;
+let fileHandle: FileSystemFileHandle | undefined;
 
 const settings = useTemplateRef<InstanceType<typeof Settings>>('settings');
 const showSettings = () => { settings.value?.show() };

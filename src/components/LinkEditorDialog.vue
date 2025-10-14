@@ -78,7 +78,7 @@ function openDialog(state: EditorState, dispatch: (tr: Transaction) => void, mar
     } else {
         typeLink.value = typeLinkOptions.value[0];
         href.value = "";
-        selectedId.value = mark && mark.attrs.href ? mark.attrs.href.slice(1) : "";
+        selectedId.value = mark?.attrs.href ? mark.attrs.href.slice(1) : "";
     };
 
     editorState.saveViewFocus();

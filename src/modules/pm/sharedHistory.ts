@@ -2,6 +2,7 @@ import { Command, Plugin } from "prosemirror-state";
 import { undo, redo, history } from "prosemirror-history";
 import { RingBuffer } from "@toolbuilder/ring-buffer";
 import editorState from "@/modules/editorState";
+import type { EditorView } from "prosemirror-view";
 
 function createCommand(isUndo: boolean): Command {
 	return (_state, dispatch) => {
@@ -18,7 +19,7 @@ function createCommand(isUndo: boolean): Command {
 				};
 				let focusGroup = isUndo ? groupSize - 1 : 0;
 
-				let body, view;
+				let body: string, view: EditorView;
 				startHistoryGroup();
 				while (groupSize > 0) {
 					body = list.back() as string;
@@ -42,7 +43,7 @@ function createCommand(isUndo: boolean): Command {
 }
 
 function sharedHistory(editorId: string, newGroupDelay = 500) {
-	let historyPlugin = history({ depth: traceDepth, newGroupDelay: newGroupDelay });
+	const historyPlugin = history({ depth: traceDepth, newGroupDelay: newGroupDelay });
 	return new Plugin({
 		key: historyPlugin.spec.key,
 		state: {
@@ -77,7 +78,7 @@ function sharedHistory(editorId: string, newGroupDelay = 500) {
 			handleDOMEvents: {
 				beforeinput(view, e) {
 					let inputType = e.inputType;
-					let command = inputType == "historyUndo" ? sharedUndo : inputType == "historyRedo" ? sharedRedo : null;
+					let command = inputType === "historyUndo" ? sharedUndo : inputType === "historyRedo" ? sharedRedo : null;
 					if (!command)
 						return false;
 					e.preventDefault();

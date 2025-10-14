@@ -71,7 +71,7 @@ class fb2Mapper {
     }
 
     private getBlocks(xmlDoc: Document, method: string) {
-        let blocks: DocumentBlocks[] = [];
+        const blocks: DocumentBlocks[] = [];
         for (const preproc of this.preprocessors) {
             blocks.push(preproc(xmlDoc, method));
         }

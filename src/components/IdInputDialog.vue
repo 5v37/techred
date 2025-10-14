@@ -15,7 +15,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { Dialog, Button, InputText, Message } from 'primevue';
-import { EditorState, Transaction } from 'prosemirror-state';
+import type { EditorState, Transaction } from 'prosemirror-state';
 
 import { endHistoryGroup, startHistoryGroup } from '@/modules/pm/sharedHistory';
 import { NCNameFilter } from '@/modules/utils';

@@ -60,7 +60,7 @@ let fonts = !isMac() ?
 const selectedSize = ref(12);
 const fontSizes = [8, 9, 10, 11, 12, 14, 16, 18, 20, 24, 28, 32, 36, 48, 72];
 
-const hasLocalStorage = localStorage != undefined;
+const hasLocalStorage = localStorage !== undefined;
 getSettings();
 addEventListener("storage", () => { getSettings() });
 

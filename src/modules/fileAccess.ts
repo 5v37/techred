@@ -213,7 +213,7 @@ export function saveFictionBookDialog(content: string, filePath: string, saveDir
 export function saveImageDialog(content: string, filePath: string) {
     return new Promise<{ path: string, handle?: FileSystemFileHandle }>((resolve, reject) => {
         const image = parseDataURL(content);
-        if (image && image.base64) {
+        if (image?.base64) {
             if (isTauriMode) {
                 const options: SaveDialogOptions = {
                     defaultPath: filePath,

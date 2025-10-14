@@ -93,7 +93,7 @@ import ComplexDatePicker from '@/components/ComplexDatePicker.vue';
 import Sequences from '@/components/Sequences.vue';
 
 import { Panel, Chip, Button, SelectButton, Popover, Select, FloatLabel, Tree, Image, InputText, InputNumber } from 'primevue';
-import { TreeNode } from 'primevue/treenode';
+import type { TreeNode } from 'primevue/treenode';
 
 import { openFileError, saveFileError, saveFileInfo } from '@/modules/notifications';
 import { Genre, genresTree, findGenre } from '@/types/genres'

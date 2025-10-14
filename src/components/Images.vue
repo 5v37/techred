@@ -24,7 +24,7 @@ import editorState from "@/modules/editorState";
 import { addingNodes } from "@/modules/utils";
 import { fb2ns, xlinkns } from "@/modules/fb2Model";
 import { NCNameFilter } from '@/modules/utils';
-import { ImageSpec } from '@/types/images';
+import type { ImageSpec } from '@/types/images';
 
 const images = editorState.images;
 const errorMessage = ref("");
@@ -114,7 +114,7 @@ function parseContent(descElements: Element | undefined) {
 function serializeContent(xmlDoc: Document, target: Element) {
 	const addElement = addingNodes(xmlDoc, fb2ns);
 
-	let image, id = undefined;
+	let image, id;
 	let idToSave: Set<string> = new Set;
 	xmlDoc.querySelectorAll("image, inlineimage").forEach(element => {
 		id = element.getAttributeNS(xlinkns, "href")?.slice(1);

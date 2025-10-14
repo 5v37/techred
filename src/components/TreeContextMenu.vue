@@ -14,10 +14,10 @@
 import { ref, useTemplateRef } from 'vue';
 
 import { ContextMenu, Dialog, Button, InputText } from 'primevue';
-import { MenuItem } from 'primevue/menuitem';
-import { TreeNode } from 'primevue/treenode';
+import type { MenuItem } from 'primevue/menuitem';
+import type { TreeNode } from 'primevue/treenode';
 
-import { EditorView } from 'prosemirror-view';
+import type { EditorView } from 'prosemirror-view';
 
 import { SectionRange, sectionRangeByUID, excludeSection, includeSection, joinSection, moveUpSection, moveDownSection, deleteSection, addNode } from '@/modules/pm/commands';
 import { openImageDialog } from '@/modules/fileAccess';

@@ -39,7 +39,7 @@ export async function unpack(fileData: ArrayBuffer) {
 		for (let i = endOfCentralDirView.byteLength - MIN_EOCD_SIZE; i >= 0; i--) {
 			if (endOfCentralDirView.getUint32(i, true) === EOCD_SIGNATURE) {
 				const commentLength = endOfCentralDirView.getUint16(i + 20, true);
-				if (i + MIN_EOCD_SIZE + commentLength == endOfCentralDirView.byteLength) {
+				if (i + MIN_EOCD_SIZE + commentLength === endOfCentralDirView.byteLength) {
 					const entriesCount = endOfCentralDirView.getUint16(i + 10, true)
 					if (entriesCount === 0) {
 						throw new Error("Файл архива пустой");

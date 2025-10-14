@@ -115,7 +115,7 @@ onMounted(() => {
             cite: (node, view, getPos) => new BlockView(node, view, getPos)
         },
         dispatchTransaction(transaction) {
-            let newState = view.state.apply(transaction);
+            const newState = view.state.apply(transaction);
             view.updateState(newState);
             if (needUpdateTOC(transaction)) {
                 updateTOC(view.state.doc);
@@ -171,8 +171,8 @@ function emptyDoc(name?: string) {
 function updateTOC(doc: Node) {
     function getTitle(node: Node) {
         for (let idx = 0; idx < 2 && idx < node.childCount; idx++) {
-            if (node.children[idx].type.name == "title") {
-                let text: string[] = [];
+            if (node.children[idx].type.name === "title") {
+                const text: string[] = [];
                 node.children[idx].content.forEach(p => {
                     if (p.textContent) {
                         text.push(p.textContent);
@@ -183,7 +183,7 @@ function updateTOC(doc: Node) {
         };
     }
     function getTOC(Node: Node) {
-        let TOC: TreeNode[] = [];
+        const TOC: TreeNode[] = [];
         Node.forEach(node => {
             if (node.attrs.uid) {
                 const titleName = getTitle(node) || "<section>";
@@ -220,7 +220,7 @@ function needUpdateTOC(transaction: Transaction) {
                 if (!hasChange) {
                     const pos = transaction.doc.resolve(step.from);
                     if (pos.depth > 1 && pos.node(pos.depth - 1).type === schema.nodes.title) {
-                        let parentType = pos.node(pos.depth - 2).type;
+                        const parentType = pos.node(pos.depth - 2).type;
                         hasChange = parentType === schema.nodes.section || parentType === schema.nodes.body;
                     };
                 };

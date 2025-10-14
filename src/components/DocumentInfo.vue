@@ -176,7 +176,7 @@ export default defineComponent({
             };
 
             if (!this.programUsed.includes("Techred")) {
-                this.programUsed += (this.programUsed.length > 0 ? ", " : "") + "Techred " + __APP_VERSION__;
+                this.programUsed += `${this.programUsed.length > 0 ? ", " : ""}Techred ${__APP_VERSION__}`;
             };
         },
         serializeContent(xmlDoc: Document, documentInfo: Element) {

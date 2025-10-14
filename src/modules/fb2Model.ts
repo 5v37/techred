@@ -29,8 +29,8 @@ function getCellAttrs(dom: HTMLElement) {
 function setCellAttrs(node: Node) {
     return {
         id: node.attrs.id,
-        colspan: node.attrs.colspan != 1 ? node.attrs.colspan : null,
-        rowspan: node.attrs.rowspan != 1 ? node.attrs.rowspan : null,
+        colspan: node.attrs.colspan !== 1 ? node.attrs.colspan : null,
+        rowspan: node.attrs.rowspan !== 1 ? node.attrs.rowspan : null,
         align: node.attrs.align,
         valign: node.attrs.valign,
     };

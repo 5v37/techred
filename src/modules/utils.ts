@@ -1,10 +1,10 @@
-export function formatXML(xml: string, textBlocks: string[] = [], tab = " ", nl = "\n",) {
+export function formatXML(xml: string, textBlocks: string[] = [], tab = " ", nl = "\n") {
     let formatted = "", indent = "", mixedMode = false, mixedContent = "";
     const mixedNodeStart = textBlocks.map(tag => tag + ">");
     const mixedNodeEnd = textBlocks.map(tag => "/" + tag);
     const nodes = xml.slice(1, -1).split(/>\s*</);
     const spaces = xml.match(/>\s*</g)!;
-    if (nodes[0][0] == "?") {
+    if (nodes[0][0] === "?") {
         formatted = "<" + nodes.shift() + ">" + nl;
         spaces.shift();
     };
@@ -23,17 +23,17 @@ export function formatXML(xml: string, textBlocks: string[] = [], tab = " ", nl 
         if (mixedMode) {
             mixedContent += node + spaces[i];
         } else {
-            if (node[0] == "/") {
+            if (node[0] === "/") {
                 indent = indent.slice(tab.length);
             };
             formatted += indent + "<" + node + ">" + nl;
-            if (node[0] != "/" && node[node.length - 1] != "/" && node.indexOf("</") == -1) {
+            if (node[0] !== "/" && node[node.length - 1] !== "/" && node.indexOf("</") === -1) {
                 indent += tab;
             };
         };
     };
     return formatted;
-};
+}
 
 function equalBytes(data: Uint8Array, decl: number[]) {
     for (let idx = 0; idx < decl.length; idx++) {
@@ -80,7 +80,7 @@ export function decodeXML(xmlData: ArrayBuffer) {
     let encoding: string | undefined;
 
     const startXml = new Uint8Array(xmlData, 0, 100);
-    const decl = startDecls.find(decl => equalBytes(startXml, decl.bytes))
+    const decl = startDecls.find(decl => equalBytes(startXml, decl.bytes));
     if (!decl) {
         if (equalBytes(startXml, [0x3C, 0x3F])) { // has prolog
             const prolog = new TextDecoder().decode(startXml);
@@ -94,10 +94,10 @@ export function decodeXML(xmlData: ArrayBuffer) {
     };
 
     return new TextDecoder(encoding).decode(xmlData);
-};
+}
 
 export function parseDataURL(dataURL: string | undefined) {
-    if (dataURL && dataURL.startsWith("data:")) {
+    if (dataURL?.startsWith("data:")) {
         const [mediatype, data] = dataURL.substring(5).split(",")
         const parameters = mediatype.split(";");
         let mime = "text/plain";
@@ -121,8 +121,8 @@ export function parseDataURL(dataURL: string | undefined) {
         return { mime, params, base64, data };
     };
 
-    return false;
-};
+    return undefined;
+}
 
 export function base64toData(data64: string) {
     const bstr = atob(data64);
@@ -132,7 +132,7 @@ export function base64toData(data64: string) {
         u8arr[n] = bstr.charCodeAt(n);
     }
     return u8arr;
-};
+}
 
 export function addingNodes(xmlDoc: Document, nameSpace: string) {
     type attrType = {
@@ -154,7 +154,7 @@ export function addingNodes(xmlDoc: Document, nameSpace: string) {
         };
     };
     return addElement;
-};
+}
 
 export function isMac() {
     return typeof navigator != "undefined" ? /Mac|iP(hone|[oa]d)/.test(navigator.platform)

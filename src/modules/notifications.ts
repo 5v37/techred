@@ -1,4 +1,4 @@
-import { ToastServiceMethods, useToast } from 'primevue';
+import { ToastServiceMethods, useToast } from "primevue";
 
 const infoLife = 3000;
 const warnLife = 7000;

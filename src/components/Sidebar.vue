@@ -15,7 +15,7 @@
 import { useTemplateRef } from 'vue';
 
 import { Tree } from 'primevue';
-import { TreeNode } from 'primevue/treenode';
+import type { TreeNode } from 'primevue/treenode';
 
 import TreeContextMenu from '@/components/TreeContextMenu.vue';
 import editorState from '@/modules/editorState';

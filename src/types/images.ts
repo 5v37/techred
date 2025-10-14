@@ -43,7 +43,7 @@ class Images {
 
 	addAsDataURL(name: string, dataURL?: string, ids?: Set<string>) {
 		const data = parseDataURL(dataURL);
-		if (data && data.base64) {
+		if (data?.base64) {
 			const validId = getValidId(name, data.mime, ids);
 			this.items[validId] = {
 				content: data.data,

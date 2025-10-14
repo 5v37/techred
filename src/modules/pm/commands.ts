@@ -511,8 +511,8 @@ export type SectionRange = {
 function sectionRangeByUID(uid: string, state: EditorState) {
     const sectionType = state.schema.nodes.section;
     function getSectionRange(uid: string, root: readonly Node[], pos: number): SectionRange | undefined {
-        let result: SectionRange | undefined = undefined;
-        let nodeBefore: Node | undefined = undefined;
+        let result: SectionRange | undefined;
+        let nodeBefore: Node | undefined;
         for (const node of root) {
             if (result) {
                 result.after += node.nodeSize;
