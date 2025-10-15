@@ -99,6 +99,11 @@ onMounted(() => {
                 return false;
             }
         },
+        transformPastedHTML: (html: string) => {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            return doc?.body ? doc.body.innerHTML : html;
+        },
         nodeViews: {
             image: nodeViewFactory({
                 component: ImageView,

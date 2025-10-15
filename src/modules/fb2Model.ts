@@ -320,16 +320,13 @@ function template(topNode: string, toXML: boolean): Schema {
         },
         marks: {
             note: {
-                attrs: {
-                    href: { default: null }
-                },
+                attrs: { href: {} },
                 excludes: "sub sup a note",
                 parseDOM: [{
-                    tag: "a[type=note]",
+                    tag: "a[type=note], note",
                     getAttrs(dom) {
-                        return {
-                            href: dom.getAttributeNS(xlinkns, "href")
-                        };
+                        const href = dom.getAttributeNS(xlinkns, "href") || dom.getAttribute("href");
+                        return href ? { href } : false;
                     }
                 }],
                 toDOM(node) {
@@ -344,16 +341,13 @@ function template(topNode: string, toXML: boolean): Schema {
                 }
             },
             a: {
-                attrs: {
-                    href: { default: null }
-                },
+                attrs: { href: {} },
                 excludes: "a note",
                 parseDOM: [{
                     tag: "a:not([type=note])",
                     getAttrs(dom) {
-                        return {
-                            href: dom.getAttributeNS(xlinkns, "href")
-                        };
+                        const href = dom.getAttributeNS(xlinkns, "href") || dom.getAttribute("href");
+                        return href ? { href } : false;
                     }
                 }],
                 toDOM(node) {
