@@ -21,4 +21,4 @@ app.use(PrimeVue, {
 app.use(ToastService);
 app.directive('tooltip', Tooltip);
 app.directive('keyfilter', KeyFilter);
-app.mount("#app");
+app.mount(".root-app-container");
