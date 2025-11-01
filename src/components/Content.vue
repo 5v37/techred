@@ -1,10 +1,10 @@
 <template>
     <div ref="content" class="t-content-container">
         <Splitter layout="vertical">
-            <SplitterPanel :size="75" :minSize="10" ref="main" style="overflow-y: auto;">
+            <SplitterPanel :size="75" :minSize="10" ref="main" class="t-link-tooltip-root" style="overflow-y: auto;">
                 <Editor :editor-id="children[0].key" />
             </SplitterPanel>
-            <SplitterPanel :size="25" :minSize="10" ref="extra" style="overflow-y: auto;"
+            <SplitterPanel :size="25" :minSize="10" ref="extra" class="t-link-tooltip-root" style="overflow-y: auto;"
                 :class="{ 't-content-has-tabs': hasTabs }">
                 <Editor v-for="item in children.slice(1)" :key="item.key" v-show="currentTab === item.key"
                     :editor-id="item.key" />
@@ -83,7 +83,7 @@ function getBlocks(xmlDoc: Document, method: string) {
 
     if (method === "parse") {
         toTop = true;
-        
+
         const bodyElements = xmlDoc.getElementsByTagName("body");
         if (bodyElements.length !== children.length) {
             fb2Mapper.setUpdateProcessor(nextTick);

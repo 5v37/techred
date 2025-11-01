@@ -1,0 +1,90 @@
+.t-link-tooltip {
+    display: block;
+    position: absolute;
+    z-index: 100;
+    padding: 0.5rem;
+    max-width: 25rem;
+    background: var(--p-overlay-popover-background);
+    border: 1px solid var(--p-overlay-popover-border-color);
+    border-radius: var(--p-overlay-popover-border-radius);
+    box-shadow: var(--p-overlay-popover-shadow);
+
+    .link-container {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .link-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .link-preview {
+        padding: 0rem;
+        display: -webkit-box;
+        line-clamp: 5;
+        -webkit-line-clamp: 5;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .link-url {
+        word-break: break-all;
+        padding-inline: 0.25rem;
+        min-width: 10rem;
+        color: var(--p-link-color);
+        cursor: pointer;
+    }
+
+    .link-url:hover {
+        text-decoration: underline;
+    }
+
+    .link-actions {
+        display: flex;
+        flex-direction: row;
+        gap: 0.125rem;
+    }
+
+    .link-edit,
+    .link-remove {
+        display: inline-flex;
+        position: relative;
+        cursor: pointer;
+        user-select: none;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;        
+        background: transparent;
+        color: var(--p-button-text-secondary-color);
+        border: 1px solid transparent;
+        width: var(--p-button-icon-only-width);
+        padding: var(--p-button-padding-y) 0;
+        font-size: 1rem;
+        font-family: inherit;
+        font-feature-settings: inherit;
+        transition: background var(--p-button-transition-duration), outline-color var(--p-button-transition-duration), box-shadow var(--p-button-transition-duration);
+        border-radius: var(--p-button-border-radius);
+        outline-color: transparent;
+    }
+
+    .link-edit:hover,
+    .link-remove:hover {
+        background: var(--p-button-text-secondary-hover-background);
+    }
+
+    .link-edit:focus-visible,
+    .link-remove:focus-visible {
+        outline-color: var(--p-button-secondary-focus-ring-color);
+        box-shadow: var(--p-button-secondary-focus-ring-shadow);
+        outline: var(--p-button-focus-ring-width) var(--p-button-focus-ring-style) var(--p-button-primary-focus-ring-color);
+        outline-offset: var(--p-button-focus-ring-offset);
+    }
+}
+
+.t-link-tooltip-root {
+    position: relative;
+}

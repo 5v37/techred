@@ -1,6 +1,6 @@
 import { Attrs, Fragment, MarkType, Node, NodeType, ResolvedPos } from "prosemirror-model";
 import { Command, Selection, AllSelection, NodeSelection, TextSelection, EditorState } from "prosemirror-state";
-import { canSplit, findWrapping } from 'prosemirror-transform';
+import { canSplit, findWrapping } from "prosemirror-transform";
 import ui from "@/modules/ui";
 import editorState from "@/modules/editorState";
 
@@ -87,11 +87,8 @@ export function updateLink(newMarkType?: MarkType, oldMarkType?: MarkType, attrs
 
                 tr.addMark(from, to, newMarkType.create(attrs));
 
-                dispatch(tr);
-                return true;
+                dispatch(tr.scrollIntoView());
             };
-
-            return true;
         } else {
             const position = markPosition(state.selection.$to, oldMarkType);
             if (!position) {
@@ -107,12 +104,11 @@ export function updateLink(newMarkType?: MarkType, oldMarkType?: MarkType, attrs
                     tr.addMark(from, to, newMarkType.create(attrs));
                 };
 
-                dispatch(tr);
+                dispatch(tr.scrollIntoView());
             };
         };
 
         return true;
-
     };
 }
 
@@ -303,7 +299,7 @@ export function setLink(): Command {
 
         if (state.selection instanceof NodeSelection) {
             return false;
-        }; 
+        };
 
         let linkMark;
         for (const mark of $to.marks()) {

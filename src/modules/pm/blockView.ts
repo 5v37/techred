@@ -1,6 +1,6 @@
-import type { NodeView, EditorView } from 'prosemirror-view';
-import type { Node as ProseMirrorNode } from 'prosemirror-model';
-import ui from '@/modules/ui';
+import type { NodeView, EditorView } from "prosemirror-view";
+import type { Node as ProseMirrorNode } from "prosemirror-model";
+import ui from "@/modules/ui";
 
 class BlockView implements NodeView {
 	node: ProseMirrorNode;
@@ -28,12 +28,12 @@ class BlockView implements NodeView {
 		this.idLabel.contentEditable = "false";
 		this.updateIdLabel();
 
-		this.idLabel.addEventListener("mousedown", (e) => e.preventDefault());
-		this.idLabel.addEventListener("click", () => {
+		this.idLabel.addEventListener("mousedown", (event) => {
+			event.preventDefault();
 			const pos = this.getPos();
 			if (pos !== undefined) {
 				ui.openIdInputDialog(this.view.state, this.view.dispatch, pos, this.node.attrs.id);
-			}
+			};
 		});
 
 		this.dom.append(this.contentDOM, this.idLabel);
@@ -50,14 +50,19 @@ class BlockView implements NodeView {
 		};
 		if (oldAttrs.id !== this.node.attrs.id) {
 			this.updateIdLabel();
-		}
+		};
 
 		return true;
 	}
 
 	updateIdLabel() {
-		const id = this.node.attrs.id || "<не установлен>";
-		this.idLabel.textContent = `#${id}`;
+		const id = this.node.attrs.id;
+		if (id) {
+			this.contentDOM.setAttribute("id", id);
+		} else {
+			this.contentDOM.removeAttribute("id");
+		};
+		this.idLabel.textContent = `#${id || "<не установлен>"}`;
 	}
 }
 

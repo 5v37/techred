@@ -32,7 +32,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="t-ui-field">
+                <div class="t-ui-field t-link-tooltip-root">
                     <label>Аннотация</label>
                     <Editor ref="annotationEditor" :editor-id=annotationId annotation class="t-ui-texteditor" />
                 </div>

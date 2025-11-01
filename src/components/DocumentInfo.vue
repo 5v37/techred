@@ -23,7 +23,7 @@
                 </div>
             </div>
 
-            <div class="t-ui-field">
+            <div class="t-ui-field t-link-tooltip-root">
                 <label>История изменений</label>
                 <Editor editor-id="history" annotation class="t-ui-texteditor" />
             </div>

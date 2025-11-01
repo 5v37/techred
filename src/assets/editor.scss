@@ -1,3 +1,5 @@
+@use './linkTooltip.scss';
+
 @import 'prosemirror-view/style/prosemirror.css';
 @import 'prosemirror-tables/style/tables.css';
 @import 'prosemirror-menu/style/menu.css';
@@ -159,8 +161,12 @@
 		line-height: 0;
 		vertical-align: super;
 		font-size: smaller;
-		color: var(--p-blue-600);
+		color: var(--p-link-color);
 		margin-inline-start: 0.1em;
+	}
+
+	a {
+		color: var(--p-link-color);
 	}
 
 	sup,

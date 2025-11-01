@@ -1,14 +1,14 @@
 <template>
-    <div :id="editorId" ref="editor" :spellcheck="spellcheckOn"
+    <div ref="editor" :spellcheck="spellcheckOn"
         :class="{ 'highlight-emphasis': editorState.highlightEmphasisOn.value }">
     </div>
 </template>
 
 <script setup lang="ts">
-import { useTemplateRef, onMounted, onUnmounted } from 'vue'
+import { useTemplateRef, onMounted, onUnmounted } from "vue";
 
-import ImageView from './views/ImageView.vue';
-import InlineImageView from './views/InlineImageView.vue';
+import ImageView from "./views/ImageView.vue";
+import InlineImageView from "./views/InlineImageView.vue";
 
 import { EditorState, Transaction } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
@@ -22,15 +22,16 @@ import { goToNextCell, tableEditing } from "prosemirror-tables";
 import { dropCursor } from "prosemirror-dropcursor";
 
 import type { TreeNode } from "primevue/treenode";
-import { useNodeViewFactory } from '@prosemirror-adapter/vue';
+import { useNodeViewFactory } from "@prosemirror-adapter/vue";
 
 import { annotationSchemaXML, annotationSchema, bodySchemaXML, bodySchema } from "@/modules/fb2Model";
 import { buildMenuItems } from "@/modules/menu";
 import { setId, setLink, splitBlock } from "@/modules/pm/commands";
-import fb2Mapper from '@/modules/fb2Mapper';
-import editorState from '@/modules/editorState';
-import { sharedHistory, sharedRedo, sharedUndo } from '@/modules/pm/sharedHistory';
-import BlockView from '@/modules/pm/blockView';
+import fb2Mapper from "@/modules/fb2Mapper";
+import editorState from "@/modules/editorState";
+import { sharedHistory, sharedRedo, sharedUndo } from "@/modules/pm/sharedHistory";
+import BlockView from "@/modules/pm/blockView";
+import linkTooltip from "@/modules/pm/linkTooltip";
 
 const spellcheckOn = editorState.spellCheckOn;
 const nodeViewFactory = useNodeViewFactory();
@@ -44,7 +45,7 @@ defineExpose({
     serializeContent
 });
 
-const editor = useTemplateRef('editor');
+const editor = useTemplateRef("editor");
 const schema = props.annotation ? annotationSchema : bodySchema;
 
 let custKeymap = baseKeymap;
@@ -56,7 +57,7 @@ let state: EditorState;
 let root = emptyDoc();
 if (!props.annotation) {
     updateTOC(root);
-}
+};
 
 fb2Mapper.addProcessor(parseContent, serializeContent, props.editorId, 1);
 
@@ -81,6 +82,7 @@ onMounted(() => {
                 "Tab": goToNextCell(1),
                 "Shift-Tab": goToNextCell(-1),
             }),
+            linkTooltip(editor.value!.parentElement!),
             tableEditing(),
             dropCursor(),
             menuBar({
@@ -101,17 +103,17 @@ onMounted(() => {
         },
         transformPastedHTML: (html: string) => {
             const parser = new DOMParser();
-            const doc = parser.parseFromString(html, 'text/html');
+            const doc = parser.parseFromString(html, "text/html");
             return doc?.body ? doc.body.innerHTML : html;
         },
         nodeViews: {
             image: nodeViewFactory({
                 component: ImageView,
-                as: 'image'
+                as: "image"
             }),
             inlineimage: nodeViewFactory({
                 component: InlineImageView,
-                as: 'inline-image'
+                as: "inline-image"
             }),
             annotation: (node, view, getPos) => new BlockView(node, view, getPos),
             epigraph: (node, view, getPos) => new BlockView(node, view, getPos),
@@ -133,7 +135,7 @@ onMounted(() => {
 onUnmounted(() => {
     fb2Mapper.delProcessor(props.editorId);
     delete editorState.views[props.editorId];
-})
+});
 
 function hasContent(): boolean {
     return view.state.doc.textContent !== "";
@@ -168,7 +170,7 @@ function emptyDoc(name?: string) {
         const attrs = {
             name: name ?? (props.editorId === "body1" ? "notes" : ""),
             body: props.editorId
-        }
+        };
         return schema.node("body", attrs, [schema.node("section", { uid: self.crypto.randomUUID() }, [schema.node("p")])]);
     };
 }
@@ -192,14 +194,14 @@ function updateTOC(doc: Node) {
         Node.forEach(node => {
             if (node.attrs.uid) {
                 const titleName = getTitle(node) || "<section>";
-                TOC.push({ key: node.attrs.uid, label: titleName, icon: 'pi pi-fw pi-bookmark', data: props.editorId, children: getTOC(node) });
+                TOC.push({ key: node.attrs.uid, label: titleName, icon: "pi pi-fw pi-bookmark", data: props.editorId, children: getTOC(node) });
             };
         });
         return TOC;
     }
 
     editorState.bodies[props.editorId].label = getTitle(doc) || doc.attrs.name || "<body>";
-    editorState.bodies[props.editorId].icon = 'pi pi-fw pi-bookmark-fill';
+    editorState.bodies[props.editorId].icon = "pi pi-fw pi-bookmark-fill";
     editorState.bodies[props.editorId].children = getTOC(doc);
 }
 

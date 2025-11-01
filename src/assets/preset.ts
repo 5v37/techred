@@ -29,6 +29,9 @@ export const Noir = definePreset(Aura, {
                     focusBackground: '{zinc.700}',
                     color: '#ffffff',
                     focusColor: '#ffffff'
+                },
+                link: {
+                    color: '{blue.600}'
                 }
             },
             dark: {
@@ -43,6 +46,9 @@ export const Noir = definePreset(Aura, {
                     focusBackground: 'rgba(250, 250, 250, .24)',
                     color: 'rgba(255,255,255,.87)',
                     focusColor: 'rgba(255,255,255,.87)'
+                },
+                link: {
+                    color: '{blue.400}'
                 }
             }
         }
