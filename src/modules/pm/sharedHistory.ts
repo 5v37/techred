@@ -17,7 +17,7 @@ function createCommand(isUndo: boolean): Command {
 					groupSize = lastValue;
 					list.pop();
 				};
-				let focusGroup = isUndo ? groupSize - 1 : 0;
+				let focusGroup = isUndo ? 0 : groupSize - 1;
 
 				let body: string, view: EditorView;
 				startHistoryGroup();

@@ -93,6 +93,8 @@ function changeId() {
 			const oldHref = "#" + params.id, newHref = "#" + newId.value;
 			replaceLinkHrefs(params.state, tr, oldHref, newHref);
 
+			params.dispatch(tr);
+
 			for (let view of Object.values(editorState.views)) {
 				const relatedBodyKey = view.state.doc.attrs.body;
 				if (relatedBodyKey && relatedBodyKey !== bodyKey) {
@@ -102,9 +104,10 @@ function changeId() {
 					};
 				};
 			};
+		} else {
+			params.dispatch(tr);
 		};
 
-		params.dispatch(tr);
 		endHistoryGroup();
 	};
 	closeDialog();
@@ -121,7 +124,7 @@ function replaceLinkHrefs(state: EditorState, tr: Transaction, oldHref: string, 
 		for (const mark of node.marks) {
 			if ((mark.type === linkMarkType || mark.type === noteMarkType) && mark.attrs.href === oldHref) {
 				tr.removeMark(pos, pos + node.nodeSize, mark);
-				tr.addMark(pos, pos + node.nodeSize, mark.type.create({ ...mark.attrs, href: newHref }))
+				tr.addMark(pos, pos + node.nodeSize, mark.type.create({ ...mark.attrs, href: newHref }));
 				found = true;
 			}
 		};

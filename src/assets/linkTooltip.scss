@@ -39,7 +39,12 @@
         cursor: pointer;
     }
 
-    .link-url:hover {
+    .link-url[broken] {
+        color: var(--p-red-500);
+        cursor: auto;
+    }
+
+    .link-url:not([broken]):hover {
         text-decoration: underline;
     }
 

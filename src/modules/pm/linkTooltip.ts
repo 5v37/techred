@@ -12,6 +12,7 @@ class LinkTooltipView {
     private url: HTMLElement;
     private preview: HTMLElement;
     private displayed: boolean;
+    private broken: boolean;
     private link: Mark | undefined;
     private target: { node: Node, body: string, pos: number; } | undefined;
 
@@ -27,6 +28,7 @@ class LinkTooltipView {
         this.root.append(this.tooltip);
 
         this.displayed = false;
+        this.broken = false;
         this.link = undefined;
         this.target = undefined;
         this.update(view);
@@ -36,10 +38,12 @@ class LinkTooltipView {
         const $to = view.state.selection.$to;
         this.link = $to.marks().find(mark => mark.type === view.state.schema.marks.a || mark.type === view.state.schema.marks.note);
         this.target = undefined;
+        this.broken = false;
         if (this.link) {
             const href = this.link.attrs.href as string;
             if (href.startsWith("#")) {
                 this.target = getNodeById(href.slice(1));
+                this.broken = !this.target;
             };
             this.showTooltip(href, $to.pos);
         } else {
@@ -74,6 +78,12 @@ class LinkTooltipView {
     private showTooltip(href: string, pos: number) {
         this.displayed = true;
         this.url.innerHTML = href;
+        if (this.broken) {
+            this.url.setAttribute("broken", "");
+        } else {
+            this.url.removeAttribute("broken");
+        };
+
         this.updatePreview();
         this.positionTooltip(pos);
     }
@@ -160,7 +170,7 @@ class LinkTooltipView {
                     element.scrollIntoView();
                 };
             });
-        } else {
+        } else if (!this.broken) {
             open(this.link!.attrs.href, "_blank", "noopener,noreferrer");
         };
     };

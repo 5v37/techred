@@ -19,7 +19,7 @@ const src = computed(() => {
 
 <style>
 .t-inlineimageview-content {
-  background-color: orangered;
+  /* background-color: var(--p-red-500); */
   max-width: 100%;
 }
 </style>
