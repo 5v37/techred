@@ -4,7 +4,8 @@
         <div class="t-ui-container">
             <div class="t-linkeditordialog-container">
                 <label class="t-linkeditordialog-label">Тип</label>
-                <SelectButton v-model="typeLink" :options="typeLinkOptions" @change="href = ''" fluid />
+                <SelectButton v-model="typeLink" :options="typeLinkOptions" :allow-empty="false" fluid
+                    @change="href = ''" />
             </div>
             <div class="t-linkeditordialog-container">
                 <label class="t-linkeditordialog-label">Значение</label>
@@ -31,7 +32,7 @@ import editorState from "@/modules/editorState";
 import { updateLink } from "@/modules/pm/commands";
 import ui from "@/modules/ui";
 
-const typeLinkOptions = ref(['Сноска', 'Гиперссылка']);
+const typeLinkOptions = ref(["Сноска", "Гиперссылка"]);
 const typeLink = ref(typeLinkOptions.value[0]);
 const visible = ref(false);
 const href = ref("");
@@ -84,7 +85,7 @@ function openDialog(state: EditorState, dispatch: (tr: Transaction) => void, mar
     editorState.saveViewFocus();
     visible.value = true;
     addEventListener("keydown", keyListener);
-};
+}
 
 function closeDialog() {
     editorState.restoreViewFocus();
@@ -108,7 +109,7 @@ function saveLink() {
 
     updateLink(linkType, params.mark?.type, attr)(params.state, params.dispatch);
     closeDialog();
-};
+}
 </script>
 
 <style>

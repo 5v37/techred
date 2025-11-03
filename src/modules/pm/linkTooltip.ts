@@ -14,7 +14,7 @@ class LinkTooltipView {
     private displayed: boolean;
     private broken: boolean;
     private link: Mark | undefined;
-    private target: { node: Node, body: string, pos: number; } | undefined;
+    private target: { node: Node, body: string, pos: number } | undefined;
 
     constructor(view: EditorView, root: HTMLElement) {
         this.view = view;
@@ -44,6 +44,8 @@ class LinkTooltipView {
             if (href.startsWith("#")) {
                 this.target = getNodeById(href.slice(1));
                 this.broken = !this.target;
+            } else {
+                try { new URL(href) } catch { this.broken = true };
             };
             this.showTooltip(href, $to.pos);
         } else {
@@ -127,7 +129,7 @@ class LinkTooltipView {
         if (this.displayed) {
             this.displayed = false;
             this.tooltip.style.display = "none";
-        }
+        };
     }
 
     private positionTooltip(pos: number) {
