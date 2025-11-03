@@ -1,7 +1,7 @@
 <template>
     <div>
         <InputGroup>
-            <InputText id="date" v-model.lazy.trim="dateString" />
+            <InputText v-model.lazy.trim="dateString" />
             <InputGroupAddon>
                 <Button :label="dateMode.shortLabel" severity="secondary" variant="text" @click="showModesSelector"
                     style="line-height: 1;"></Button>
@@ -17,8 +17,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, useTemplateRef, watch } from 'vue';
-import { InputText, InputGroup, InputGroupAddon, DatePicker, Popover, Button, SelectButton } from 'primevue';
+import { ref, useTemplateRef, watch } from "vue";
+import { InputText, InputGroup, InputGroupAddon, DatePicker, Popover, Button, SelectButton } from "primevue";
 
 const timezoneOffset = new Date().getTimezoneOffset() * 60000;
 const dateString = defineModel<string>("date");
@@ -61,7 +61,7 @@ const dateModes = ref<DateMode[]>([
     }
 ]);
 const dateMode = ref<DateMode>(dateModes.value[dateString.value && dateString.value.length > 4 ? 2 : 0]);
-const pop = useTemplateRef('selectDateMode');
+const pop = useTemplateRef("selectDateMode");
 
 watch(dateISO, (newDateISO, oldDateISO) => {
     if (!newDateISO) {
@@ -85,11 +85,11 @@ watch(date, (newDate) => {
 
 function stringToDate(datebyString: string) {
     return new Date(new Date(datebyString).getTime() + timezoneOffset);
-};
+}
 
 function showModesSelector(event: Event) {
     if (pop.value) {
         pop.value.toggle(event);
     };
-};
+}
 </script>

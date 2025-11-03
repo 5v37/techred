@@ -1,5 +1,5 @@
 diff --git a/node_modules/prosemirror-model/dist/index.js b/node_modules/prosemirror-model/dist/index.js
-index c933a50..3136e1b 100644
+index 5177072..d99a8f6 100644
 --- a/node_modules/prosemirror-model/dist/index.js
 +++ b/node_modules/prosemirror-model/dist/index.js
 @@ -2362,7 +2362,7 @@ class MarkType {
