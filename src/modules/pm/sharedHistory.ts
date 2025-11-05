@@ -8,10 +8,14 @@ function createCommand(isUndo: boolean): Command {
 	return (_state, dispatch) => {
 		const list = isUndo ? historyTrace.undo : historyTrace.redo;
 		if (list.length) {
+			const lastValue = list.back();
+			if (typeof lastValue === "number" && lastValue > list.length - 1) {
+				return false;
+			};
+
 			if (dispatch) {
 				const command = isUndo ? undo : redo;
 
-				const lastValue = list.back();
 				let groupSize = 1;
 				if (typeof lastValue === "number") {
 					groupSize = lastValue;
@@ -55,19 +59,21 @@ function sharedHistory(editorId: string, newGroupDelay = 500) {
 				const result = historyPlugin.spec.state!.apply(tr, hist, state, newState);
 
 				const newUndoCtx = result.done.eventCount;
-				if (newUndoCtx > undoCtx) {
-					let id = editorId;
-					if (redoCtx - 1 === result.undone.eventCount) {
-						id = historyTrace.redo.pop() as string;
+				if (newUndoCtx != undoCtx) {
+					if (undoCtx - 1 === newUndoCtx) {
+						const id = historyTrace.undo.pop() as string;
+						historyTrace.redo.push(id);
+						if (isGroup) groupIdx--;
 					} else {
-						historyTrace.redo.clear();
+						let id = editorId;
+						if (redoCtx - 1 === result.undone.eventCount) {
+							id = historyTrace.redo.pop() as string;
+						} else {
+							historyTrace.redo.clear();
+						};
+						historyTrace.undo.push(id);
+						if (isGroup) groupIdx++;
 					};
-					historyTrace.undo.push(id);
-					if (isGroup) groupIdx++;
-				} else if (newUndoCtx < undoCtx) {
-					const id = historyTrace.undo.pop() as string;
-					historyTrace.redo.push(id);
-					if (isGroup) groupIdx--;
 				};
 
 				return result;
