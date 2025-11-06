@@ -1,5 +1,5 @@
 <template>
-    <Panel toggleable :collapsed="isEmpty">
+    <Panel toggleable :collapsed="!required">
         <template #header>
             <div :uid=tag class="t-ui-panelheader">{{ header }}</div>
         </template>
@@ -7,12 +7,12 @@
         <div class="t-ui-container">
             <div class="t-ui-field">
                 <label>Заглавие</label>
-                <InputText v-model.lazy.trim=bookTitle />
+                <InputText v-model.trim="model.bookTitle" />
             </div>
 
             <div class="t-ui-field">
                 <label>Автор</label>
-                <Persons v-model="authors" />
+                <Persons v-model="model.authors" />
             </div>
 
             <div class="t-ui-group">
@@ -41,30 +41,30 @@
             <div class="t-ui-group">
                 <div class="t-ui-field">
                     <label>Язык</label>
-                    <Select v-model="selectedLang" :options="languages" optionLabel="name" filter showClear />
+                    <Select v-model="model.selectedLang" :options="languages" optionLabel="name" filter showClear />
                 </div>
                 <div class="t-ui-field">
                     <label>Язык оригинала</label>
-                    <Select v-model="selectedSrcLang" :options="languages" optionLabel="name" filter showClear />
+                    <Select v-model="model.selectedSrcLang" :options="languages" optionLabel="name" filter showClear />
                 </div>
                 <div class="t-ui-field">
                     <label>Дата</label>
-                    <ComplexDatePicker v-model:date="date" v-model:date-value="dateValue" />
+                    <ComplexDatePicker v-model:date="model.date" v-model:date-value="model.dateValue" />
                 </div>
             </div>
 
             <div class="t-ui-field">
                 <label>Переводчики</label>
-                <Persons v-model="translators" />
+                <Persons v-model="model.translators" />
             </div>
 
             <div class="t-ui-field">
                 <label>Жанры</label>
                 <div class="t-ui-chipcontainer">
-                    <Chip v-for="genre in selectedGenres" :key="genre.mark" :label="genre.name" removable
+                    <Chip v-for="genre in model.selectedGenres" :key="genre.mark" :label="genre.name" removable
                         @remove="genreRemove(genre.mark)" />
                     <Button type="button" icon="pi pi-plus" @click="showGenreSelector" v-tooltip="'Добавить'" />
-                    <Popover ref="genrespop" class="t-titleinfo-genrespop">
+                    <Popover ref="genresPop" class="t-titleinfo-genrespop">
                         <Tree :value="genresTree" selectionMode="single" :pt="{ root: { style: 'padding: 0rem' } }"
                             @node-select="genreSelect" />
                     </Popover>
@@ -73,255 +73,214 @@
 
             <div class="t-ui-field">
                 <label>Ключевые слова</label>
-                <InputText v-model.lazy.trim=keywords />
+                <InputText v-model.trim="model.keywords" />
             </div>
 
             <div class="t-ui-field">
                 <label>Серии</label>
-                <Sequences v-model="sequences" />
+                <Sequences v-model="model.sequences" />
             </div>
         </div>
     </Panel>
 </template>
 
-<script lang="ts">
-import { defineComponent } from 'vue'
+<script setup lang="ts">
+import { computed, ref, useTemplateRef } from "vue";
 
-import Persons from '@/components/Persons.vue';
-import Editor from '@/components/Editor.vue';
-import ComplexDatePicker from '@/components/ComplexDatePicker.vue';
-import Sequences from '@/components/Sequences.vue';
+import { Panel, Chip, Button, Popover, Select, Tree, Image, InputText } from "primevue";
+import type { TreeNode } from "primevue/treenode";
 
-import { Panel, Chip, Button, SelectButton, Popover, Select, FloatLabel, Tree, Image, InputText, InputNumber } from 'primevue';
-import type { TreeNode } from 'primevue/treenode';
+import Persons from "@/components/Persons.vue";
+import Editor from "@/components/Editor.vue";
+import ComplexDatePicker from "@/components/ComplexDatePicker.vue";
+import Sequences from "@/components/Sequences.vue";
 
-import { openFileError, saveFileError, saveFileInfo } from '@/modules/notifications';
-import { Genre, genresTree, findGenre } from '@/types/genres'
-import { Language, languages, findLanguage } from '@/types/languages';
-import PersonInfo from '@/types/personInfo';
-import Series from '@/types/series';
-import { openImageDialog, saveImageDialog } from '@/modules/fileAccess';
-import { addingNodes } from '@/modules/utils';
-import { fb2ns, xlinkns } from '@/modules/fb2Model';
-import fb2Mapper from '@/modules/fb2Mapper';
-import editorState from '@/modules/editorState';
+import { openFileError, saveFileError, saveFileInfo } from "@/modules/notifications";
+import { genresTree, findGenre } from "@/types/genres";
+import type { Genre } from "@/types/genres";
+import { languages, findLanguage } from "@/types/languages";
+import type { Language } from "@/types/languages";
+import PersonInfo from "@/types/personInfo";
+import Series from "@/types/series";
+import { openImageDialog, saveImageDialog } from "@/modules/fileAccess";
+import { addingNodes } from "@/modules/utils";
+import { fb2ns, xlinkns } from "@/modules/fb2Model";
+import fb2Mapper from "@/modules/fb2Mapper";
+import editorState from "@/modules/editorState";
+import modificationTracker from "@/modules/modificationTracker";
 
-interface StateDescription {
-    bookTitle: string,
-    date: string,
-    dateValue: string,
-    genresTree: TreeNode[],
-    keywords: string,
-    coverHref: string,
-    languages: Language[],
-    authors: PersonInfo[],
-    translators: PersonInfo[],
-    selectedLang: Language | undefined,
-    selectedSrcLang: Language | undefined,
-    selectedGenres: Genre[],
-    sequences: Series[],
-    isEmpty: boolean,
-}
+const model = ref(initialStateDescription());
+const genresPop = useTemplateRef<InstanceType<typeof Popover>>("genresPop");
+const annotationEditor = useTemplateRef<InstanceType<typeof Editor>>("annotationEditor");
+const props = defineProps<{
+    tag: string
+    header: string
+}>();
 
-function initialStateDescription(): StateDescription {
+const required = !props.tag.startsWith("src");
+const annotationId = !required ? "src-annotation" : "annotation";
+
+fb2Mapper.addProcessor(parseContent, serializeContent, props.tag);
+modificationTracker.register(model);
+
+const hasCover = computed(() => {
+    return cover.value !== "";
+});
+const cover = computed(() => {
+    return editorState.images.value.getDataByHref(model.value.coverHref);
+});
+
+function initialStateDescription() {
     return {
-        selectedGenres: [],
-        selectedLang: undefined,
-        selectedSrcLang: undefined,
+        selectedGenres: new Array<Genre>(),
+        selectedLang: null as Language | null,
+        selectedSrcLang: null as Language | null,
         bookTitle: "",
         date: "",
         dateValue: "",
-        authors: [],
-        translators: [],
-        genresTree: genresTree,
+        authors: new Array<PersonInfo>(),
+        translators: new Array<PersonInfo>(),
         keywords: "",
         coverHref: "",
-        languages: languages,
-        sequences: [],
-        isEmpty: false
+        sequences: new Array<Series>()
     };
 };
 
-export default defineComponent({
-    name: "TitleInfo",
-    props: {
-        header: {
-            type: String,
-            required: true
-        },
-        tag: {
-            type: String,
-            required: true
-        }
-    },
-    exposed: ['parseContent', 'serializeContent'],
-    emits: [],
-    components: {
-        Persons,
-        Sequences,
-        InputText,
-        FloatLabel,
-        Button,
-        Select,
-        SelectButton,
-        Chip,
-        Popover,
-        Tree,
-        ComplexDatePicker,
-        Image,
-        Panel,
-        Editor,
-        InputNumber
-    },
-    data(): StateDescription {
-        return initialStateDescription();
-    },
-    created() {
-        fb2Mapper.addProcessor(this.parseContent, this.serializeContent, this.$props.tag);
-    },
-    computed: {
-        hasCover() {
-            return this.cover !== "";
-        },
-        annotationId() {
-            return this.$props.tag.startsWith("src") ? "src-annotation" : "annotation";
-        },
-        required() {
-            return !this.$props.tag.startsWith("src");
-        },
-        cover() {
-            return editorState.images.value.getDataByHref(this.coverHref);
-        }
-    },
-    methods: {
-        showGenreSelector(event: Event) {
-            (this.$refs.genrespop as InstanceType<typeof Popover>).toggle(event);
-        },
-        genreSelect(node: TreeNode) {
-            if (!this.selectedGenres.find(g => g.mark === node.key) && node.label) {
-                this.selectedGenres.push({ name: node.label, mark: node.key });
+function showGenreSelector(event: Event) {
+    genresPop.value!.toggle(event);
+}
+
+function genreSelect(node: TreeNode) {
+    if (!model.value.selectedGenres.find(g => g.mark === node.key) && node.label) {
+        model.value.selectedGenres.push({ name: node.label, mark: node.key });
+    };
+}
+
+function genreRemove(mark: string) {
+    model.value.selectedGenres = model.value.selectedGenres.filter(genre => genre.mark != mark)
+}
+
+function parseContent(descElement: Element | undefined) {
+    model.value = initialStateDescription();
+    const data = model.value;
+
+    if (!descElement) {
+        return;
+    };
+
+    for (const item of descElement.children) {
+        if (item.tagName === "genre" && item.textContent) {
+            data.selectedGenres.push(findGenre(item.textContent));
+        } else if (item.tagName === "author") {
+            data.authors.push(new PersonInfo(item));
+        } else if (item.tagName === "book-title" && item.textContent) {
+            data.bookTitle = item.textContent.trim();
+        } else if (item.tagName === "keywords" && item.textContent) {
+            data.keywords = item.textContent.trim();
+        } else if (item.tagName === "date" && item.textContent) {
+            data.dateValue = item.getAttribute("value") ?? "";
+            data.date = item.textContent.trim();
+        } else if (item.tagName === "coverpage" && item.children) {
+            data.coverHref = item.children[0].getAttributeNS(xlinkns, "href") ?? "";
+        } else if (item.tagName === "lang" && item.textContent) {
+            data.selectedLang = findLanguage(item.textContent);
+        } else if (item.tagName === "src-lang" && item.textContent) {
+            data.selectedSrcLang = findLanguage(item.textContent);
+        } else if (item.tagName === "translator") {
+            data.translators.push(new PersonInfo(item));
+        } else if (item.tagName === "sequence") {
+            const name = item.getAttribute("name")?.trim();
+            const number = item.getAttribute("number");
+            if (name) {
+                data.sequences.push(new Series(name, number));
             };
-        },
-        genreRemove(mark: string) {
-            this.selectedGenres = this.selectedGenres.filter(genre => genre.mark != mark)
-        },
-        parseContent(descElement: Element | undefined) {
-            Object.assign(this.$data, initialStateDescription());
+        };
+    };
+}
 
-            if (!descElement) {
-                this.isEmpty = !this.required;
-                return;
-            };
+function serializeContent(xmlDoc: Document, titleInfo: Element) {
+    const data = model.value;
+    const addElement = addingNodes(xmlDoc, fb2ns);
 
-            for (const item of descElement.children) {
-                if (item.tagName === "genre" && item.textContent) {
-                    this.selectedGenres.push(findGenre(item.textContent));
-                } else if (item.tagName === "author") {
-                    this.authors.push(new PersonInfo(item));
-                } else if (item.tagName === "book-title" && item.textContent) {
-                    this.bookTitle = item.textContent.trim();
-                } else if (item.tagName === "keywords" && item.textContent) {
-                    this.keywords = item.textContent.trim();
-                } else if (item.tagName === "date" && item.textContent) {
-                    this.dateValue = item.getAttribute("value") ?? "";
-                    this.date = item.textContent.trim();
-                } else if (item.tagName === "coverpage" && item.children) {
-                    this.coverHref = item.children[0].getAttributeNS(xlinkns, "href") ?? "";
-                } else if (item.tagName === "lang" && item.textContent) {
-                    this.selectedLang = findLanguage(item.textContent);
-                } else if (item.tagName === "src-lang" && item.textContent) {
-                    this.selectedSrcLang = findLanguage(item.textContent);
-                } else if (item.tagName === "translator") {
-                    this.translators.push(new PersonInfo(item));
-                } else if (item.tagName === "sequence") {
-                    const name = item.getAttribute("name")?.trim();
-                    const number = item.getAttribute("number");
-                    if (name) {
-                        this.sequences.push(new Series(name, number));
-                    };
-                };
-            };
-        },
-        serializeContent(xmlDoc: Document, titleInfo: Element) {
-            const addElement = addingNodes(xmlDoc, fb2ns);
+    const genres = data.selectedGenres.length ? data.selectedGenres : [{ mark: "" }];
+    for (const element of genres) {
+        addElement(titleInfo, "genre", element.mark, true);
+    };
 
-            const genres = this.selectedGenres.length ? this.selectedGenres : [{ mark: "" }];
-            for (const element of genres) {
-                addElement(titleInfo, "genre", element.mark, true);
-            };
+    const authors = data.authors.length ? data.authors : [new PersonInfo];
+    for (const author of authors) {
+        const authorNode = xmlDoc.createElementNS(fb2ns, "author");
+        for (const prop of author.props()) {
+            addElement(authorNode, prop.key, prop.value, prop.required);
+        };
+        titleInfo.appendChild(authorNode);
+    };
 
-            const authors = this.authors.length ? this.authors : [new PersonInfo];
-            for (const author of authors) {
-                const authorNode = xmlDoc.createElementNS(fb2ns, "author");
-                for (const prop of author.props()) {
-                    addElement(authorNode, prop.key, prop.value, prop.required);
-                };
-                titleInfo.appendChild(authorNode);
-            };
+    addElement(titleInfo, "book-title", data.bookTitle, true);
 
-            addElement(titleInfo, "book-title", this.bookTitle, true);
+    const [history] = titleInfo.getElementsByTagName("annotation");
+    titleInfo.appendChild(history);
 
-            const [history] = titleInfo.getElementsByTagName("annotation");
-            titleInfo.appendChild(history);
+    addElement(titleInfo, "keywords", data.keywords);
+    addElement(titleInfo, "date", data.date, false, [{ key: "value", value: data.dateValue || undefined }]);
 
-            addElement(titleInfo, "keywords", this.keywords);
-            addElement(titleInfo, "date", this.date, false, [{ key: "value", value: this.dateValue || undefined }]);
+    if (hasCover.value) {
+        const coverpage = xmlDoc.createElementNS(fb2ns, "coverpage");
+        const image = xmlDoc.createElementNS(fb2ns, "image");
+        image.setAttributeNS(xlinkns, "href", data.coverHref);
 
-            if (this.hasCover) {
-                const coverpage = xmlDoc.createElementNS(fb2ns, "coverpage");
-                const image = xmlDoc.createElementNS(fb2ns, "image");
-                image.setAttributeNS(xlinkns, "href", this.coverHref);
+        coverpage.appendChild(image);
+        titleInfo.appendChild(coverpage);
+    };
 
-                coverpage.appendChild(image);
-                titleInfo.appendChild(coverpage);
-            };
+    addElement(titleInfo, "lang", data.selectedLang?.code, true);
+    addElement(titleInfo, "src-lang", data.selectedSrcLang?.code);
 
-            addElement(titleInfo, "lang", this.selectedLang?.code, true);
-            addElement(titleInfo, "src-lang", this.selectedSrcLang?.code);
+    for (const translator of data.translators) {
+        const translatorNode = xmlDoc.createElementNS(fb2ns, "translator");
+        for (const prop of translator.props()) {
+            addElement(translatorNode, prop.key, prop.value, prop.required);
+        };
+        titleInfo.appendChild(translatorNode);
+    };
 
-            for (const translator of this.translators) {
-                const translatorNode = xmlDoc.createElementNS(fb2ns, "translator");
-                for (const prop of translator.props()) {
-                    addElement(translatorNode, prop.key, prop.value, prop.required);
-                };
-                titleInfo.appendChild(translatorNode);
-            };
+    for (const series of data.sequences) {
+        if (series.name) {
+            const attrs = [
+                { key: "name", value: series.name },
+                { key: "number", value: series.number?.toString() },
+            ]
+            addElement(titleInfo, "sequence", "", true, attrs);
+        };
+    };
 
-            for (const series of this.sequences) {
-                if (series.name) {
-                    const attrs = [
-                        { key: "name", value: series.name },
-                        { key: "number", value: series.number?.toString() },
-                    ]
-                    addElement(titleInfo, "sequence", "", true, attrs);
-                };
-            };
+    if (!titleInfo.textContent && !required && !annotationEditor.value!.hasContent()) {
+        titleInfo.remove();
+    };
+}
 
-            const annotationEditor = this.$refs.annotationEditor as InstanceType<typeof Editor>;
-            if (!titleInfo.textContent && !this.required && !annotationEditor.hasContent()) {
-                titleInfo.remove();
-            };
-        },
-        selectCover() {
-            openImageDialog().then(file => {
-                const id = editorState.images.value.addAsDataURL(file.name, file.content);
-                if (id) {
-                    this.coverHref = "#" + id;
-                };
-            }).catch((error) => openFileError(error));
-        },
-        saveCover() {
-            if (this.hasCover && this.coverHref.startsWith("#")) {
-                saveImageDialog(this.cover, this.coverHref.slice(1)).then(() => {
-                    saveFileInfo()
-                }).catch((error) => saveFileError(error));
-            };
-        },
-        deleteCover() {
-            this.coverHref = "";
-        }
-    }
-})
+function selectCover() {
+    openImageDialog().then(file => {
+        const id = editorState.images.value.addAsDataURL(file.name, file.content);
+        if (id) {
+            model.value.coverHref = "#" + id;
+        };
+    }).catch((error) => openFileError(error));
+}
+
+function saveCover() {
+    if (hasCover.value && model.value.coverHref.startsWith("#")) {
+        saveImageDialog(cover.value, model.value.coverHref.slice(1)).then(() => {
+            saveFileInfo();
+        }).catch((error) => saveFileError(error));
+    };
+}
+
+function deleteCover() {
+    model.value.coverHref = "";
+}
+
+defineExpose({ parseContent, serializeContent });
 </script>
 
 <style>

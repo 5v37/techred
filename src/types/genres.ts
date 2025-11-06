@@ -1,4 +1,4 @@
-import { TreeNode } from "primevue/treenode";
+import type { TreeNode } from "primevue/treenode";
 import { missingGenre } from "@/modules/notifications";
 
 const genresTree: TreeNode[] = [

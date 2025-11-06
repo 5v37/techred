@@ -32,6 +32,7 @@ import editorState from "@/modules/editorState";
 import { sharedHistory, sharedRedo, sharedUndo } from "@/modules/pm/sharedHistory";
 import BlockView from "@/modules/pm/blockView";
 import linkTooltip from "@/modules/pm/linkTooltip";
+import modificationMonitor from "@/modules/pm/modificationMonitor";
 
 const spellcheckOn = editorState.spellCheckOn;
 const nodeViewFactory = useNodeViewFactory();
@@ -83,6 +84,7 @@ onMounted(() => {
                 "Shift-Tab": goToNextCell(-1),
             }),
             linkTooltip(editor.value!.parentElement!),
+            modificationMonitor(),
             tableEditing(),
             dropCursor(),
             menuBar({

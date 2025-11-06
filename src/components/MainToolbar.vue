@@ -17,7 +17,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, useTemplateRef, watch } from 'vue';
+import { ref, useTemplateRef, watchEffect } from 'vue';
 
 import { Toolbar, Button } from 'primevue';
 
@@ -29,6 +29,7 @@ import fb2Mapper from '@/modules/fb2Mapper';
 import { openInitialFictionBook, openFictionBookDialog, saveFictionBookDialog } from '@/modules/fileAccess';
 import { openFileError, saveFileError, saveFileInfo, UnexpectedError } from '@/modules/notifications';
 import { isTauriMode } from '@/modules/utils';
+import modificationTracker from '@/modules/modificationTracker';
 
 const emit = defineEmits(['loaded']);
 
@@ -51,8 +52,8 @@ openInitialFictionBook().then(async file => {
     emit("loaded");
 });
 
-watch(currentFilePath, (newPath) => {
-    const title = `${!newPath ? "Новый" : newPath} - Техред`;
+watchEffect(() => {
+    const title = `${modificationTracker.docModified.value ? "*" : ""}${!currentFilePath.value ? "Новый" : currentFilePath.value} - Техред`;
     if (isTauriMode) {
         getCurrentWindow().setTitle(title);
     } else {

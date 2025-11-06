@@ -7,7 +7,7 @@
 					<Message v-if="hasErrorId(value.newId, key)" severity="error" icon="pi pi-times-circle"
 						class="t-images-errorId">{{ errorMessage }}</Message>
 				</div>
-				<InputText v-model.lazy=value.newId v-keyfilter=NCNameFilter class="t-images-caption"
+				<InputText v-model="value.newId" v-keyfilter=NCNameFilter class="t-images-caption"
 					@focus="getContext(value.newId, key)" @change="validateId(value, key)" />
 			</div>
 		</div>
@@ -15,19 +15,21 @@
 </template>
 
 <script setup lang="ts">
-import { onUpdated, ref, useTemplateRef } from 'vue';
+import { onUpdated, ref, useTemplateRef } from "vue";
 
-import { Image, InputText, Message } from 'primevue';
+import { Image, InputText, Message } from "primevue";
 
 import fb2Mapper, { DocumentBlocks } from "@/modules/fb2Mapper";
 import editorState from "@/modules/editorState";
 import { addingNodes } from "@/modules/utils";
 import { fb2ns, xlinkns } from "@/modules/fb2Model";
-import { NCNameFilter } from '@/modules/utils';
-import type { ImageSpec } from '@/types/images';
+import { NCNameFilter } from "@/modules/utils";
+import type { ImageSpec } from "@/types/images";
+import modificationTracker from "@/modules/modificationTracker";
 
 const images = editorState.images;
 const errorMessage = ref("");
+const isModified = ref(false);
 
 let currentKey: string | number;
 let oldId: string;
@@ -42,6 +44,8 @@ function getContext(id: string, key: string | number) {
 function validateId(image: ImageSpec, key: string | number) {
 	if (hasErrorId(image.newId, key)) {
 		image.newId = oldId;
+	} else {
+		isModified.value = true;
 	};
 }
 
@@ -75,6 +79,8 @@ editorState.menu.push({
 });
 
 fb2Mapper.addPreprocessor(getBlocks);
+fb2Mapper.addProcessor(parseContent, serializeContent, "fiction-book", 2);
+modificationTracker.register(isModified);
 
 function getBlocks(xmlDoc: Document, method: string) {
 	toTop = method === "parse";
@@ -86,18 +92,19 @@ function getBlocks(xmlDoc: Document, method: string) {
 	};
 
 	return parts;
-};
-
-fb2Mapper.addProcessor(parseContent, serializeContent, "fiction-book", 2);
+}
 
 function parseContent(descElements: Element | undefined) {
 	images.value.clear();
+	isModified.value = false;
+	currentKey = "";
+	oldId = "";
 
 	if (!descElements) {
 		return;
 	};
 
-	ids = editorState.getIds();
+	ids = editorState.getIds(true);
 	let id, newId = undefined;
 	for (const item of descElements.children) {
 		if (item.tagName === "binary") {
@@ -110,9 +117,11 @@ function parseContent(descElements: Element | undefined) {
 			};
 		};
 	};
-};
+}
+
 function serializeContent(xmlDoc: Document, target: Element) {
 	const addElement = addingNodes(xmlDoc, fb2ns);
+	isModified.value = false;
 
 	let image, id;
 	let idToSave: Set<string> = new Set;
@@ -136,9 +145,9 @@ function serializeContent(xmlDoc: Document, target: Element) {
 			};
 		};
 	});
-};
+}
 
-defineExpose({ getBlocks, parseContent, serializeContent, });
+defineExpose({ getBlocks, parseContent, serializeContent });
 </script>
 
 <style>

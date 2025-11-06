@@ -1,5 +1,6 @@
 import { formatXML } from '@/modules/utils';
 import { textBlocks, markBlocks, xmlTemplate } from '@/modules/fb2Model';
+import modificationTracker from './modificationTracker';
 
 type DocumentBlocks = { [key: string]: Element | undefined }
 type ParseHandler = (source: Element | undefined) => void;
@@ -50,6 +51,8 @@ class fb2Mapper {
         for (const proc of this.processors) {
             proc.parseHandler(parts[proc.elementId]);
         };
+
+        modificationTracker.reset(true);
     }
 
     serialize() {
@@ -63,6 +66,8 @@ class fb2Mapper {
 
         const serializer = new XMLSerializer();
         const xmlStr = serializer.serializeToString(xmlDoc).replace(/  +/g, " ");
+
+        modificationTracker.reset(false);
         return formatXML(fixMarks(xmlStr), textBlocks);
     }
 

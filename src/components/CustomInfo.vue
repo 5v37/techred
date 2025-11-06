@@ -20,14 +20,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref } from "vue";
 
-import { Panel, Chip, Textarea, InputText, Button } from 'primevue';
+import { Panel, Chip, Textarea, InputText, Button } from "primevue";
 
-import Customs from '@/types/customs';
-import { addingNodes } from '@/modules/utils';
-import { fb2ns } from '@/modules/fb2Model';
-import fb2Mapper from '@/modules/fb2Mapper';
+import Customs from "@/types/customs";
+import { addingNodes } from "@/modules/utils";
+import { fb2ns } from "@/modules/fb2Model";
+import fb2Mapper from "@/modules/fb2Mapper";
+import modificationTracker from "@/modules/modificationTracker";
 
 const model = ref<Customs[]>([]);
 const props = defineProps<{
@@ -35,14 +36,16 @@ const props = defineProps<{
     header: string
 }>();
 
+fb2Mapper.addProcessor(parseContent, serializeContent, "description");
+modificationTracker.register(model);
+
 function add() {
     model.value.push(new Customs);
-};
+}
+
 function del(index: number) {
     model.value.splice(index, 1);
-};
-
-fb2Mapper.addProcessor(parseContent, serializeContent, "description");
+}
 
 function parseContent(descElements: Element | undefined) {
     model.value = [];
@@ -53,17 +56,18 @@ function parseContent(descElements: Element | undefined) {
 
     for (const item of descElements.children) {
         if (item.tagName === props.tag) {
-            model.value.push(new Customs(item.getAttribute("info-type")?.trim() , item.textContent?.trim()));
+            model.value.push(new Customs(item.getAttribute("info-type")?.trim(), item.textContent?.trim()));
         }
     };
-};
+}
+
 function serializeContent(xmlDoc: Document, target: Element) {
     const addElement = addingNodes(xmlDoc, fb2ns);
 
     for (const custom of model.value) {
         addElement(target, props.tag, custom.value, false, [{ key: "info-type", value: custom.type }]);
     };
-};
+}
 
 defineExpose({ parseContent, serializeContent });
 </script>

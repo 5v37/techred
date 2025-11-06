@@ -80,6 +80,8 @@ watch(date, (newDate) => {
             dateISO.value = newDateISO;
             dateString.value = newDate.toLocaleDateString("ru", dateMode.value.dateFormat);
         };
+    } else {
+        dateISO.value = "";
     };
 });
 

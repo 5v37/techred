@@ -156,6 +156,60 @@ export function addingNodes(xmlDoc: Document, nameSpace: string) {
     return addElement;
 }
 
+export class CircularBuffer<T> {
+	private capacity: number;
+	private buffer: Array<T | undefined>;
+	private first = 0;
+	private last: number;
+	private length = 0;
+
+	constructor(capacity: number) {
+		this.capacity = capacity;
+		this.last = capacity;
+		this.buffer = new Array<T>(capacity);
+	}
+
+	clear() {
+		this.first = 0;
+		this.last = this.capacity;
+		this.length = 0;
+	}
+
+	push(value: T) {
+		if (this.length === this.capacity) {
+			this.first = this._right(this.first);
+		} else {
+			this.length++;
+		};
+		this.last = this._right(this.last);
+
+		this.buffer[this.last] = value;
+		return this.length;
+	}
+
+	back() {
+		if (this.length === 0) return undefined;
+		this.last = this._left(this.last);
+		this.length--;
+		return this.buffer[this.last];
+	}
+
+	forward() {
+		if (this.length === this.capacity) return undefined;
+		this.last = this._right(this.last);
+		this.length++;
+		return this.buffer[this.last];
+	}
+
+	private _right(index: number) {
+		return (index + 1 > (this.capacity - 1)) ? 0 : index + 1;
+	}
+
+	private _left(index: number) {
+		return (index - 1 < 0) ? this.capacity - 1 : index - 1;
+	}
+}
+
 export function isMac() {
     return typeof navigator != "undefined" ? /Mac|iP(hone|[oa]d)/.test(navigator.platform)
         // @ts-ignore
