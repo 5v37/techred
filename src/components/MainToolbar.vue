@@ -22,6 +22,7 @@ import { ref, useTemplateRef, watchEffect } from 'vue';
 import { Toolbar, Button } from 'primevue';
 
 import { getCurrentWindow } from '@tauri-apps/api/window';
+import { confirm } from '@tauri-apps/plugin-dialog';
 import { supported as fileAPIsupported } from 'browser-fs-access';
 
 import Settings from '@/components/Settings.vue';
@@ -81,6 +82,28 @@ addEventListener("keydown", (event: KeyboardEvent) => {
     event.preventDefault();
 });
 addEventListener("error", UnexpectedError);
+
+if (isTauriMode) {
+    getCurrentWindow().onCloseRequested(async (event) => {
+        if (modificationTracker.docModified.value) {
+            const confirmation = await confirm(
+                "Все несохранённые изменения будут потеряны. Продолжить?",
+                { title: "Техред", kind: "warning" }
+            );
+            if (!confirmation) {
+                event.preventDefault();
+            };
+        }
+    });
+} else {
+    addEventListener('beforeunload', (event: BeforeUnloadEvent) => {
+        if (modificationTracker.docModified.value) {
+            event.preventDefault();
+            return "";
+        }
+        return false;
+    });
+};
 
 function newFile() {
     fb2Mapper.reset().then(() => {

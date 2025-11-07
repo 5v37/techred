@@ -8,8 +8,10 @@
   "permissions": [
     "core:default",
     "core:window:allow-set-title",
+    "core:window:allow-destroy",
     "dialog:allow-open",
     "dialog:allow-save",
+    "dialog:allow-confirm",
     "fs:allow-read-file",    
     "fs:allow-write-file",
     {

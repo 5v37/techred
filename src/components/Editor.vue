@@ -61,6 +61,7 @@ if (!props.annotation) {
 };
 
 fb2Mapper.addProcessor(parseContent, serializeContent, props.editorId, 1);
+const monitor = modificationMonitor();
 
 onMounted(() => {
     state = EditorState.create({
@@ -84,7 +85,7 @@ onMounted(() => {
                 "Shift-Tab": goToNextCell(-1),
             }),
             linkTooltip(editor.value!.parentElement!),
-            modificationMonitor(),
+            monitor,
             tableEditing(),
             dropCursor(),
             menuBar({
@@ -137,6 +138,8 @@ onMounted(() => {
 onUnmounted(() => {
     fb2Mapper.delProcessor(props.editorId);
     delete editorState.views[props.editorId];
+    monitor.getState(view.state)!.dispose();
+    view.destroy();
 });
 
 function hasContent(): boolean {

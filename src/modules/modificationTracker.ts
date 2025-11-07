@@ -23,6 +23,10 @@ class ModificationTracker {
 		this.modificationCheckers.push(new ModificationCheckers(model));
 	}
 
+	unregister(model: Ref) {
+		this.modificationCheckers = this.modificationCheckers.filter(checker => !checker.match(model))
+	}
+
 	reset(isNewData: boolean) {
 		for (const checker of this.modificationCheckers) {
 			checker.reset(isNewData);
@@ -58,6 +62,10 @@ class ModificationCheckers {
 		const initialData = JSON.stringify(this._model.value);
 		this.skipInit = isNewData && this.initialData !== initialData;
 		this.initialData = initialData;
+	}
+
+	match(model: Ref) {
+		return this._model === model;
 	}
 }
 

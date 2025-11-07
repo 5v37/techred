@@ -29,6 +29,10 @@ class MonitorState {
 	previousId() {
 		this.id.value = this.trace.back()!;
 	}
+
+	dispose() {
+		modificationTracker.unregister(this.id)
+	}
 }
 
 function modificationMonitor() {
@@ -55,7 +59,7 @@ function modificationMonitor() {
 				};
 
 				return checkerState;
-			}
+			}			
 		}
 	});
 }
