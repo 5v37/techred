@@ -68,6 +68,7 @@ jobs:
           tagName: v__VERSION__ # the action automatically replaces \_\_VERSION\_\_ with the app version.
           releaseName: __VERSION__
           releaseBody: ${{ steps.changelog.outputs.changes }}
+          assetNamePattern: '[name]_[version]_[arch][ext]'
           releaseDraft: true
           prerelease: true
           args: ${{ matrix.args }}
