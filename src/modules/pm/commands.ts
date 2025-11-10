@@ -304,7 +304,7 @@ export function setLink(): Command {
         let linkMark;
         for (const mark of $to.marks()) {
             if (mark.type === state.schema.marks.note || mark.type === state.schema.marks.a) {
-                if (empty || mark.isInSet($from.nodeAfter!.marks)) {
+                if (empty || $from.nodeAfter && mark.isInSet($from.nodeAfter.marks)) {
                     linkMark = mark;
                 };
                 break;
