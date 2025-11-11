@@ -58,14 +58,14 @@
 		@include after($content: "<section>");
 	}
 
-	title {
+	header {
 		@include block(rgb(22, 231, 84));
 		padding-block: 0.25rem;
 		margin-top: 0rem;
 		text-align: center;
 	}
 
-	title::after {
+	header::after {
 		@include after($content: "<title>");
 	}
 
@@ -174,14 +174,6 @@
 		line-height: 0;
 	}
 
-	emphasis {
-		font-style: italic;
-	}
-
-	strikethrough {
-		text-decoration: line-through;
-	}
-
 	code {
 		background-color: var(--p-content-hover-background);
 	}
@@ -226,7 +218,7 @@
 }
 
 .highlight-emphasis {
-	emphasis {
+	em {
 		border: 1px solid rgb(255, 88, 88);
 	}
 }

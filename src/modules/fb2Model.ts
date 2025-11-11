@@ -93,8 +93,14 @@ function template(topNode: string, toXML: boolean): Schema {
             },
             title: {
                 content: "p+",
-                parseDOM: [{ tag: "title" }],
-                toDOM() { return [defaultNameSpace + "title", 0] }
+                parseDOM: [{ tag: "title, header" }],
+                toDOM() {
+                    if (defaultNameSpace) {
+                        return [defaultNameSpace + "title", 0];
+                    } else {
+                        return ["header", 0];
+                    }
+                }
             },
             epigraph: {
                 content: "(p+ | poem | cite)* textauthor*",
@@ -148,8 +154,8 @@ function template(topNode: string, toXML: boolean): Schema {
                     { tag: "empty-line" }
                 ],
                 toDOM(node) {
-                    if (defaultNameSpace && !node.firstChild) {
-                        return [defaultNameSpace + "empty-line", 0];
+                    if (defaultNameSpace && node.textContent.trim() === "") {
+                        return [defaultNameSpace + "empty-line"];
                     } else {
                         return [defaultNameSpace + "p", node.attrs, 0];
                     }
@@ -334,7 +340,7 @@ function template(topNode: string, toXML: boolean): Schema {
                         return [defaultNameSpace + "a", {
                             [xlinkns + " href"]: node.attrs.href,
                             type: "note"
-                        }]
+                        }];
                     } else {
                         return ["note", node.attrs];
                     }
@@ -354,7 +360,7 @@ function template(topNode: string, toXML: boolean): Schema {
                     if (defaultNameSpace) {
                         return [defaultNameSpace + "a", {
                             [xlinkns + " href"]: node.attrs.href
-                        }]
+                        }];
                     } else {
                         return ["a", node.attrs];
                     }
@@ -362,29 +368,29 @@ function template(topNode: string, toXML: boolean): Schema {
             },
             code: {
                 parseDOM: [{ tag: "code" }],
-                toDOM() { return [defaultNameSpace + "code"]; }
+                toDOM() { return [defaultNameSpace + "code"] }
             },
             emphasis: {
-                parseDOM: [{ tag: "emphasis" }],
-                toDOM() { return [defaultNameSpace + "emphasis"]; }
+                parseDOM: [{ tag: "emphasis, em, i" }],
+                toDOM() { return defaultNameSpace ? [defaultNameSpace + "emphasis"] : ["em"] }
             },
             strong: {
-                parseDOM: [{ tag: "strong" }],
-                toDOM() { return [defaultNameSpace + "strong"]; }
+                parseDOM: [{ tag: "strong, b" }],
+                toDOM() { return [defaultNameSpace + "strong"] }
             },
             strikethrough: {
-                parseDOM: [{ tag: "strikethrough" }],
-                toDOM() { return [defaultNameSpace + "strikethrough"]; }
+                parseDOM: [{ tag: "strikethrough, strike, s, del" }],
+                toDOM() { return defaultNameSpace ? [defaultNameSpace + "strikethrough"] : ["s"] }
             },
             sup: {
                 excludes: "sub sup",
                 parseDOM: [{ tag: "sup" }],
-                toDOM() { return [defaultNameSpace + "sup"]; }
+                toDOM() { return [defaultNameSpace + "sup"] }
             },
             sub: {
                 excludes: "sub sup",
                 parseDOM: [{ tag: "sub" }],
-                toDOM() { return [defaultNameSpace + "sub"]; }
+                toDOM() { return [defaultNameSpace + "sub"] }
             }
         }
     })
