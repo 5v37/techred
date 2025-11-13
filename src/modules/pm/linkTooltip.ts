@@ -1,6 +1,7 @@
 import { Plugin } from "prosemirror-state";
 import type { EditorView } from "prosemirror-view";
 import type { Node, Mark } from "prosemirror-model";
+import { openUrl } from "@tauri-apps/plugin-opener";
 
 import { setLink, updateLink } from "@/modules/pm/commands";
 import editorState from "@/modules/editorState";
@@ -173,7 +174,11 @@ class LinkTooltipView {
                 };
             });
         } else if (!this.broken) {
-            open(this.link!.attrs.href, "_blank", "noopener,noreferrer");
+            if (__APP_TAURI_MODE__) {
+                openUrl(this.link!.attrs.href);
+            } else {
+                open(this.link!.attrs.href, "_blank", "noopener,noreferrer");
+            };
         };
     };
 

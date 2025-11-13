@@ -12,7 +12,9 @@
     "dialog:allow-open",
     "dialog:allow-save",
     "dialog:allow-confirm",
-    "fs:allow-read-file",    
+    "opener:allow-open-url",
+    "opener:allow-default-urls",
+    "fs:allow-read-file",
     "fs:allow-write-file",
     {
       "identifier": "fs:allow-read-file",
