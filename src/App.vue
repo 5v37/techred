@@ -40,7 +40,7 @@ initNotification();
 </script>
 
 <style>
-.t-app-main {
+.p-splitter.t-app-main {
     flex: 1 1 0;
     overflow: hidden;
     border-radius: 0px;

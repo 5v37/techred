@@ -3,8 +3,10 @@
         <InputGroup>
             <InputText v-model.lazy.trim="dateString" />
             <InputGroupAddon>
-                <Button :label="dateMode.shortLabel" severity="secondary" variant="text" @click="showModesSelector"
-                    style="line-height: 1;"></Button>
+                <Button severity="secondary" text @click="showModesSelector"
+                    style="padding-block: calc(var(--p-button-padding-y) - 2px);">
+                    <span style="min-width: 1rem;">{{ dateMode.shortLabel }}</span>
+                </Button>
             </InputGroupAddon>
             <DatePicker v-model="date" showIcon iconDisplay="input" :view="dateMode.view" date-format="yy-mm-dd" />
         </InputGroup>
