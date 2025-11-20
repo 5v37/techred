@@ -1,5 +1,6 @@
 @import 'primeicons/primeicons.css';
 
+@import './Nunito/Nunito.css';
 @import './editor.scss';
 @import './ui.css';
 
@@ -9,7 +10,7 @@ html {
 }
 
 body {
-  font-family: sans-serif;
+  font-family: 'Nunito', sans-serif;
   color: var(--p-text-color);
   margin: 0;
   padding: 0;
