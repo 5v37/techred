@@ -1,19 +1,19 @@
 <template>
     <div>
         <InputGroup>
-            <InputText v-model.lazy.trim="dateString" />
+            <InputText v-model.trim="dateString" />
             <InputGroupAddon>
-                <Button severity="secondary" text @click="showModesSelector"
-                    style="padding-block: calc(var(--p-button-padding-y) - 2px);">
+                <Button severity="secondary" text @click="toggleModePicker"
+                    style="padding-block: calc(var(--p-button-padding-y) - 1px);">
                     <span style="min-width: 1rem;">{{ dateMode.shortLabel }}</span>
                 </Button>
             </InputGroupAddon>
             <DatePicker v-model="date" showIcon iconDisplay="input" :view="dateMode.view" date-format="yy-mm-dd" />
         </InputGroup>
 
-        <Popover ref="selectDateMode">
+        <Popover ref="modePicker">
             <SelectButton v-model="dateMode" :options="dateModes" optionLabel="label" severity="secondary"
-                @value-change="pop!.hide" />
+                :allow-empty="false" @value-change="toggleModePicker" />
         </Popover>
     </div>
 </template>
@@ -22,7 +22,6 @@
 import { ref, useTemplateRef, watch } from "vue";
 import { InputText, InputGroup, InputGroupAddon, DatePicker, Popover, Button, SelectButton } from "primevue";
 
-const timezoneOffset = new Date().getTimezoneOffset() * 60000;
 const dateString = defineModel<string>("date");
 const dateISO = defineModel<string>("dateValue");
 const date = ref<Date | undefined>(!dateISO.value ? undefined : stringToDate(dateISO.value));
@@ -33,7 +32,7 @@ interface DateMode {
     view: "year" | "month" | "date",
     dateFormat: Intl.DateTimeFormatOptions
 };
-const dateModes = ref<DateMode[]>([
+const dateModes: DateMode[] = [
     {
         label: "Год",
         shortLabel: "Г",
@@ -61,9 +60,9 @@ const dateModes = ref<DateMode[]>([
             day: "numeric"
         }
     }
-]);
-const dateMode = ref<DateMode>(dateModes.value[dateString.value && dateString.value.length > 4 ? 2 : 0]);
-const pop = useTemplateRef("selectDateMode");
+];
+const dateMode = ref<DateMode>(dateModes[dateString.value && dateString.value.length > 4 ? 2 : 0]);
+const modePicker = useTemplateRef<InstanceType<typeof Popover>>("modePicker");
 
 watch(dateISO, (newDateISO, oldDateISO) => {
     if (!newDateISO) {
@@ -77,23 +76,27 @@ watch(dateISO, (newDateISO, oldDateISO) => {
 });
 watch(date, (newDate) => {
     if (newDate) {
-        const newDateISO = new Date(newDate.getTime() - timezoneOffset).toISOString().slice(0, 10);
+        const newDateISO = new Date(newDate.getTime() - timezoneOffset(newDate)).toISOString().slice(0, 10);
         if (newDateISO !== dateISO.value) {
             dateISO.value = newDateISO;
-            dateString.value = newDate.toLocaleDateString("ru", dateMode.value.dateFormat);
+            const str = newDate.toLocaleDateString("ru", dateMode.value.dateFormat);
+            dateString.value = str.charAt(0).toUpperCase() + str.slice(1, str.endsWith(" г.") ? -3 : undefined);
         };
     } else {
         dateISO.value = "";
     };
 });
 
-function stringToDate(datebyString: string) {
-    return new Date(new Date(datebyString).getTime() + timezoneOffset);
+function stringToDate(dateByString: string) {
+    const newDate = new Date(dateByString);
+    return new Date(newDate.getTime() + timezoneOffset(newDate));
 }
 
-function showModesSelector(event: Event) {
-    if (pop.value) {
-        pop.value.toggle(event);
-    };
+function timezoneOffset(date: Date) {
+    return date.getTimezoneOffset() * 60000;
+}
+
+function toggleModePicker(event: Event) {
+    modePicker.value?.toggle(event);
 }
 </script>
