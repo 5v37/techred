@@ -7,7 +7,7 @@
 
 :root {
 	--t-content-indent: 1.4em;
-	--t-content-font: "PT Serif";
+	--t-content-font: 'PT Serif';
 	--t-content-font-size: 12pt;
 }
 
@@ -17,7 +17,8 @@
 	line-height: 1rem;
 	bottom: -0.5rem;
 	right: 0.5rem;
-	font-size: small;
+	font-size: 1rem;
+	font-family: 'Nunito', sans-serif;
 	color: var(--p-text-muted-color);
 	background: var(--p-content-background);
 }
@@ -27,7 +28,8 @@
 	line-height: 1rem;
 	top: -0.5rem;
 	left: 1rem;
-	font-size: small;
+	font-size: 1rem;
+	font-family: 'Nunito', sans-serif;
 	color: var(--p-text-muted-color);
 	background: var(--p-content-background);
 }
@@ -148,7 +150,8 @@
 	td[id]::after {
 		content: " #" attr(id);
 		color: var(--p-text-muted-color);
-		font-size: small;
+		font-size: 1rem;
+		font-family: 'Nunito', sans-serif;
 	}
 
 	subtitle[id]::before {

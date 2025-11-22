@@ -24,7 +24,7 @@
                     </FloatLabel>
                     <FloatLabel variant="on">
                         <InputText v-model.lazy.trim="person.email" fluid />
-                        <label>email</label>
+                        <label>Email</label>
                     </FloatLabel>
                     <FloatLabel variant="on">
                         <InputText v-model.lazy.trim="person['home-page']" fluid />
