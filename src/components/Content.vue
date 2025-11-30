@@ -1,6 +1,7 @@
 <template>
     <div ref="content" class="t-content-container">
-        <Splitter layout="vertical">
+        <EditorToolbar editor-id="mainEditor" />
+        <Splitter layout="vertical" style="min-height: 0;">
             <SplitterPanel :size="75" :minSize="10" ref="main" class="t-link-tooltip-root" style="overflow-y: auto;">
                 <Editor :editor-id="children[0].key" />
             </SplitterPanel>
@@ -26,6 +27,7 @@ import { Splitter, SplitterPanel } from "primevue";
 import type { TreeNode } from "primevue/treenode";
 
 import Editor from "@/components/Editor.vue";
+import EditorToolbar from "./EditorToolbar.vue";
 
 import fb2Mapper, { DocumentBlocks } from "@/modules/fb2Mapper";
 import editorState from "@/modules/editorState";
@@ -121,6 +123,7 @@ defineExpose({ getBlocks });
 .t-content-container {
     display: flex;
     flex-grow: 1;
+    flex-direction: column;
 }
 
 .t-content-has-tabs {

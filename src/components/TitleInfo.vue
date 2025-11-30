@@ -32,9 +32,9 @@
                         </div>
                     </div>
                 </div>
-                <div class="t-ui-field t-link-tooltip-root">
+                <div class="t-ui-field">
                     <label>Аннотация</label>
-                    <Editor ref="annotationEditor" :editor-id=annotationId annotation class="t-ui-texteditor" />
+                    <EmbeddedEditor ref="annotationEditor" :editor-id="annotationId"/>
                 </div>
             </div>
 
@@ -91,7 +91,7 @@ import { Panel, Chip, Button, Popover, Select, Tree, Image, InputText } from "pr
 import type { TreeNode } from "primevue/treenode";
 
 import Persons from "@/components/Persons.vue";
-import Editor from "@/components/Editor.vue";
+import EmbeddedEditor from "@/components/EmbeddedEditor.vue";
 import ComplexDatePicker from "@/components/ComplexDatePicker.vue";
 import Sequences from "@/components/Sequences.vue";
 
@@ -111,7 +111,7 @@ import modificationTracker from "@/modules/modificationTracker";
 
 const model = ref(initialStateDescription());
 const genresPop = useTemplateRef<InstanceType<typeof Popover>>("genresPop");
-const annotationEditor = useTemplateRef<InstanceType<typeof Editor>>("annotationEditor");
+const annotationEditor = useTemplateRef<InstanceType<typeof EmbeddedEditor>>("annotationEditor");
 const props = defineProps<{
     tag: string
     header: string

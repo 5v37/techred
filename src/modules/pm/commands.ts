@@ -1,8 +1,10 @@
-import { Attrs, Fragment, MarkType, Node, NodeType, ResolvedPos } from "prosemirror-model";
+import { Attrs, Fragment, MarkType, Node, NodeType } from "prosemirror-model";
 import { Command, Selection, AllSelection, NodeSelection, TextSelection, EditorState } from "prosemirror-state";
 import { canSplit, findWrapping } from "prosemirror-transform";
+import { wordBoundaries, markBoundaries, isSameMark, marksInPos } from "@/modules/transform";
 import ui from "@/modules/ui";
 import editorState from "@/modules/editorState";
+import { deleteTable } from "prosemirror-tables";
 
 export function splitBlock(shift: boolean): Command {
     return (state, dispatch) => {
@@ -77,20 +79,13 @@ export function splitBlock(shift: boolean): Command {
 export function updateLink(newMarkType?: MarkType, oldMarkType?: MarkType, attrs?: Attrs): Command {
     return (state, dispatch) => {
         if (!oldMarkType) {
-            if (state.selection.empty || !newMarkType) {
+            if (!newMarkType) {
                 return false;
             };
 
-            if (dispatch) {
-                const { from, to, } = trimSelection(state.selection);
-                const tr = state.tr;
-
-                tr.addMark(from, to, newMarkType.create(attrs));
-
-                dispatch(tr.scrollIntoView());
-            };
+            return setMark(newMarkType, false, attrs)(state, dispatch);
         } else {
-            const position = markPosition(state.selection.$to, oldMarkType);
+            const position = markBoundaries(state.selection.$to, oldMarkType);
             if (!position) {
                 return false;
             };
@@ -293,6 +288,30 @@ export function addInlineImage(image?: Node): Command {
     }
 }
 
+export function setMark(markType: MarkType, isMarked?: boolean, attrs?: Attrs): Command {
+    return (state, dispatch) => {
+        const { $from, $to, empty } = state.selection;
+
+        const active = isMarked ?? (markType.isInSet(marksInPos($to)) && (empty || isSameMark($from, $to, markType)));
+        const range = empty ? wordBoundaries($from, markType, active) : { from: $from.pos, to: $to.pos, canMarkup: true };
+        if (!range.canMarkup) {
+            return false;
+        }
+
+        if (dispatch) {
+            let tr = state.tr;
+            if (active) {
+                tr.removeMark(range.from, range.to, markType);
+            } else {
+                tr.addMark(range.from, range.to, markType.create(attrs));
+            };
+            dispatch(tr.scrollIntoView());
+        }
+
+        return true;
+    }
+}
+
 export function setLink(): Command {
     return (state, dispatch) => {
         const { $from, $to, empty } = state.selection;
@@ -302,18 +321,14 @@ export function setLink(): Command {
         };
 
         let linkMark;
-        for (const mark of $to.marks()) {
+        for (const mark of marksInPos($to)) {
             if (mark.type === state.schema.marks.note || mark.type === state.schema.marks.a) {
-                if (empty || $from.nodeAfter && mark.isInSet($from.nodeAfter.marks)) {
+                if (empty || isSameMark($from, $to, mark)) {
                     linkMark = mark;
                 };
                 break;
             };
         };
-
-        if (!linkMark && empty) {
-            return false;
-        }
 
         if (dispatch) {
             ui.openLinkEditorDialog(state, dispatch, linkMark);
@@ -343,6 +358,16 @@ export function setId(block: boolean): Command {
 
         return true;
     }
+}
+
+export function deleteTableSafety(): Command {
+    return (state, dispatch) => {
+        const $pos = state.selection.$anchor;
+        if ($pos.depth >= 3 && $pos.node($pos.depth - 3).childCount > 1) {
+            return deleteTable(state, dispatch);
+        }
+        return false;
+    };
 }
 
 export function addNode(parentNode: Node, nodeType: NodeType, startPos: number, node?: Node): Command {
@@ -431,42 +456,6 @@ function getTextFromSelection(selection: Selection, textType: NodeType) {
     } else {
         return [textType.create()];
     };
-}
-
-function trimSelection(selection: Selection) {
-    const { $from, $to, } = selection;
-
-    let from = $from.pos, to = $to.pos, start = $from.nodeAfter, end = $to.nodeBefore;
-    let spaceStart = start && start.isText ? /^\s*/.exec(start.text!)![0].length : 0;
-    let spaceEnd = end && end.isText ? /\s*$/.exec(end.text!)![0].length : 0;
-    if (from + spaceStart < to) {
-        from += spaceStart;
-        to -= spaceEnd;
-    }
-    return { from, to }
-}
-
-function markPosition(pos: ResolvedPos, markType: MarkType) {
-    const { parent, parentOffset } = pos;
-    const start = parentOffset === 0 ? parent.childAfter(parentOffset) : parent.childBefore(parentOffset);
-    if (!start.node) return;
-
-    const mark = start.node.marks.find((mark) => mark.type === markType);
-    if (!mark) return;
-
-    let startIndex = start.index;
-    let from = pos.start() + start.offset;
-    let endIndex = startIndex + 1;
-    let to = from + start.node.nodeSize;
-    while (startIndex > 0 && mark.isInSet(parent.child(startIndex - 1).marks)) {
-        startIndex -= 1;
-        from -= parent.child(startIndex).nodeSize;
-    }
-    while (endIndex < parent.childCount && mark.isInSet(parent.child(endIndex).marks)) {
-        to += parent.child(endIndex).nodeSize;
-        endIndex += 1;
-    }
-    return { from, to, mark };
 }
 
 function incrementId(input: string): string | undefined {

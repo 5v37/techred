@@ -23,9 +23,9 @@
                 </div>
             </div>
 
-            <div class="t-ui-field t-link-tooltip-root">
+            <div class="t-ui-field">
                 <label>История изменений</label>
-                <Editor editor-id="history" annotation class="t-ui-texteditor" />
+                <EmbeddedEditor editor-id="history"/>
             </div>
 
             <div class="t-ui-field">
@@ -69,7 +69,7 @@ import { ref } from "vue";
 import { Panel, Chip, Button, InputText, InputNumber } from "primevue";
 
 import Persons from "./Persons.vue";
-import Editor from "./Editor.vue";
+import EmbeddedEditor from "./EmbeddedEditor.vue";
 import ComplexDatePicker from "./ComplexDatePicker.vue";
 
 import PersonInfo from "@/types/personInfo";

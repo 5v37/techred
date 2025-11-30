@@ -10,14 +10,13 @@ import { useTemplateRef, onMounted, onUnmounted } from "vue";
 import ImageView from "./views/ImageView.vue";
 import InlineImageView from "./views/InlineImageView.vue";
 
-import { EditorState, Transaction } from "prosemirror-state";
+import { EditorState, TextSelection, Transaction } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
 import { Node, DOMParser as pmDOMParser, DOMSerializer as pmDOMSerializer } from "prosemirror-model";
 import { DocAttrStep, ReplaceAroundStep, ReplaceStep } from "prosemirror-transform";
 import { undo, redo, history } from "prosemirror-history";
 import { keymap } from "prosemirror-keymap";
-import { baseKeymap, toggleMark, chainCommands } from "prosemirror-commands";
-import { menuBar } from "prosemirror-menu";
+import { baseKeymap, chainCommands } from "prosemirror-commands";
 import { goToNextCell, tableEditing } from "prosemirror-tables";
 import { dropCursor } from "prosemirror-dropcursor";
 
@@ -25,14 +24,15 @@ import type { TreeNode } from "primevue/treenode";
 import { useNodeViewFactory } from "@prosemirror-adapter/vue";
 
 import { annotationSchemaXML, annotationSchema, bodySchemaXML, bodySchema } from "@/modules/fb2Model";
-import { buildMenuItems } from "@/modules/menu";
-import { setId, setLink, splitBlock } from "@/modules/pm/commands";
+import { setId, setLink, setMark, splitBlock } from "@/modules/pm/commands";
 import fb2Mapper from "@/modules/fb2Mapper";
 import editorState from "@/modules/editorState";
 import { sharedHistory, sharedRedo, sharedUndo } from "@/modules/pm/sharedHistory";
 import BlockView from "@/modules/pm/blockView";
 import linkTooltip from "@/modules/pm/linkTooltip";
+import toolbar from "@/modules/pm/toolbar";
 import modificationMonitor from "@/modules/pm/modificationMonitor";
+import { wordBoundaries } from "@/modules/transform";
 
 const spellcheckOn = editorState.spellCheckOn;
 const nodeViewFactory = useNodeViewFactory();
@@ -72,12 +72,12 @@ onMounted(() => {
             keymap({
                 "Mod-z": props.annotation ? undo : sharedUndo,
                 "Mod-y": props.annotation ? redo : sharedRedo,
-                "Mod-b": toggleMark(schema.marks.strong),
-                "Mod-i": toggleMark(schema.marks.emphasis),
-                "Mod-,": toggleMark(schema.marks.sub),
-                "Mod-.": toggleMark(schema.marks.sup),
-                "Mod-Shift-x": toggleMark(schema.marks.strikethrough),
-                "Mod-Shift-m": toggleMark(schema.marks.code),
+                "Mod-b": setMark(schema.marks.strong),
+                "Mod-i": setMark(schema.marks.emphasis),
+                "Mod-,": setMark(schema.marks.sub),
+                "Mod-.": setMark(schema.marks.sup),
+                "Mod-Shift-x": setMark(schema.marks.strikethrough),
+                "Mod-Shift-m": setMark(schema.marks.code),
                 "Mod-k": chainCommands(setLink(), () => true),
                 "Mod-;": chainCommands(setId(false), () => true),
                 "Mod-Shift-;": chainCommands(setId(true), () => true),
@@ -88,12 +88,10 @@ onMounted(() => {
             monitor,
             tableEditing(),
             dropCursor(),
-            menuBar({
-                floating: !props.annotation,
-                content: buildMenuItems(schema)
-            }),
+            toolbar(props.annotation ? props.editorId : "mainEditor")
         ]
     });
+
     view = new EditorView(editor.value, {
         state: state,
         handleScrollToSelection: () => {
@@ -103,6 +101,26 @@ onMounted(() => {
             } else {
                 return false;
             }
+        },
+        handleDoubleClick: (view, pos, event) => {
+            if (event.button === 0) {
+                if (!view.hasFocus()) {
+                    view.focus();
+                };
+                // В Chromium рассинхрон с DOMObserver при замене выделения
+                setTimeout(() => {
+                    const doc = view.state.doc;
+                    const range = wordBoundaries(doc.resolve(pos));
+                    const selection = TextSelection.create(doc, range.from, range.to)
+                    if (!view.state.selection.eq(selection)) {
+                        let tr = view.state.tr;
+                        tr.setSelection(selection);
+                        view.dispatch(tr);
+                    };
+                });
+                return true;
+            }
+            return false;
         },
         transformPastedHTML: (html: string) => {
             const parser = new DOMParser();
@@ -154,6 +172,10 @@ function parseContent(bodyElement: Element | undefined) {
     if (view) {
         state.doc = root;
         view.updateState(state);
+        
+        let tr = view.state.tr;
+        tr.setSelection(TextSelection.near(tr.doc.resolve(0)));
+        view.dispatch(tr);
     };
 }
 function serializeContent(xmlDoc: Document, target: Element) {

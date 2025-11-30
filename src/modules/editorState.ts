@@ -16,6 +16,7 @@ class editorState {
     public currentBody = ref("");
     public spellCheckOn = ref(false);
     public highlightEmphasisOn = ref(true);
+    public toolbars: { [key: string]: (view: EditorView) => void } = Object.create(null);
 
     private focusedView?: EditorView;
 
