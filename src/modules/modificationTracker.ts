@@ -1,5 +1,5 @@
-import { watchDebounced } from "@vueuse/core";
-import { Ref, ref } from "vue";
+import type { Ref } from "vue";
+import { ref, watch } from "vue";
 
 class ModificationTracker {
 	public docModified = ref(false);
@@ -24,7 +24,7 @@ class ModificationTracker {
 	}
 
 	unregister(model: Ref) {
-		this.modificationCheckers = this.modificationCheckers.filter(checker => !checker.match(model))
+		this.modificationCheckers = this.modificationCheckers.filter(checker => !checker.match(model));
 	}
 
 	reset(isNewData: boolean) {
@@ -47,14 +47,14 @@ class ModificationCheckers {
 		this.isModified = false;
 		this.initialData = JSON.stringify(model.value);
 		this._model = model;
-		watchDebounced(model, (newValue) => {
+		watch(model, (newValue) => {
 			if (this.skipInit) {
 				this.skipInit = false;
 			} else {
 				this.isModified = JSON.stringify(newValue) !== this.initialData;
 				modificationTracker.refresh(this.isModified);
 			};
-		}, { debounce: 500, deep: true });
+		}, { deep: true });
 	}
 
 	reset(isNewData: boolean) {
