@@ -5,7 +5,7 @@
         </div>
         <div ref="splitterRef" class="t-splitter-bar"
             :class="{ 't-splitter-bar-vertical': isVertical, 't-splitter-bar-horizontal': !isVertical }"
-            @pointerdown="onPointerDown" @pointermove="onPointerMove" @pointerup="onPointerUp"
+            @pointerdown.prevent="onPointerDown" @pointermove="onPointerMove" @pointerup="onPointerUp"
             @pointercancel="onPointerUp" @dblclick="onDbClick" />
         <div class="t-splitter-pane"
             :style="{ [isVertical ? 'width' : 'height']: `calc(${100 - mainPercent}% - var(--t-splitter-bar-size))` }">
@@ -98,6 +98,7 @@ function onDbClick() {
     background-color: var(--p-content-border-color);
     flex: none;
     user-select: none;
+    touch-action: none;
     transition: background-color 0.15s ease-out 0.2s;
 }
 
