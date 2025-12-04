@@ -1,31 +1,34 @@
 <template>
-    <div ref="content" class="t-content-container">
+    <div ref="content" class="t-content">
         <EditorToolbar editor-id="mainEditor" />
-        <Splitter layout="vertical" style="min-height: 0;">
-            <SplitterPanel :size="75" :minSize="10" ref="main" class="t-link-tooltip-root" style="overflow-y: auto;">
-                <Editor :editor-id="children[0].key" />
-            </SplitterPanel>
-            <SplitterPanel :size="25" :minSize="10" ref="extra" class="t-link-tooltip-root" style="overflow-y: auto;"
-                :class="{ 't-content-has-tabs': hasTabs }">
-                <Editor v-for="item in children.slice(1)" :key="item.key" v-show="currentTab === item.key"
-                    :editor-id="item.key" />
-                <div v-if="hasTabs" class="t-content-tabs">
-                    <button v-for="item in children.slice(1)" :key="item.key" @click="currentTab = item.key"
-                        class="t-content-tab" :class="{ 't-content-tab-active': currentTab === item.key }">
-                        {{ item.label }}
-                    </button>
+        <Splitter :initial-ratio="75" ref="splitter">
+            <template #main>
+                <div class="t-content-pane">
+                    <Editor :editor-id="children[0].key" />
                 </div>
-            </SplitterPanel>
+            </template>
+            <template #extra>
+                <div class="t-content-pane">
+                    <Editor v-for="item in children.slice(1)" :key="item.key" v-show="currentTab === item.key"
+                        :editor-id="item.key" />
+                </div>
+            </template>
         </Splitter>
+        <div v-if="hasTabs" class="t-content-tabs">
+            <button v-for="item in children.slice(1)" :key="item.key" @click="currentTab = item.key"
+                class="t-content-tab" :class="{ 't-content-tab-active': currentTab === item.key }">
+                {{ item.label }}
+            </button>
+        </div>
     </div>
 </template>
 
 <script setup lang="ts">
-import { onUpdated, useTemplateRef, ComponentPublicInstance, computed, shallowReactive, reactive, nextTick } from "vue";
+import { computed, shallowReactive, reactive, nextTick } from "vue";
 
-import { Splitter, SplitterPanel } from "primevue";
 import type { TreeNode } from "primevue/treenode";
 
+import Splitter from "@/components/Splitter.vue";
 import Editor from "@/components/Editor.vue";
 import EditorToolbar from "./EditorToolbar.vue";
 
@@ -33,18 +36,6 @@ import fb2Mapper, { DocumentBlocks } from "@/modules/fb2Mapper";
 import editorState from "@/modules/editorState";
 import { fb2ns } from "@/modules/fb2Model";
 import { resetSharedHistory } from "@/modules/pm/sharedHistory";
-
-let toTop = false;
-const content = useTemplateRef('content');
-const main = useTemplateRef<ComponentPublicInstance>('main');
-const extra = useTemplateRef<ComponentPublicInstance>('extra');
-onUpdated(() => {
-    if (toTop && content.value && !content.value.style.display) {
-        main.value!.$el.scrollTop = 0;
-        extra.value!.$el.scrollTop = 0;
-        toTop = false;
-    }
-});
 
 const currentTab = editorState.currentBody;
 fillBodies();
@@ -84,8 +75,6 @@ function getBlocks(xmlDoc: Document, method: string) {
     const parts: DocumentBlocks = {};
 
     if (method === "parse") {
-        toTop = true;
-
         const bodyElements = xmlDoc.getElementsByTagName("body");
         if (bodyElements.length !== children.length) {
             fb2Mapper.setUpdateProcessor(nextTick);
@@ -120,23 +109,21 @@ defineExpose({ getBlocks });
 </script>
 
 <style>
-.t-content-container {
+.t-content {
     display: flex;
     flex-grow: 1;
     flex-direction: column;
 }
 
-.t-content-has-tabs {
-    margin-bottom: 2.5rem;
+.t-content-pane {
+    display: flex;
+    height: 100%;
 }
 
 .t-content-tabs {
-    position: fixed;
-    bottom: 0;
-    width: 100%;
-    border-top: 2px solid var(--p-splitter-border-color);
-    height: 2.5rem;
     display: flex;
+    height: 2.5rem;
+    border-top: 2px solid var(--p-content-border-color);
 }
 
 .t-content-tab {

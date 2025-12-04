@@ -3,15 +3,20 @@
 
     <MainToolbar v-show="loaded" @loaded="loaded = true" />
     <ProsemirrorAdapterProvider>
-        <Splitter v-show="loaded" layout="horizontal" class="t-app-main">
-            <SplitterPanel :size="15" :minSize="10" class="t-ui-container">
-                <Sidebar @switch="current = $event" />
-            </SplitterPanel>
-            <SplitterPanel :size="85" style="display: flex;">
-                <Description v-show="current === 'description'" />
-                <Content v-show="current === 'content'" />
-                <Images v-show="current === 'images'" />
-            </SplitterPanel>
+        <Splitter v-show="loaded" :initialRatio="15" direction="vertical" class="t-app-main">
+            <template #main>
+                <div class="t-app-pane">
+                    <Sidebar @switch="current = $event" />
+                </div>
+            </template>
+            <template #extra>
+                <div class="t-app-pane">
+                    <Description v-show="current === 'description'" />
+                    <Content v-show="current === 'content'" />
+                    <Images v-show="current === 'images'" />
+                </div>
+
+            </template>
         </Splitter>
     </ProsemirrorAdapterProvider>
 
@@ -22,10 +27,11 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 
-import { SplitterPanel, Splitter, Toast } from 'primevue';
+import { Toast } from 'primevue';
 import { ProsemirrorAdapterProvider } from '@prosemirror-adapter/vue';
 
 import MainToolbar from '@/components/MainToolbar.vue';
+import Splitter from '@/components/Splitter.vue';
 import Sidebar from '@/components/Sidebar.vue';
 import Description from "@/components/Description.vue";
 import Content from '@/components/Content.vue';
@@ -40,9 +46,13 @@ initNotification();
 </script>
 
 <style>
-.p-splitter.t-app-main {
-    flex: 1 1 0;
-    overflow: hidden;
-    border-radius: 0px;
+.t-app-main {
+    border: 1px solid var(--p-content-border-color);
+    border-top-width: 3px;
+}
+
+.t-app-pane {
+    height: 100%;
+    display: flex;
 }
 </style>

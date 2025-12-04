@@ -1,6 +1,6 @@
 <template>
     <div ref="editor" :spellcheck="spellcheckOn"
-        :class="{ 'highlight-emphasis': editorState.highlightEmphasisOn.value }">
+        :class="{ 'highlight-emphasis': editorState.highlightEmphasisOn.value, 't-editor-main': !props.annotation }">
     </div>
 </template>
 
@@ -56,6 +56,7 @@ custKeymap["Shift-Enter"] = splitBlock(true);
 let view: EditorView;
 let state: EditorState;
 let root = emptyDoc();
+let observer: IntersectionObserver;
 if (!props.annotation) {
     updateTOC(root);
 };
@@ -84,7 +85,7 @@ onMounted(() => {
                 "Tab": goToNextCell(1),
                 "Shift-Tab": goToNextCell(-1),
             }),
-            linkTooltip(editor.value!.parentElement!),
+            linkTooltip(editor.value!),
             monitor,
             tableEditing(),
             dropCursor(),
@@ -151,6 +152,17 @@ onMounted(() => {
         }
     });
     editorState.views[props.editorId] = view;
+
+    if (!props.annotation) {
+        observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting && editor.value) {
+                    editor.value.scrollTop = 0;
+                    observer.unobserve(editor.value);
+                };
+            });
+        });
+    };
 });
 
 onUnmounted(() => {
@@ -168,11 +180,18 @@ function parseContent(bodyElement: Element | undefined) {
     root = !bodyElement || !bodyElement.textContent ? emptyDoc(name) : pmDOMParser.fromSchema(schema).parse(bodyElement, { topNode: emptyDoc(name) });
     if (!props.annotation) {
         updateTOC(root);
+        if (editor.value) {
+            if (editor.value.scrollHeight !== 0) {
+                editor.value.scrollTop = 0;
+            } else {
+                observer.observe(editor.value);
+            };
+        };
     };
     if (view) {
         state.doc = root;
         view.updateState(state);
-        
+
         let tr = view.state.tr;
         tr.setSelection(TextSelection.near(tr.doc.resolve(0)));
         view.dispatch(tr);
@@ -210,7 +229,7 @@ function updateTOC(doc: Node) {
                 node.children[idx].content.forEach(p => {
                     if (p.textContent) {
                         text.push(p.textContent);
-                    }
+                    };
                 });
                 return text.join(" ");
             };
@@ -271,4 +290,10 @@ function needUpdateTOC(transaction: Transaction) {
 }
 </script>
 
-<style></style>
+<style>
+.t-editor-main {
+    position: relative;
+    overflow-y: auto;
+    flex-grow: 1;
+}
+</style>
