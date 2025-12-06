@@ -77,7 +77,7 @@ function template(topNode: string, toXML: boolean): Schema {
                         };
                     }
                 }],
-                leafText: () => "(image)",
+                leafText: () => "◪",
                 toDOM(node) {
                     if (defaultNameSpace) {
                         return [defaultNameSpace + "image", {
@@ -310,7 +310,7 @@ function template(topNode: string, toXML: boolean): Schema {
                         };
                     }
                 }],
-                leafText: () => "(inline image)",
+                leafText: () => "◪",
                 toDOM(node) {
                     if (defaultNameSpace) {
                         return [defaultNameSpace + "image", {
