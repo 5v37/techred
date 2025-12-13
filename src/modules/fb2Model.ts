@@ -76,6 +76,16 @@ function template(topNode: string, toXML: boolean): Schema {
                             id: dom.getAttribute("id")
                         };
                     }
+                }, {
+                    tag: "figure",
+                    getAttrs(dom) {
+                        return {
+                            href: dom.getAttribute("href"),
+                            alt: dom.getAttribute("alt"),
+                            title: dom.getAttribute("title"),
+                            id: dom.getAttribute("id")
+                        };
+                    }
                 }],
                 leafText: () => "◪",
                 toDOM(node) {
@@ -306,6 +316,14 @@ function template(topNode: string, toXML: boolean): Schema {
                     getAttrs(dom) {
                         return {
                             href: dom.getAttributeNS(xlinkns, "href"),
+                            alt: dom.getAttribute("alt")
+                        };
+                    }
+                }, {
+                    tag: "img",
+                    getAttrs(dom) {
+                        return {
+                            href: dom.getAttribute("href"),
                             alt: dom.getAttribute("alt")
                         };
                     }
