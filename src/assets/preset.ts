@@ -1,5 +1,6 @@
 import { definePreset } from "@primevue/themes";
 import Aura from '@primevue/themes/aura'
+import { error } from "console";
 
 export const Noir = definePreset(Aura, {
     semantic: {
@@ -30,8 +31,14 @@ export const Noir = definePreset(Aura, {
                     color: '#ffffff',
                     focusColor: '#ffffff'
                 },
+                image: {
+                    borderColor: '{teal.400}'
+                },
                 link: {
                     color: '{blue.600}'
+                },
+                error: {
+                    color: '{red.400}'
                 }
             },
             dark: {
@@ -47,8 +54,14 @@ export const Noir = definePreset(Aura, {
                     color: 'rgba(255,255,255,.87)',
                     focusColor: 'rgba(255,255,255,.87)'
                 },
+                image: {
+                    borderColor: '{teal.600}'
+                },
                 link: {
                     color: '{blue.400}'
+                },
+                error: {
+                    color: '{red.600}'
                 }
             }
         }

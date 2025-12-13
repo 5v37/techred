@@ -1,0 +1,37 @@
+.t-button-secondary {
+	display: flex;
+	position: relative;
+	cursor: pointer;
+	user-select: none;
+	align-items: center;
+	justify-content: center;
+	overflow: hidden;
+	background: var(--p-content-background);
+	color: var(--p-button-text-secondary-color);
+	border: 1px solid transparent;
+	width: var(--p-button-icon-only-width);
+	padding: var(--p-button-padding-y) 0;
+	font-size: 1rem;
+	font-family: 'Nunito', sans-serif;
+	font-feature-settings: inherit;
+	transition: background var(--p-button-transition-duration), outline-color var(--p-button-transition-duration), box-shadow var(--p-button-transition-duration);
+	border-radius: var(--p-button-border-radius);
+	outline-color: transparent;
+}
+
+.t-button-secondary::after {
+    content: "M";
+    visibility: hidden;
+    width: 0;
+}
+
+.t-button-secondary:hover {
+	background: var(--p-button-text-secondary-hover-background);
+}
+
+.t-button-secondary:focus-visible {
+	outline-color: var(--p-button-secondary-focus-ring-color);
+	box-shadow: var(--p-button-secondary-focus-ring-shadow);
+	outline: var(--p-button-focus-ring-width) var(--p-button-focus-ring-style) var(--p-button-primary-focus-ring-color);
+	outline-offset: var(--p-button-focus-ring-offset);
+}

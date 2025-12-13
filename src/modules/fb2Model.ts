@@ -87,7 +87,7 @@ function template(topNode: string, toXML: boolean): Schema {
                             id: node.attrs.id
                         }]
                     } else {
-                        return ["image", node.attrs];
+                        return ["figure", node.attrs];
                     }
                 }
             },

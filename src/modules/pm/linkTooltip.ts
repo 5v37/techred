@@ -55,6 +55,7 @@ class LinkTooltipView {
     }
 
     destroy() {
+        this.removeEventListeners();
         this.tooltip.remove();
     }
 
@@ -68,8 +69,8 @@ class LinkTooltipView {
             <div class="link-header">
                 <div class="link-url">#id</div>
                 <div class="link-actions">
-                    <button class="link-edit"><span class="pi pi-pencil"/></button>
-                    <button class="link-remove"><span class="pi pi-trash"/></button>
+                    <button class="t-button-secondary link-edit"><span class="pi pi-pencil"></span></button>
+                    <button class="t-button-secondary link-remove"><span class="pi pi-trash"></span></button>
                 </div>
             </div>            
             <div class="ProseMirror link-preview"></div>            
@@ -154,42 +155,58 @@ class LinkTooltipView {
     }
 
     private addEventListeners() {
-        const editBtn = this.tooltip.querySelector(".link-edit")!;
-        const removeBtn = this.tooltip.querySelector(".link-remove")!;
+        const editBtn = this.tooltip.querySelector(".link-edit") as HTMLElement;
+        const removeBtn = this.tooltip.querySelector(".link-remove") as HTMLElement;
 
         this.url.addEventListener("mousedown", this.handleOpenLink);
         editBtn.addEventListener("mousedown", this.handleEditLink);
         removeBtn.addEventListener("mousedown", this.handleRemoveLink);
     }
 
-    private handleOpenLink = (event: Event) => {
-        event.preventDefault();
-        if (this.target) {
-            editorState.setBody(this.target.body);
-            const selector = this.target.node.attrs.uid ? `[uid="${this.target.node.attrs.uid}"]` : `[id="${this.target.node.attrs.id}"]`;
-            queueMicrotask(() => {
-                const element = document.querySelector(selector);
-                if (element) {
-                    element.scrollIntoView();
+    private removeEventListeners() {
+        const editBtn = this.tooltip.querySelector(".link-edit") as HTMLElement;
+        const removeBtn = this.tooltip.querySelector(".link-remove") as HTMLElement;
+
+        this.url.removeEventListener("mousedown", this.handleOpenLink);
+        editBtn.removeEventListener("mousedown", this.handleEditLink);
+        removeBtn.removeEventListener("mousedown", this.handleRemoveLink);
+    }
+
+    private handleOpenLink = (event: MouseEvent) => {
+        if (event.button === 0) {
+            event.preventDefault();
+
+            if (this.target) {
+                editorState.setBody(this.target.body);
+                const selector = this.target.node.attrs.uid ? `[uid="${this.target.node.attrs.uid}"]` : `[id="${this.target.node.attrs.id}"]`;
+                queueMicrotask(() => {
+                    const element = document.querySelector(selector);
+                    if (element) {
+                        element.scrollIntoView();
+                    };
+                });
+            } else if (!this.broken) {
+                if (__APP_TAURI_MODE__) {
+                    openUrl(this.link!.attrs.href);
+                } else {
+                    open(this.link!.attrs.href, "_blank", "noopener,noreferrer");
                 };
-            });
-        } else if (!this.broken) {
-            if (__APP_TAURI_MODE__) {
-                openUrl(this.link!.attrs.href);
-            } else {
-                open(this.link!.attrs.href, "_blank", "noopener,noreferrer");
             };
         };
     };
 
-    private handleEditLink = (event: Event) => {
-        event.preventDefault();
-        setLink()(this.view.state, this.view.dispatch);
+    private handleEditLink = (event: MouseEvent) => {
+        if (event.button === 0) {
+            event.preventDefault();
+            setLink()(this.view.state, this.view.dispatch);
+        };
     };
 
-    private handleRemoveLink = (event: Event) => {
-        event.preventDefault();
-        updateLink(undefined, this.link!.type)(this.view.state, this.view.dispatch);
+    private handleRemoveLink = (event: MouseEvent) => {
+        if (event.button === 0) {
+            event.preventDefault();
+            updateLink(undefined, this.link!.type)(this.view.state, this.view.dispatch);
+        };
     };
 }
 

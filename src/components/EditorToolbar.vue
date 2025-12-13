@@ -385,6 +385,9 @@ function toggleTableMenu(event: MouseEvent) {
 <style>
 .t-editor_toolbar {
 	display: flex;
+	background: var(--p-content-background);
+	border-top-left-radius: inherit;
+	border-top-right-radius: inherit;
 	border-bottom: thin solid var(--p-toolbar-border-color);
 }
 

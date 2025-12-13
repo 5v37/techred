@@ -2,25 +2,23 @@
     <Toast />
 
     <MainToolbar v-show="loaded" @loaded="loaded = true" />
-    <ProsemirrorAdapterProvider>
-        <Splitter v-show="loaded" :initialRatio="15" direction="vertical" class="t-app-main">
-            <template #main>
-                <div class="t-app-pane">
-                    <Sidebar @switch="current = $event" />
-                </div>
-            </template>
-            <template #extra>
-                <div class="t-app-pane">
-                    <Description v-show="current === 'description'" />
-                    <Content v-show="current === 'content'" />
-                    <Images v-show="current === 'images'" />
-                </div>
-
-            </template>
-        </Splitter>
-    </ProsemirrorAdapterProvider>
+    <Splitter v-show="loaded" :initialRatio="15" direction="vertical" class="t-app-main">
+        <template #main>
+            <div class="t-app-pane">
+                <Sidebar @switch="current = $event" />
+            </div>
+        </template>
+        <template #extra>
+            <div class="t-app-pane">
+                <Description v-show="current === 'description'" />
+                <Content v-show="current === 'content'" />
+                <Images v-show="current === 'images'" />
+            </div>
+        </template>
+    </Splitter>
 
     <IdInputDialog />
+    <ImageEditDialog />
     <LinkEditorDialog />
 </template>
 
@@ -28,7 +26,6 @@
 import { ref } from 'vue'
 
 import { Toast } from 'primevue';
-import { ProsemirrorAdapterProvider } from '@prosemirror-adapter/vue';
 
 import MainToolbar from '@/components/MainToolbar.vue';
 import Splitter from '@/components/Splitter.vue';
@@ -37,6 +34,7 @@ import Description from "@/components/Description.vue";
 import Content from '@/components/Content.vue';
 import Images from '@/components/Images.vue';
 import IdInputDialog from '@/components/IdInputDialog.vue';
+import ImageEditDialog from './components/ImageEditDialog.vue';
 import LinkEditorDialog from '@/components/LinkEditorDialog.vue';
 import { initNotification } from '@/modules/notifications';
 

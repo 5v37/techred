@@ -1,4 +1,6 @@
+@use './button.scss';
 @use './linkTooltip.scss';
+@use './imageView.scss';
 
 @import 'prosemirror-view/style/prosemirror.css';
 @import 'prosemirror-tables/style/tables.css';
@@ -181,15 +183,22 @@
 		background-color: var(--p-content-hover-background);
 	}
 
-	image {
-		display: block;
-		width: fit-content;
-		margin: auto;
+	img {
+		max-width: 100%;
 	}
 
-	table {
-		margin: 0.25rem var(--t-content-indent);
-		width: calc(100% - 2*var(--t-content-indent));
+	img.t-img-broken {
+		border: thin solid var(--p-error-color);
+		text-indent: initial;
+	}
+
+	figure {
+		@include block(var(--p-image-border-color));
+		display: flex;
+	}
+
+	figure::after {
+		@include after($content: "<image>");
 	}
 
 	th,
@@ -222,18 +231,6 @@
 
 .highlight-emphasis {
 	em {
-		border: 1px solid rgb(255, 88, 88);
+		border: thin solid rgb(255, 88, 88);
 	}
-}
-
-.ProseMirror-menubar {
-	padding: 6px 6px;
-	color: var(--p-text-muted-color);
-	background: var(--p-toolbar-background);
-	border-color: var(--p-toolbar-border-color);
-}
-
-.ProseMirror-menubar-wrapper {
-	border-top-left-radius: inherit;
-	border-top-right-radius: inherit;
 }

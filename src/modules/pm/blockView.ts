@@ -1,17 +1,18 @@
 import type { NodeView, EditorView } from "prosemirror-view";
-import type { Node as ProseMirrorNode } from "prosemirror-model";
+import type { Node } from "prosemirror-model";
+
 import ui from "@/modules/ui";
 
 class BlockView implements NodeView {
-	node: ProseMirrorNode;
-	view: EditorView;
-	getPos: () => number | undefined;
+	private node: Node;
+	private view: EditorView;
+	private getPos: () => number | undefined;
 
-	dom: HTMLElement;
 	contentDOM: HTMLElement;
-	idLabel: HTMLElement;
+	private dom: HTMLElement;
+	private idLabel: HTMLElement;
 
-	constructor(node: ProseMirrorNode, view: EditorView, getPos: () => number | undefined) {
+	constructor(node: Node, view: EditorView, getPos: () => number | undefined) {
 		this.node = node;
 		this.view = view;
 		this.getPos = getPos;
@@ -28,18 +29,12 @@ class BlockView implements NodeView {
 		this.idLabel.contentEditable = "false";
 		this.updateIdLabel();
 
-		this.idLabel.addEventListener("mousedown", (event) => {
-			event.preventDefault();
-			const pos = this.getPos();
-			if (pos !== undefined) {
-				ui.openIdInputDialog(this.view.state, this.view.dispatch, pos, this.node.attrs.id);
-			};
-		});
+		this.idLabel.addEventListener("mousedown", this.handleSetId);
 
 		this.dom.append(this.contentDOM, this.idLabel);
 	}
 
-	update(node: ProseMirrorNode): boolean {
+	update(node: Node): boolean {
 		if (node.type !== this.node.type) return false;
 
 		const oldAttrs = this.node.attrs;
@@ -55,7 +50,11 @@ class BlockView implements NodeView {
 		return true;
 	}
 
-	updateIdLabel() {
+	destroy() {
+        this.idLabel.removeEventListener("mousedown", this.handleSetId);
+    }
+
+	private updateIdLabel() {
 		const id = this.node.attrs.id;
 		if (id) {
 			this.contentDOM.setAttribute("id", id);
@@ -63,6 +62,16 @@ class BlockView implements NodeView {
 			this.contentDOM.removeAttribute("id");
 		};
 		this.idLabel.textContent = `#${id || "<не установлен>"}`;
+	}
+
+	private handleSetId = (event: MouseEvent) => {
+		if (event.button === 0) {
+			event.preventDefault();
+			const pos = this.getPos();
+			if (pos !== undefined) {
+				ui.openIdInputDialog(this.view.state, this.view.dispatch, pos, this.node.attrs.id);
+			};
+		};
 	}
 }
 
