@@ -1,6 +1,5 @@
 import { definePreset } from "@primevue/themes";
 import Aura from '@primevue/themes/aura'
-import { error } from "console";
 
 export const Noir = definePreset(Aura, {
     semantic: {
