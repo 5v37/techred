@@ -123,7 +123,12 @@ onMounted(() => {
         transformPastedHTML: (html: string) => {
             const parser = new DOMParser();
             const doc = parser.parseFromString(html, "text/html");
-            return doc?.body ? doc.body.innerHTML : html;
+            if (doc.body) {
+                doc.body.querySelectorAll("[id]").forEach(el => el.removeAttribute("id"));
+                return doc.body.innerHTML;
+            } else {
+                return html;
+            };
         },
         nodeViews: {
             image: (node, view, getPos) => new ImageView(node, view, getPos),
