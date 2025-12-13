@@ -60,11 +60,11 @@ import { redo as localRedo, undo as localUndo } from "prosemirror-history"
 import { setBlockType, wrapIn } from "prosemirror-commands";
 
 import editorState from "@/modules/editorState";
-import { addInlineImage, addNodeAfterSelection, addTextautor, addTitle, changeToSection, deleteTableSafety, setId, setLink, setMark, wrapPoem } from "@/modules/pm/commands";
+import { addInlineImage, addNodeAfterSelection, addTextautor, addTitle, changeToSection, deleteTableSafety, setId, setLink, setMark, wrapPoem } from "@/modules/commands";
 import { openImageDialog } from "@/modules/fileAccess";
 import { openFileError } from "@/modules/notifications";
 import { isSameMark, marksInPos } from "@/modules/transform";
-import { sharedRedo, sharedUndo } from "@/modules/pm/sharedHistory";
+import { sharedRedo, sharedUndo } from "@/extensions/sharedHistory";
 import { addColumnAfter, addColumnBefore, addRowAfter, addRowBefore, deleteColumn, deleteRow, isInTable, mergeCells, setCellAttr, splitCell, toggleHeaderCell, toggleHeaderColumn, toggleHeaderRow } from "prosemirror-tables";
 import { NodeType } from "prosemirror-model";
 

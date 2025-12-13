@@ -35,7 +35,7 @@ import EditorToolbar from "./EditorToolbar.vue";
 import fb2Mapper, { DocumentBlocks } from "@/modules/fb2Mapper";
 import editorState from "@/modules/editorState";
 import { fb2ns } from "@/modules/fb2Model";
-import { resetSharedHistory } from "@/modules/pm/sharedHistory";
+import { resetSharedHistory } from "@/extensions/sharedHistory";
 
 const currentTab = editorState.currentBody;
 fillBodies();

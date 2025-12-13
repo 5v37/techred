@@ -3,7 +3,7 @@ import type { EditorView } from "prosemirror-view";
 import type { Node, Mark } from "prosemirror-model";
 import { openUrl } from "@tauri-apps/plugin-opener";
 
-import { setLink, updateLink } from "@/modules/pm/commands";
+import { setLink, updateLink } from "@/modules/commands";
 import editorState from "@/modules/editorState";
 
 class LinkTooltipView {

@@ -20,17 +20,17 @@ import { dropCursor } from "prosemirror-dropcursor";
 import type { TreeNode } from "primevue/treenode";
 
 import { annotationSchemaXML, annotationSchema, bodySchemaXML, bodySchema } from "@/modules/fb2Model";
-import { setId, setLink, setMark, splitBlock } from "@/modules/pm/commands";
+import { setId, setLink, setMark, splitBlock } from "@/modules/commands";
+import { wordBoundaries } from "@/modules/transform";
 import fb2Mapper from "@/modules/fb2Mapper";
 import editorState from "@/modules/editorState";
-import { sharedHistory, sharedRedo, sharedUndo } from "@/modules/pm/sharedHistory";
-import BlockView from "@/modules/pm/blockView";
-import ImageView from "@/modules/pm/imageView";
-import InlineImageView from "@/modules/pm/inlineImageView";
-import linkTooltip from "@/modules/pm/linkTooltip";
-import toolbar from "@/modules/pm/toolbar";
-import modificationMonitor from "@/modules/pm/modificationMonitor";
-import { wordBoundaries } from "@/modules/transform";
+import { sharedHistory, sharedRedo, sharedUndo } from "@/extensions/sharedHistory";
+import BlockView from "@/extensions/blockView";
+import ImageView from "@/extensions/imageView";
+import InlineImageView from "@/extensions/inlineImageView";
+import linkTooltip from "@/extensions/linkTooltip";
+import toolbar from "@/extensions/toolbar";
+import modificationMonitor from "@/extensions/modificationMonitor";
 
 const spellcheckOn = editorState.spellCheckOn;
 const props = defineProps<{
