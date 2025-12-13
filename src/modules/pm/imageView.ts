@@ -11,7 +11,7 @@ class ImageView implements NodeView {
     private view: EditorView;
     private getPos: () => number | undefined;
 
-    private dom: HTMLElement;
+    dom: HTMLElement;
     private imageContent: HTMLImageElement;
     private idLabel: HTMLElement;
     private unwatch: WatchHandle;

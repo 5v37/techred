@@ -8,8 +8,8 @@ class BlockView implements NodeView {
 	private view: EditorView;
 	private getPos: () => number | undefined;
 
+	dom: HTMLElement;
 	contentDOM: HTMLElement;
-	private dom: HTMLElement;
 	private idLabel: HTMLElement;
 
 	constructor(node: Node, view: EditorView, getPos: () => number | undefined) {
@@ -51,8 +51,8 @@ class BlockView implements NodeView {
 	}
 
 	destroy() {
-        this.idLabel.removeEventListener("mousedown", this.handleSetId);
-    }
+		this.idLabel.removeEventListener("mousedown", this.handleSetId);
+	}
 
 	private updateIdLabel() {
 		const id = this.node.attrs.id;

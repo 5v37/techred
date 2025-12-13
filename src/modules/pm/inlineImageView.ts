@@ -8,7 +8,7 @@ import editorState from "@/modules/editorState";
 class InlineImageView implements NodeView {
     private node: Node;
 
-    private dom: HTMLImageElement;
+    dom: HTMLImageElement;
     private unwatch: WatchHandle;
 
     constructor(node: Node) {
