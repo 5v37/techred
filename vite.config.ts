@@ -1,5 +1,6 @@
+import { fileURLToPath, URL } from "node:url";
+
 import { defineConfig } from "vite";
-import { fileURLToPath, URL } from "url";
 import vue from "@vitejs/plugin-vue";
 import { version } from "./package.json";
 
@@ -12,9 +13,9 @@ export default defineConfig(async ({ mode }) => ({
     __APP_VERSION__: JSON.stringify(version)
   },
   resolve: {
-    alias: [
-      { find: '@', replacement: fileURLToPath(new URL('./src', import.meta.url)) }
-    ]
+    alias: {
+      "@": fileURLToPath(new URL("./src", import.meta.url))
+    },
   },
   plugins: [
     vue()
