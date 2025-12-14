@@ -1,6 +1,5 @@
 <template>
-	<Dialog v-model:visible="visible" modal :closable="false" class="t-ui-dialog"
-		header="Укажите новую подпись">
+	<Dialog v-model:visible="visible" modal :closable="false" class="t-ui-dialog" header="Укажите новую подпись">
 		<Textarea v-model.trim="newCaption" autofocus autoResize rows="1" fluid />
 		<template #footer>
 			<Button type="button" label="Отмена" severity="secondary" @click="closeDialog"></Button>

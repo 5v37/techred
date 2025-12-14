@@ -1,25 +1,25 @@
 <template>
-    <Toast />
+	<Toast />
 
-    <MainToolbar v-show="loaded" @loaded="loaded = true" />
-    <Splitter v-show="loaded" :initialRatio="15" direction="vertical" class="t-app-main">
-        <template #main>
-            <div class="t-app-pane">
-                <Sidebar @switch="current = $event" />
-            </div>
-        </template>
-        <template #extra>
-            <div class="t-app-pane">
-                <Description v-show="current === 'description'" />
-                <Content v-show="current === 'content'" />
-                <Images v-show="current === 'images'" />
-            </div>
-        </template>
-    </Splitter>
+	<MainToolbar v-show="loaded" @loaded="loaded = true" />
+	<Splitter v-show="loaded" :initialRatio="15" direction="vertical" class="t-app-main">
+		<template #main>
+			<div class="t-app-pane">
+				<Sidebar @switch="current = $event" />
+			</div>
+		</template>
+		<template #extra>
+			<div class="t-app-pane">
+				<Description v-show="current === 'description'" />
+				<Content v-show="current === 'content'" />
+				<Images v-show="current === 'images'" />
+			</div>
+		</template>
+	</Splitter>
 
-    <IdInputDialog />
-    <ImageEditDialog />
-    <LinkEditorDialog />
+	<IdInputDialog />
+	<ImageEditDialog />
+	<LinkEditorDialog />
 </template>
 
 <script setup lang="ts">
@@ -45,12 +45,12 @@ initNotification();
 
 <style>
 .t-app-main {
-    border: 1px solid var(--p-content-border-color);
-    border-top-width: 3px;
+	border: 1px solid var(--p-content-border-color);
+	border-top-width: 3px;
 }
 
 .t-app-pane {
-    height: 100%;
-    display: flex;
+	height: 100%;
+	display: flex;
 }
 </style>

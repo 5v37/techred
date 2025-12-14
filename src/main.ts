@@ -10,13 +10,13 @@ import { Noir } from "@/assets/preset";
 
 const app = createApp(App);
 app.use(PrimeVue, {
-    theme: {
-        preset: Noir,
-        options: {
-            darkModeSelector: '.my-app-dark',
-        }
-    },
-    locale: ru
+	theme: {
+		preset: Noir,
+		options: {
+			darkModeSelector: '.my-app-dark',
+		}
+	},
+	locale: ru
 });
 app.use(ToastService);
 app.directive('tooltip', Tooltip);

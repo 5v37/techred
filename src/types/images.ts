@@ -14,10 +14,10 @@ type ImageList = {
 }
 
 function getExt(mime: string) {
-	if (mime === "image/png") 
+	if (mime === "image/png")
 		return "png";
-	else if (mime === "image/jpeg" || mime === "image/jpg") 
-		return "jpg";		
+	else if (mime === "image/jpeg" || mime === "image/jpg")
+		return "jpg";
 	else if (mime === "image/gif")
 		return "gif";
 }

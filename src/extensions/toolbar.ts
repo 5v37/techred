@@ -3,33 +3,33 @@ import type { EditorView } from "prosemirror-view";
 import editorState from "@/modules/editorState"
 
 class ToolbarView {
-    private editorView: EditorView;
-    private id: string;
+	private editorView: EditorView;
+	private id: string;
 
-    constructor(view: EditorView, editorId: string) {
-        this.editorView = view;
-        this.id = editorId;
-        
-        view.dom.addEventListener("focus", this.handleOnFocus);
+	constructor(view: EditorView, editorId: string) {
+		this.editorView = view;
+		this.id = editorId;
 
-        this.update(view);
-    }
+		view.dom.addEventListener("focus", this.handleOnFocus);
 
-    update(view: EditorView) {
-        editorState.toolbars[this.id](view);
-    }
+		this.update(view);
+	}
 
-    destroy() {
-        this.editorView.dom.removeEventListener("focus", this.handleOnFocus);
-    }
+	update(view: EditorView) {
+		editorState.toolbars[this.id](view);
+	}
 
-    private handleOnFocus = () => {
-        this.update(this.editorView);
-    };
+	destroy() {
+		this.editorView.dom.removeEventListener("focus", this.handleOnFocus);
+	}
+
+	private handleOnFocus = () => {
+		this.update(this.editorView);
+	};
 }
 
 export default function toolbar(editorId: string) {
-    return new Plugin({
-        view(editorView) { return new ToolbarView(editorView, editorId); }
-    });
+	return new Plugin({
+		view(editorView) { return new ToolbarView(editorView, editorId); }
+	});
 }

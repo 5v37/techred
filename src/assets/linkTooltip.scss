@@ -1,60 +1,60 @@
 .t-link-tooltip {
-    display: block;
-    position: absolute;
-    z-index: 100;
-    padding: 0.5rem;
-    max-width: 25rem;
-    background: var(--p-overlay-popover-background);
-    border: 1px solid var(--p-overlay-popover-border-color);
-    border-radius: var(--p-overlay-popover-border-radius);
-    box-shadow: var(--p-overlay-popover-shadow);
+	display: block;
+	position: absolute;
+	z-index: 100;
+	padding: 0.5rem;
+	max-width: 25rem;
+	background: var(--p-overlay-popover-background);
+	border: 1px solid var(--p-overlay-popover-border-color);
+	border-radius: var(--p-overlay-popover-border-radius);
+	box-shadow: var(--p-overlay-popover-shadow);
 
-    .link-container {
-        display: flex;
-        flex-direction: column;
-        gap: 0.5rem;
-    }
+	.link-container {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+	}
 
-    .link-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-    }
+	.link-header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+	}
 
-    .link-preview {
-        padding: 0rem;
-        display: -webkit-box;
-        line-clamp: 5;
-        -webkit-line-clamp: 5;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
+	.link-preview {
+		padding: 0rem;
+		display: -webkit-box;
+		line-clamp: 5;
+		-webkit-line-clamp: 5;
+		-webkit-box-orient: vertical;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
 
-    .link-url {
-        word-break: break-all;
-        padding-inline: 0.25rem;
-        min-width: 10rem;
-        color: var(--p-link-color);
-        cursor: pointer;
-    }
+	.link-url {
+		word-break: break-all;
+		padding-inline: 0.25rem;
+		min-width: 10rem;
+		color: var(--p-link-color);
+		cursor: pointer;
+	}
 
-    .link-url[broken] {
-        color: var(--p-red-500);
-        cursor: auto;
-    }
+	.link-url[broken] {
+		color: var(--p-red-500);
+		cursor: auto;
+	}
 
-    .link-url:not([broken]):hover {
-        text-decoration: underline;
-    }
+	.link-url:not([broken]):hover {
+		text-decoration: underline;
+	}
 
-    .link-actions {
-        display: flex;
-        flex-direction: row;
-        gap: 0.125rem;
-    }
+	.link-actions {
+		display: flex;
+		flex-direction: row;
+		gap: 0.125rem;
+	}
 }
 
 .t-link-tooltip-root {
-    position: relative;
+	position: relative;
 }
