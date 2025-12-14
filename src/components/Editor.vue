@@ -187,10 +187,7 @@ function parseContent(bodyElement: Element | undefined) {
     if (view) {
         state.doc = root;
         view.updateState(state);
-
-        let tr = view.state.tr;
-        tr.setSelection(TextSelection.near(tr.doc.resolve(0)));
-        view.dispatch(tr);
+        view.dispatch(view.state.tr.deleteSelection());
     };
 }
 function serializeContent(xmlDoc: Document, target: Element) {
