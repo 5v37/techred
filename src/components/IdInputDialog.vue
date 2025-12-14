@@ -3,11 +3,11 @@
 		header="Укажите новый идентификатор">
 		<InputText v-model.lazy=newId v-keyfilter=NCNameFilter autofocus style="width: 100%;" />
 		<template #footer>
-			<Message v-if="invalidId" severity="error" variant="simple" style="margin-inline-end: auto;">
-				{{ errorMessage }}
+			<Message v-if="idValidation.invalid" severity="error" variant="simple" style="margin-inline-end: auto;">
+				{{ idValidation.error }}
 			</Message>
 			<Button type="button" label="Отмена" severity="secondary" @click="closeDialog"></Button>
-			<Button type="button" label="Ок" :disabled="invalidId" @click="changeId"></Button>
+			<Button type="button" label="Ок" :disabled="idValidation.invalid" @click="changeId"></Button>
 		</template>
 	</Dialog>
 </template>
@@ -33,17 +33,14 @@ let ids: Set<string>;
 
 const visible = ref(false);
 const newId = ref("");
-const errorMessage = ref("");
-const invalidId = computed(() => {
+const idValidation = computed(() => {
 	if (newId.value && !NCNameFilter.pattern.test(newId.value)) {
-		errorMessage.value = "Значение некорректно";
-		return true;
+		return { invalid: true, error: "Значение некорректно" };
 	};
 	if (newId.value !== params.id && ids.has(newId.value)) {
-		errorMessage.value = "Значение не уникально";
-		return true;
+		return { invalid: true, error: "Значение не уникально" };
 	};
-	return false;
+	return { invalid: false, error: "" };
 });
 
 ui.openIdInputDialog = openDialog;
@@ -80,7 +77,7 @@ function closeDialog() {
 }
 
 function changeId() {
-	if (invalidId.value) {
+	if (idValidation.value.invalid) {
 		return;
 	};
 	if ((newId.value || params.id) && newId.value !== params.id) {

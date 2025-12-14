@@ -111,8 +111,8 @@ export function wordBoundaries($pos: ResolvedPos, markType?: MarkType, active?: 
 		if (!enough) {
 			for (const mark of node.marks) {
 				if (linkTypes.includes(mark.type)) {
-					let linkFrom = pos;
-					let linkTo = pos + node.nodeSize;
+					const linkFrom = pos;
+					const linkTo = pos + node.nodeSize;
 					if (parentOffset >= linkFrom && (parentOffset < linkTo || linkTo === text.length)) {
 						const position = markBoundaries($pos.doc.resolve(nodeOffset + linkTo), mark.type);
 						if (position) {

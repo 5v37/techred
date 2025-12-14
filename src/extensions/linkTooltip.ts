@@ -143,15 +143,14 @@ class LinkTooltipView {
         const editorRect2 = this.root.getBoundingClientRect();
         const tooltipRect = this.tooltip.getBoundingClientRect();
 
+        const top = coords.bottom - editorRect2.top + this.root.scrollTop + 5;
         let left = coords.left - editorRect2.left;
-        let top = coords.bottom - editorRect2.top + this.root.scrollTop + 5;
-
         if (coords.left + tooltipRect.width > editorRect2.right) {
             left -= tooltipRect.width;
         };
 
-        this.tooltip.style.left = left + "px";
         this.tooltip.style.top = top + "px";
+        this.tooltip.style.left = left + "px";
     }
 
     private addEventListeners() {

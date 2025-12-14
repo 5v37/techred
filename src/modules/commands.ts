@@ -17,8 +17,8 @@ export function splitBlock(shift: boolean): Command {
         const sectionType = state.schema.nodes.section;
         const parent = $from.parent;
 
-        let types = [{ type: parent.type, attrs: {} }];
-        let tr = state.tr;
+        const types = [{ type: parent.type, attrs: {} }];
+        const tr = state.tr;
 
         if (shift) {
             const { $to } = state.selection;
@@ -54,7 +54,7 @@ export function splitBlock(shift: boolean): Command {
         };
 
         tr.deleteSelection();
-        let splitPos = tr.mapping.map($from.pos);
+        const splitPos = tr.mapping.map($from.pos);
         if (!canSplit(tr.doc, splitPos, types.length, types)) {
             return false;
         };
@@ -126,11 +126,11 @@ export function addTitle(): Command {
             const insertPos = $from.start($from.depth - 1);
             const selectedText = getTextFromSelection(state.selection, state.schema.nodes.p);
 
-            let tr = state.tr;
+            const tr = state.tr;
             if (state.selection instanceof TextSelection || state.selection instanceof AllSelection) {
                 tr.deleteSelection();
             };
-            let startPos = tr.mapping.map(insertPos);
+            const startPos = tr.mapping.map(insertPos);
             tr.insert(startPos, titleType.create(null, selectedText));
 
             // передвинуть курсор на заглавие ?
@@ -162,11 +162,11 @@ export function addTextautor(): Command {
             const insertPos = $from.end($from.depth - 1);
             const selectedText = getTextFromSelection(state.selection, textauthorType);
 
-            let tr = state.tr;
+            const tr = state.tr;
             if (state.selection instanceof TextSelection || state.selection instanceof AllSelection) {
                 tr.deleteSelection();
             };
-            let startPos = tr.mapping.map(insertPos);
+            const startPos = tr.mapping.map(insertPos);
             tr.insert(startPos, selectedText);
 
             // передвинуть курсор ?
@@ -198,7 +198,7 @@ export function wrapPoem(): Command {
         };
 
         if (dispatch) {
-            let tr = state.tr;
+            const tr = state.tr;
 
             tr.setSelection(new TextSelection(
                 state.doc.resolve($from.before() + 1),
@@ -206,13 +206,13 @@ export function wrapPoem(): Command {
             ));
             const selectedText = getTextFromSelection(tr.selection, state.schema.nodes.v);
             const stanzaType = state.schema.nodes.stanza;
-            let poemNode: Node[] = [];
-            let stanzaNode: Node[] = [];
+            const poemNode: Node[] = [];
+            const stanzaNode: Node[] = [];
             for (const element of selectedText) {
                 if (element.textContent === "") {
                     if (stanzaNode.length) {
                         poemNode.push(stanzaType.create(null, stanzaNode));
-                        stanzaNode = [];
+                        stanzaNode.length = 0;
                     }
                 } else {
                     stanzaNode.push(element)
@@ -248,7 +248,7 @@ export function changeToSection(): Command {
         };
 
         if (dispatch) {
-            let tr = state.tr;
+            const tr = state.tr;
 
             const section = sectionType.create({ uid: self.crypto.randomUUID() }, parentNode.children[nodeIndex].children);
             tr.replaceWith($from.start($from.depth - 1) - 1, $from.end($from.depth - 1) + 1, section);
@@ -274,11 +274,11 @@ export function addInlineImage(image?: Node): Command {
         };
 
         if (dispatch && image) {
-            let tr = state.tr;
+            const tr = state.tr;
             if (state.selection instanceof TextSelection || state.selection instanceof AllSelection) {
                 tr.deleteSelection();
             };
-            let startPos = tr.mapping.map($from.pos);
+            const startPos = tr.mapping.map($from.pos);
             tr.insert(startPos, image);
 
             dispatch(tr.scrollIntoView());
@@ -299,7 +299,7 @@ export function setMark(markType: MarkType, isMarked?: boolean, attrs?: Attrs): 
         }
 
         if (dispatch) {
-            let tr = state.tr;
+            const tr = state.tr;
             if (active) {
                 tr.removeMark(range.from, range.to, markType);
             } else {
@@ -387,7 +387,7 @@ export function addNode(parentNode: Node, nodeType: NodeType, startPos: number, 
         }
 
         if (dispatch) {
-            let tr = state.tr;
+            const tr = state.tr;
             tr.insert(insertPos, node ?? nodeType.create(null, state.schema.nodes.p.create()));
 
             dispatch(tr.scrollIntoView());
@@ -418,7 +418,7 @@ export function addNodeAfterSelection(nodeType: NodeType, node?: Node): Command 
         if (dispatch) {
             const insertPos = isNodeSelection ? $to.pos : $from.end($from.depth) + 1;
 
-            let tr = state.tr;
+            const tr = state.tr;
             tr.insert(insertPos, node ?? nodeType.create());
 
             dispatch(tr.scrollIntoView());
@@ -433,7 +433,7 @@ function getTextFromSelection(selection: Selection, textType: NodeType) {
     if (content.size) {
         function getText(text: Fragment, parts: Node[]) {
             if (text.size) {
-                let textNodes: Node[] = [];
+                const textNodes: Node[] = [];
                 for (const node of text.content) {
                     if (node.isText) {
                         textNodes.push(node);
@@ -449,7 +449,7 @@ function getTextFromSelection(selection: Selection, textType: NodeType) {
             };
         };
 
-        let parts: Node[] = [];
+        const parts: Node[] = [];
         getText(content.content, parts);
 
         return parts;
@@ -543,7 +543,7 @@ function excludeSection(range?: SectionRange): Command {
         };
 
         if (dispatch) {
-            let tr = state.tr;
+            const tr = state.tr;
 
             const cutNodes = range.parent.cut(range.from - range.parentStart);
             tr.insert(range.parentEnd, cutNodes.content);
@@ -567,13 +567,16 @@ function includeSection(range?: SectionRange): Command {
         };
 
         if (dispatch) {
-            let tr = state.tr;
+            const tr = state.tr;
 
             tr.delete(range.from, range.to);
 
             const sectionType = state.schema.nodes.section;
-            let startPoint = range.from - 1, endPoint = startPoint;
-            let childCount = range.nodeBefore.childCount, childIndex = childCount;
+            const childCount = range.nodeBefore.childCount;
+            const endPoint = range.from - 1;
+
+            let childIndex = childCount;
+            let startPoint = endPoint;
             let hasContent = false;
             while (childIndex > 0 && !range.nodeBefore.canReplaceWith(childIndex, childCount, sectionType)) {
                 childIndex -= 1;
@@ -618,7 +621,7 @@ function joinSection(range?: SectionRange): Command {
         };
 
         if (dispatch) {
-            let tr = state.tr
+            const tr = state.tr
             tr.delete(range.from, range.to);
             if (isTitleFirst) {
                 const nodes = [];
@@ -644,7 +647,7 @@ function moveUpSection(range?: SectionRange): Command {
         }
 
         if (dispatch) {
-            let tr = state.tr
+            const tr = state.tr
             tr.delete(range.from, range.to);
             tr.insert(range.before, range.node);
             dispatch(tr);
@@ -660,7 +663,7 @@ function moveDownSection(range?: SectionRange): Command {
         }
 
         if (dispatch) {
-            let tr = state.tr
+            const tr = state.tr
             tr.insert(range.after, range.node);
             tr.delete(range.from, range.to);
             dispatch(tr);
@@ -676,7 +679,7 @@ function deleteSection(range?: SectionRange): Command {
         }
 
         if (dispatch) {
-            let tr = state.tr;
+            const tr = state.tr;
             if (range.from === range.before && range.to === range.after) {
                 tr.replaceWith(range.from, range.to, state.schema.nodes.p.create());
             } else {

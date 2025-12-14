@@ -19,7 +19,7 @@ class PersonInfo implements Record<PersonProps, string> {
     };
 
     props() {
-        let props = [];
+        const props = [];
         for (const key in this) {
             if (key !== "id" && typeof this[key] !== 'function') {
                 const required = key === "first-name" && !this.isShort() || key === "nickname" && this.isShort();

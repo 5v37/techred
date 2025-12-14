@@ -9,15 +9,15 @@ export const initNotification = () => {
     toast = useToast();
 };
 
-export function openFileError(error: any) {
+export function openFileError(error: unknown) {
     toast.add({ severity: 'error', summary: 'Ошибка открытия файла', detail: error });
 }
 
-export function saveFileError(error: any) {
+export function saveFileError(error: unknown) {
     toast.add({ severity: 'error', summary: 'Ошибка сохранения файла', detail: error });
 }
 
-export function saveSettingsError(error: any) {
+export function saveSettingsError(error: unknown) {
     toast.add({ severity: 'error', summary: 'Ошибка сохранения настроек', detail: error });
 }
 

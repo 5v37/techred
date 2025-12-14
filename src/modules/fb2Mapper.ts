@@ -85,7 +85,7 @@ class fb2Mapper {
 }
 
 function fixMarks(xml: string) {
-    const regex = new RegExp('<(' + markBlocks.join("|") + ')>([  ]*)<\/\\1>', 'g');
+    const regex = new RegExp('<(' + markBlocks.join("|") + ')>([  ]*)</\\1>', 'g');
     return xml.replace(regex, '$2'); // убираем пустые теги
 };
 

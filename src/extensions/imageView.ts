@@ -158,7 +158,7 @@ class ImageView implements NodeView {
     private handleRemove = (event: MouseEvent) => {
         if (event.button === 0) {
             event.preventDefault();
-            let tr = this.view.state.tr;
+            const tr = this.view.state.tr;
             const pos = this.getPos();
             if (pos !== undefined) {
                 tr.delete(pos, pos + 1);

@@ -21,7 +21,7 @@ function createCommand(isUndo: boolean): Command {
 					groupSize = lastValue;
 					list.pop();
 				};
-				let focusGroup = isUndo ? 0 : groupSize - 1;
+				const focusGroup = isUndo ? 0 : groupSize - 1;
 
 				let body: string, view: EditorView;
 				startHistoryGroup();
@@ -83,8 +83,8 @@ function sharedHistory(editorId: string, newGroupDelay = 500) {
 		props: {
 			handleDOMEvents: {
 				beforeinput(view, e) {
-					let inputType = e.inputType;
-					let command = inputType === "historyUndo" ? sharedUndo : inputType === "historyRedo" ? sharedRedo : null;
+					const inputType = e.inputType;
+					const command = inputType === "historyUndo" ? sharedUndo : inputType === "historyRedo" ? sharedRedo : null;
 					if (!command)
 						return false;
 					e.preventDefault();

@@ -106,7 +106,7 @@ function changeSpellCheck() {
 	saveToStorage("spell-check", editorState.spellCheckOn.value);
 }
 
-function saveToStorage(key: string, value: any) {
+function saveToStorage(key: string, value: unknown) {
 	if (!hasLocalStorage) {
 		return;
 	};
