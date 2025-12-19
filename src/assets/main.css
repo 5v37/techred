@@ -5,12 +5,13 @@
 @import './ui.css';
 
 :root {
+	--t-ui-font-size: 90%;
 	--t-splitter-bar-size: 4px;
 }
 
 html {
 	height: 100%;
-	font-size: 14px;
+	font-size: var(--t-ui-font-size);
 }
 
 body {

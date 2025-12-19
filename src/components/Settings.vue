@@ -7,12 +7,18 @@
 					optionLabel="name" option-value="key" />
 			</div>
 			<div class="t-setting-element">
-				<label>Шрифт</label>
-				<Select v-model="userSettings.font" :options="userSettingsSchema.font.options" checkmark />
+				<label>Масштаб интерфейса</label>
+				<Select v-model="userSettings.uiFontSize" :options="userSettingsSchema.uiFontSize.options"
+					optionLabel="name" option-value="key" />
 			</div>
 			<div class="t-setting-element">
-				<label>Размер шрифта</label>
-				<Select v-model="userSettings.fontSize" :options="userSettingsSchema.fontSize.options" checkmark />
+				<label>Шрифт текста</label>
+				<Select v-model="userSettings.textFont" :options="userSettingsSchema.textFont.options" checkmark />
+			</div>
+			<div class="t-setting-element">
+				<label>Размер шрифта текста</label>
+				<Select v-model="userSettings.textFontSize" :options="userSettingsSchema.textFontSize.options"
+					checkmark />
 			</div>
 			<div class="t-setting-element">
 				<label>Выделение границ курсива</label>

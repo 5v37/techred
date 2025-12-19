@@ -17,8 +17,9 @@ type Setting<T extends string | number | boolean> = {
 
 type UserSettingsSchema = {
 	colorMode: Setting<ColorMode>,
-	font: Setting<string>,
-	fontSize: Setting<number>,
+	uiFontSize: Setting<string>,
+	textFont: Setting<string>,
+	textFontSize: Setting<number>,
 	highlightEmphasis: Setting<boolean>,
 	spellCheck: Setting<boolean>
 }
@@ -36,19 +37,30 @@ const userSettingsSchema: UserSettingsSchema = {
 		],
 		reaction: setColorMode
 	},
-	font: {
+	uiFontSize: {
+		default: "90%",
+		options: [
+			{ name: "Авто", key: "90%" },
+			{ name: "Компактный", key: "12px" },
+			{ name: "Умеренный", key: "14px" },
+			{ name: "Просторный", key: "16px" },
+			{ name: "Крупный", key: "18px" }
+		],
+		reaction: (newValue) => document.documentElement.style.setProperty("--t-ui-font-size", `${newValue}`)
+	},
+	textFont: {
 		default: "PT Serif",
 		options: !isMac() ?
 			["Arial", "Comic Sans MS", "Courier New", "Georgia", "Impact", "Lucida Console", "Lucida Sans Unicode",
 				"Palatino Linotype", "MS Sans Serif", "MS Serif", "PT Serif", "Tahoma", "Times New Roman", "Trebuchet MS", "Verdana"] :
 			["Arial", "Comic Sans MS", "Courier New", "Geneva", "Georgia", "Charcoal", "Monaco", "Lucida Grande",
 				"Palatino", "PT Serif", "New York", "Times", "Trebuchet MS", "Verdana"],
-		reaction: (newValue) => document.documentElement.style.setProperty("--t-content-font", `${newValue}`)
+		reaction: (newValue) => document.documentElement.style.setProperty("--t-text-font", `${newValue}`)
 	},
-	fontSize: {
+	textFontSize: {
 		default: 12,
 		options: [8, 9, 10, 11, 12, 14, 16, 18, 20, 24, 28, 32, 36, 48, 72],
-		reaction: (newValue) => document.documentElement.style.setProperty("--t-content-font-size", `${newValue}pt`)
+		reaction: (newValue) => document.documentElement.style.setProperty("--t-text-font-size", `${newValue}pt`)
 	},
 	highlightEmphasis: {
 		default: true
@@ -135,5 +147,8 @@ function applyColorMode(dark: boolean) {
 		element.classList.remove("my-app-dark");
 	};
 }
+
+// удаление старых настроек
+["color-mode", "font", "font-size", "highlight-emphasis", "spell-check"].forEach(key => localStorage.removeItem(key));
 
 export { userSettings, userSettingsSchema, resetUserSettings }

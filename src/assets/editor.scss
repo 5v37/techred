@@ -7,9 +7,9 @@
 @import './PTSerif/PTSerif.css';
 
 :root {
-	--t-content-indent: 1.4em;
-	--t-content-font: 'PT Serif';
-	--t-content-font-size: 12pt;
+	--t-text-indent: 1.4em;
+	--t-text-font: 'PT Serif';
+	--t-text-font-size: 12pt;
 }
 
 @mixin after($content: "<tag>") {
@@ -48,8 +48,8 @@
 .ProseMirror {
 	padding-block: var(--p-inputtext-padding-y);
 	padding-inline: var(--p-inputtext-padding-x);
-	font-size: var(--t-content-font-size);
-	font-family: var(--t-content-font), serif;
+	font-size: var(--t-text-font-size);
+	font-family: var(--t-text-font), serif;
 	overflow-wrap: anywhere;
 	line-height: 1.4;
 	outline: none;
@@ -143,7 +143,7 @@
 	v {
 		display: block;
 		margin: 0em;
-		text-indent: var(--t-content-indent);
+		text-indent: var(--t-text-indent);
 	}
 
 	p[id]::after,
@@ -231,6 +231,6 @@
 
 .highlight-emphasis {
 	em {
-		border: thin solid rgb(255, 88, 88);
+		outline: thin solid rgb(255, 88, 88);
 	}
 }
