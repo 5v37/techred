@@ -1,6 +1,6 @@
 <template>
-	<div ref="editor" :spellcheck="spellcheckOn"
-		:class="{ 'highlight-emphasis': editorState.highlightEmphasisOn.value, 't-editor-main': !props.annotation }">
+	<div ref="editor" :spellcheck="userSettings.spellCheck"
+		:class="{ 'highlight-emphasis': userSettings.highlightEmphasis, 't-editor-main': !props.annotation }">
 	</div>
 </template>
 
@@ -24,6 +24,7 @@ import { setId, setLink, setMark, splitBlock } from "@/modules/commands";
 import { wordBoundaries } from "@/modules/transform";
 import fb2Mapper from "@/modules/fb2Mapper";
 import editorState from "@/modules/editorState";
+import { userSettings } from "@/modules/settingsManager";
 import { sharedHistory, sharedRedo, sharedUndo } from "@/extensions/sharedHistory";
 import BlockView from "@/extensions/blockView";
 import ImageView from "@/extensions/imageView";
@@ -31,8 +32,6 @@ import InlineImageView from "@/extensions/inlineImageView";
 import linkTooltip from "@/extensions/linkTooltip";
 import toolbar from "@/extensions/toolbar";
 import modificationMonitor from "@/extensions/modificationMonitor";
-
-const spellcheckOn = editorState.spellCheckOn;
 const props = defineProps<{
 	editorId: string,
 	annotation?: boolean

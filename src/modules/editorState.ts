@@ -14,8 +14,6 @@ class editorState {
 	public menu = reactive<TreeNode[]>([]);
 	public bodies: bodiesType = Object.create(null);
 	public currentBody = ref("");
-	public spellCheckOn = ref(false);
-	public highlightEmphasisOn = ref(true);
 	public toolbars: { [key: string]: (view: EditorView) => void } = Object.create(null);
 
 	private focusedView?: EditorView;
