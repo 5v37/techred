@@ -56,7 +56,7 @@ import { Button, ButtonGroup, Menu, TieredMenu } from "primevue";
 import type { MenuItem } from "primevue/menuitem";
 import type { Command } from "prosemirror-state";
 import type { EditorView } from "prosemirror-view";
-import { redo as localRedo, undo as localUndo } from "prosemirror-history"
+import { redo as localRedo, undo as localUndo } from "prosemirror-history";
 import { setBlockType, wrapIn } from "prosemirror-commands";
 
 import editorState from "@/modules/editorState";
@@ -70,11 +70,11 @@ import { NodeType } from "prosemirror-model";
 
 const props = defineProps<{ editorId: string }>();
 
-const insertMenu = useTemplateRef<InstanceType<typeof Menu>>("insertMenu")
+const insertMenu = useTemplateRef<InstanceType<typeof Menu>>("insertMenu");
 const insertMenuItems = ref<Array<MenuItem>>();
-const changeMenu = useTemplateRef<InstanceType<typeof Menu>>("changeMenu")
+const changeMenu = useTemplateRef<InstanceType<typeof Menu>>("changeMenu");
 const changeMenuItems = ref<Array<MenuItem>>();
-const tableMenu = useTemplateRef<InstanceType<typeof TieredMenu>>("tableMenu")
+const tableMenu = useTemplateRef<InstanceType<typeof TieredMenu>>("tableMenu");
 const tableMenuItems = ref<Array<MenuItem>>();
 
 const sh = props.editorId === "mainEditor";
@@ -94,17 +94,17 @@ const createInsertMenuItems = () => [
 		command: () => insertCommand(addTitle())
 	},
 	{
-		label: 'Автор',
+		label: "Автор",
 		disabled: !addTextautor()(editorView.state),
 		command: () => insertCommand(addTextautor())
 	},
 	{
-		label: 'Абзац',
+		label: "Абзац",
 		disabled: !addNodeAfterSelection(nodes.p)(editorView.state),
 		command: () => insertCommand(addNodeAfterSelection(nodes.p))
 	},
 	{
-		label: 'Изображение',
+		label: "Изображение",
 		disabled: !addNodeAfterSelection(nodes.image)(editorView.state),
 		command: () => {
 			openImageDialog().then(file => {
@@ -117,7 +117,7 @@ const createInsertMenuItems = () => [
 		}
 	},
 	{
-		label: 'Изображение в текст',
+		label: "Изображение в текст",
 		disabled: !addInlineImage()(editorView.state),
 		command: () => {
 			openImageDialog().then(file => {
@@ -130,7 +130,7 @@ const createInsertMenuItems = () => [
 		}
 	},
 	{
-		label: 'Таблица',
+		label: "Таблица",
 		disabled: !addNodeAfterSelection(nodes.table)(editorView.state),
 		command: () => {
 			const tableTemplate = nodes.table.create(null,
@@ -147,22 +147,22 @@ const createChangeMenuItems = () => [
 		command: () => insertCommand(setBlockType(nodes.subtitle))
 	},
 	{
-		label: 'Цитата',
+		label: "Цитата",
 		disabled: !wrapIn(nodes.cite)(editorView.state),
 		command: () => insertCommand(wrapIn(nodes.cite))
 	},
 	{
-		label: 'Стих',
+		label: "Стих",
 		disabled: !wrapPoem()(editorView.state),
 		command: () => insertCommand(wrapPoem())
 	},
 	{
-		label: 'Абзац',
+		label: "Абзац",
 		disabled: !setBlockType(nodes.p)(editorView.state),
 		command: () => insertCommand(setBlockType(nodes.p))
 	},
 	{
-		label: 'Секция',
+		label: "Секция",
 		disabled: !changeToSection()(editorView.state),
 		command: () => insertCommand(changeToSection())
 	}
@@ -174,92 +174,92 @@ const createTableMenuItems = () => [
 		command: () => insertCommand(addColumnBefore)
 	},
 	{
-		label: 'Вставить столбец справа',
+		label: "Вставить столбец справа",
 		disabled: !addColumnAfter(editorView.state),
 		command: () => insertCommand(addColumnAfter)
 	},
 	{
-		label: 'Удалить столбец',
+		label: "Удалить столбец",
 		disabled: !deleteColumn(editorView.state),
 		command: () => insertCommand(deleteColumn)
 	},
 	{
-		label: 'Вставить строку сверху',
+		label: "Вставить строку сверху",
 		disabled: !addRowBefore(editorView.state),
 		command: () => insertCommand(addRowBefore)
 	},
 	{
-		label: 'Вставить строку снизу',
+		label: "Вставить строку снизу",
 		disabled: !addRowAfter(editorView.state),
 		command: () => insertCommand(addRowAfter)
 	},
 	{
-		label: 'Удалить строку',
+		label: "Удалить строку",
 		disabled: !deleteRow(editorView.state),
 		command: () => insertCommand(deleteRow)
 	},
 	{
-		label: 'Объединить ячейки',
+		label: "Объединить ячейки",
 		disabled: !mergeCells(editorView.state),
 		command: () => insertCommand(mergeCells)
 	},
 	{
-		label: 'Разделить ячейки',
+		label: "Разделить ячейки",
 		disabled: !splitCell(editorView.state),
 		command: () => insertCommand(splitCell)
 	},
 	{
-		label: 'Включить заголовочный столбец',
+		label: "Включить заголовочный столбец",
 		disabled: !toggleHeaderColumn(editorView.state),
 		command: () => insertCommand(toggleHeaderColumn)
 	},
 	{
-		label: 'Включить заголовочную строку',
+		label: "Включить заголовочную строку",
 		disabled: !toggleHeaderRow(editorView.state),
 		command: () => insertCommand(toggleHeaderRow)
 	},
 	{
-		label: 'Включить заголовочную ячейку',
+		label: "Включить заголовочную ячейку",
 		disabled: !toggleHeaderCell(editorView.state),
 		command: () => insertCommand(toggleHeaderCell)
 	},
 	{
-		label: 'Выровнять',
+		label: "Выровнять",
 		items: [
 			{
-				label: 'Выровнять по левому краю',
-				disabled: !setCellAttr('align', 'left')(editorView.state),
-				command: () => insertCommand(setCellAttr('align', 'left'))
+				label: "Выровнять по левому краю",
+				disabled: !setCellAttr("align", "left")(editorView.state),
+				command: () => insertCommand(setCellAttr("align", "left"))
 			},
 			{
-				label: 'Выровнять по центру',
-				disabled: !setCellAttr('align', 'center')(editorView.state),
-				command: () => insertCommand(setCellAttr('align', 'center'))
+				label: "Выровнять по центру",
+				disabled: !setCellAttr("align", "center")(editorView.state),
+				command: () => insertCommand(setCellAttr("align", "center"))
 			},
 			{
-				label: 'Выровнять по правому краю',
-				disabled: !setCellAttr('align', 'right')(editorView.state),
-				command: () => insertCommand(setCellAttr('align', 'right'))
+				label: "Выровнять по правому краю",
+				disabled: !setCellAttr("align", "right")(editorView.state),
+				command: () => insertCommand(setCellAttr("align", "right"))
 			},
 			{
-				label: 'Выровнять по верхнему краю',
-				disabled: !setCellAttr('valign', 'top')(editorView.state),
-				command: () => insertCommand(setCellAttr('valign', 'top'))
+				label: "Выровнять по верхнему краю",
+				disabled: !setCellAttr("valign", "top")(editorView.state),
+				command: () => insertCommand(setCellAttr("valign", "top"))
 			},
 			{
-				label: 'Выровнять по середине',
-				disabled: !setCellAttr('valign', 'middle')(editorView.state),
-				command: () => insertCommand(setCellAttr('valign', 'middle'))
+				label: "Выровнять по середине",
+				disabled: !setCellAttr("valign", "middle")(editorView.state),
+				command: () => insertCommand(setCellAttr("valign", "middle"))
 			},
 			{
-				label: 'Выровнять по нижнему краю',
-				disabled: !setCellAttr('valign', 'bottom')(editorView.state),
-				command: () => insertCommand(setCellAttr('valign', 'bottom'))
-			},
+				label: "Выровнять по нижнему краю",
+				disabled: !setCellAttr("valign", "bottom")(editorView.state),
+				command: () => insertCommand(setCellAttr("valign", "bottom"))
+			}
 		]
 	},
 	{
-		label: 'Удалить таблицу',
+		label: "Удалить таблицу",
 		disabled: !deleteTableSafety()(editorView.state),
 		command: () => insertCommand(deleteTableSafety())
 	}

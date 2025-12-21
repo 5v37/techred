@@ -33,7 +33,7 @@ const isModified = ref(false);
 
 let currentKey: string | number;
 let oldId: string;
-let ids: Set<string>
+let ids: Set<string>;
 
 function getContext(id: string, key: string | number) {
 	currentKey = key;
@@ -64,7 +64,7 @@ function hasErrorId(id: string, key: string | number) {
 }
 
 let toTop = false;
-const binary = useTemplateRef('binary');
+const binary = useTemplateRef("binary");
 onUpdated(() => {
 	if (toTop && binary.value && !binary.value.style.display) {
 		binary.value.scrollTop = 0;
@@ -73,9 +73,9 @@ onUpdated(() => {
 });
 
 editorState.menu.push({
-	key: 'images',
-	label: 'Изображения',
-	icon: 'pi pi-fw pi-images'
+	key: "images",
+	label: "Изображения",
+	icon: "pi pi-fw pi-images"
 });
 
 fb2Mapper.addPreprocessor(getBlocks);
@@ -138,7 +138,7 @@ function serializeContent(xmlDoc: Document, target: Element) {
 					idToSave.add(id);
 					const attrs = [
 						{ key: "id", value: id },
-						{ key: "content-type", value: image.type },
+						{ key: "content-type", value: image.type }
 					];
 					addElement(target, "binary", image.content, false, attrs);
 				}

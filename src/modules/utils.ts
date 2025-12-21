@@ -56,23 +56,23 @@ export function imageFileType(fileData: ArrayBuffer) {
 export function decodeXML(xmlData: ArrayBuffer) {
 	const startDecls = [
 		{
-			encoding: 'utf-8', // with BOM
+			encoding: "utf-8", // with BOM
 			bytes: [0xEF, 0xBB, 0xBF]
 		},
 		{
-			encoding: 'utf-16le', // with BOM
+			encoding: "utf-16le", // with BOM
 			bytes: [0xFF, 0xFE]
 		},
 		{
-			encoding: 'utf-16be', // with BOM
+			encoding: "utf-16be", // with BOM
 			bytes: [0xFE, 0xFF]
 		},
 		{
-			encoding: 'utf-16le', // without BOM
+			encoding: "utf-16le", // without BOM
 			bytes: [0x3C, 0x00, 0x3F, 0x00]
 		},
 		{
-			encoding: 'utf-16be', // without BOM
+			encoding: "utf-16be", // without BOM
 			bytes: [0x00, 0x3C, 0x00, 0x3F]
 		}
 	];
@@ -98,7 +98,7 @@ export function decodeXML(xmlData: ArrayBuffer) {
 
 export function parseDataURL(dataURL: string | undefined) {
 	if (dataURL?.startsWith("data:")) {
-		const [mediatype, data] = dataURL.substring(5).split(",")
+		const [mediatype, data] = dataURL.substring(5).split(",");
 		const parameters = mediatype.split(";");
 		const params: { [key: string]: string; } = {};
 		let mime = "text/plain";
@@ -107,7 +107,7 @@ export function parseDataURL(dataURL: string | undefined) {
 			let idx = 0, end = parameters.length;
 			if (parameters[0].length && parameters[0].includes("/")) {
 				mime = parameters[0];
-				idx++
+				idx++;
 			};
 			if (parameters[end - 1] === "base64") {
 				base64 = true;

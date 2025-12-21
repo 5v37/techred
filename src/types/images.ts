@@ -1,17 +1,17 @@
 import editorState from "@/modules/editorState";
 import { invalidId } from "@/modules/notifications";
 import { base64toData, imageFileType, parseDataURL } from "@/modules/utils";
-import { NCNameFilter } from '@/modules/utils';
+import { NCNameFilter } from "@/modules/utils";
 
 type ImageSpec = {
 	type: string,
 	content: string,
 	dataURL: string,
 	newId: string
-}
+};
 type ImageList = {
 	[id: string]: ImageSpec
-}
+};
 
 function getExt(mime: string) {
 	if (mime === "image/png")
@@ -88,4 +88,4 @@ class Images {
 
 export default Images;
 
-export type { ImageSpec }
+export type { ImageSpec };

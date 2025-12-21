@@ -1,6 +1,6 @@
 import { Plugin } from "prosemirror-state";
 import type { EditorView } from "prosemirror-view";
-import editorState from "@/modules/editorState"
+import editorState from "@/modules/editorState";
 
 class ToolbarView {
 	private editorView: EditorView;
@@ -30,6 +30,6 @@ class ToolbarView {
 
 export default function toolbar(editorId: string) {
 	return new Plugin({
-		view(editorView) { return new ToolbarView(editorView, editorId); }
+		view(editorView) { return new ToolbarView(editorView, editorId) }
 	});
 }

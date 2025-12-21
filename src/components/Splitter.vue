@@ -15,10 +15,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref } from "vue";
 
 const props = defineProps<{
-	direction?: 'horizontal' | 'vertical'
+	direction?: "horizontal" | "vertical"
 	initialRatio?: number,
 	minRatio?: number
 }>();
@@ -42,7 +42,7 @@ function onPointerDown(e: PointerEvent) {
 	startClient = isVertical ? e.clientX : e.clientY;
 	startPercent = mainPercent.value;
 
-	splitterRef.value.setPointerCapture(e.pointerId)
+	splitterRef.value.setPointerCapture(e.pointerId);
 }
 
 function onPointerMove(e: PointerEvent) {

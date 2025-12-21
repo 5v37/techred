@@ -9,18 +9,18 @@
 </template>
 
 <script setup lang="ts">
-import { onUpdated, useTemplateRef } from 'vue';
+import { onUpdated, useTemplateRef } from "vue";
 
-import TitleInfo from './TitleInfo.vue';
-import DocumentInfo from './DocumentInfo.vue';
-import PublishInfo from './PublishInfo.vue';
-import CustomInfo from './CustomInfo.vue';
+import TitleInfo from "@/components/TitleInfo.vue";
+import DocumentInfo from "@/components/DocumentInfo.vue";
+import PublishInfo from "@/components/PublishInfo.vue";
+import CustomInfo from "@/components/CustomInfo.vue";
 
 import fb2Mapper, { DocumentBlocks } from "@/modules/fb2Mapper";
-import editorState from '@/modules/editorState';
+import editorState from "@/modules/editorState";
 
 let toTop = false;
-const description = useTemplateRef('description');
+const description = useTemplateRef("description");
 onUpdated(() => {
 	if (toTop && description.value && !description.value.style.display) {
 		description.value.scrollTop = 0;
@@ -29,39 +29,39 @@ onUpdated(() => {
 });
 
 editorState.menu.push({
-	key: 'description',
-	label: 'Описание',
-	icon: 'pi pi-fw pi-pen-to-square',
+	key: "description",
+	label: "Описание",
+	icon: "pi pi-fw pi-pen-to-square",
 	children: [
 		{
-			key: 'title-info',
-			label: 'Сведения',
-			data: 'description',
-			icon: 'pi pi-fw pi-list'
+			key: "title-info",
+			label: "Сведения",
+			data: "description",
+			icon: "pi pi-fw pi-list"
 		},
 		{
-			key: 'src-title-info',
-			label: 'Сведения на оригинальном языке',
-			data: 'description',
-			icon: 'pi pi-fw pi-list'
+			key: "src-title-info",
+			label: "Сведения на оригинальном языке",
+			data: "description",
+			icon: "pi pi-fw pi-list"
 		},
 		{
-			key: 'document-info',
-			label: 'Информация о файле',
-			data: 'description',
-			icon: 'pi pi-fw pi-list'
+			key: "document-info",
+			label: "Информация о файле",
+			data: "description",
+			icon: "pi pi-fw pi-list"
 		},
 		{
-			key: 'publish-info',
-			label: 'Выходные данные',
-			data: 'description',
-			icon: 'pi pi-fw pi-list'
+			key: "publish-info",
+			label: "Выходные данные",
+			data: "description",
+			icon: "pi pi-fw pi-list"
 		},
 		{
-			key: 'custom-info',
-			label: 'Дополнительно',
-			data: 'description',
-			icon: 'pi pi-fw pi-list'
+			key: "custom-info",
+			label: "Дополнительно",
+			data: "description",
+			icon: "pi pi-fw pi-list"
 		}
 	]
 });
@@ -81,7 +81,7 @@ function getBlocks(xmlDoc: Document, method: string) {
 		"annotation": undefined,
 		"src-annotation": undefined,
 		"history": undefined,
-		"description": desc,
+		"description": desc
 	};
 
 	if (desc) {

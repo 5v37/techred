@@ -1,6 +1,6 @@
 import { invoke } from "@tauri-apps/api/core";
 import { open as openDialog, OpenDialogOptions, save as saveDialog, SaveDialogOptions } from "@tauri-apps/plugin-dialog";
-import { readFile, writeFile } from '@tauri-apps/plugin-fs';
+import { readFile, writeFile } from "@tauri-apps/plugin-fs";
 import { fileOpen, fileSave, FirstFileOpenOptions, FirstFileSaveOptions, supported as fileAPIsupported } from "browser-fs-access";
 
 import { base64toData, decodeXML, imageFileType, isTauriMode, parseDataURL } from "@/modules/utils";
@@ -21,7 +21,7 @@ async function encode(content: string, filePath: string) {
 export function openInitialFictionBook() {
 	return new Promise<{ content: string, path: string } | void>((resolve, reject) => {
 		if (isTauriMode) {
-			invoke<string>('file_path').then(async path => {
+			invoke<string>("file_path").then(async path => {
 				if (path) {
 					const fileData = (await readFile(path)).buffer;
 					const content = decodeXML(await unpack(fileData));
@@ -45,8 +45,8 @@ export function openFictionBookDialog() {
 				multiple: false,
 				directory: false,
 				filters: [{
-					name: 'FictionBook',
-					extensions: ['fb2', 'fbz', 'fb2.zip']
+					name: "FictionBook",
+					extensions: ["fb2", "fbz", "fb2.zip"]
 				}]
 			};
 
@@ -61,8 +61,8 @@ export function openFictionBookDialog() {
 			});
 		} else {
 			const options: FirstFileOpenOptions<false> = {
-				description: 'FictionBook',
-				extensions: ['.fb2', '.fbz', '.fb2.zip'],
+				description: "FictionBook",
+				extensions: [".fb2", ".fbz", ".fb2.zip"],
 				excludeAcceptAllOption: true
 			};
 
@@ -71,7 +71,7 @@ export function openFictionBookDialog() {
 				const content = decodeXML(await unpack(fileData));
 				resolve({ content, path: file.name, handle: file.handle });
 			}).catch((error) => {
-				if (error.name !== 'AbortError') {
+				if (error.name !== "AbortError") {
 					reject(error);
 				};
 			});
@@ -86,8 +86,8 @@ export function openImageDialog() {
 				multiple: false,
 				directory: false,
 				filters: [{
-					name: 'Изображения',
-					extensions: ['png', 'jpg', 'jpeg']
+					name: "Изображения",
+					extensions: ["png", "jpg", "jpeg"]
 				}]
 			};
 
@@ -114,7 +114,7 @@ export function openImageDialog() {
 		} else {
 			const options: FirstFileOpenOptions<false> = {
 				description: "Изображения",
-				mimeTypes: ['image/png', 'image/jpeg'],
+				mimeTypes: ["image/png", "image/jpeg"],
 				excludeAcceptAllOption: true
 			};
 
@@ -131,7 +131,7 @@ export function openImageDialog() {
 					resolve({ content, name: file.name, handle: file.handle });
 				};
 			}).catch((error) => {
-				if (error.name !== 'AbortError') {
+				if (error.name !== "AbortError") {
 					reject(error);
 				};
 			});
@@ -145,8 +145,8 @@ export function saveFictionBookDialog(content: string, filePath: string, saveDir
 			const options: SaveDialogOptions = {
 				defaultPath: filePath,
 				filters: [{
-					name: 'FictionBook',
-					extensions: ['fb2', 'fbz', 'fb2.zip']
+					name: "FictionBook",
+					extensions: ["fb2", "fbz", "fb2.zip"]
 				}]
 			};
 
@@ -168,7 +168,7 @@ export function saveFictionBookDialog(content: string, filePath: string, saveDir
 						accept: {
 							"application/fb2": [".fb2"],
 							"application/fb2+zip": [".fbz", ".fb2.zip"]
-						},
+						}
 					}],
 					excludeAcceptAllOption: true
 				};
@@ -180,12 +180,12 @@ export function saveFictionBookDialog(content: string, filePath: string, saveDir
 					await writableStream.close();
 					resolve({ path: handle.name, handle });
 				}).catch((error) => {
-					if (error.name !== 'AbortError') {
+					if (error.name !== "AbortError") {
 						reject(error);
 					};
 				});
 			} else {
-				const blob = new Blob([content], { type: 'application/fb2' });
+				const blob = new Blob([content], { type: "application/fb2" });
 
 				let ext = filePath.slice(-4).toLowerCase();
 				let fileName = filePath;
@@ -195,8 +195,8 @@ export function saveFictionBookDialog(content: string, filePath: string, saveDir
 				};
 				const options: FirstFileSaveOptions = {
 					fileName: ext === ".fb2" ? fileName : fileName + ".fb2",
-					description: 'FictionBook',
-					extensions: ['.fb2'],
+					description: "FictionBook",
+					extensions: [".fb2"],
 					excludeAcceptAllOption: true
 				};
 
@@ -218,8 +218,8 @@ export function saveImageDialog(content: string, filePath: string) {
 				const options: SaveDialogOptions = {
 					defaultPath: filePath,
 					filters: [{
-						name: 'Изображения',
-						extensions: image.mime === "image/png" ? ['png'] : ['jpg', 'jpeg']
+						name: "Изображения",
+						extensions: image.mime === "image/png" ? ["png"] : ["jpg", "jpeg"]
 					}]
 				};
 
@@ -245,7 +245,7 @@ export function saveImageDialog(content: string, filePath: string) {
 						resolve({ path: handle.name, handle });
 					};
 				}).catch((error) => {
-					if (error.name !== 'AbortError') {
+					if (error.name !== "AbortError") {
 						reject(error);
 					};
 				});

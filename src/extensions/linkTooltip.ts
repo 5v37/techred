@@ -231,6 +231,6 @@ function getNodeById(id: string) {
 
 export default function linkTooltip(root: HTMLElement) {
 	return new Plugin({
-		view(editorView) { return new LinkTooltipView(editorView, root); }
+		view(editorView) { return new LinkTooltipView(editorView, root) }
 	});
 }

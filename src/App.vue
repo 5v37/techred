@@ -23,20 +23,20 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref } from "vue";
 
-import { Toast } from 'primevue';
+import { Toast } from "primevue";
 
-import MainToolbar from '@/components/MainToolbar.vue';
-import Splitter from '@/components/Splitter.vue';
-import Sidebar from '@/components/Sidebar.vue';
+import MainToolbar from "@/components/MainToolbar.vue";
+import Splitter from "@/components/Splitter.vue";
+import Sidebar from "@/components/Sidebar.vue";
 import Description from "@/components/Description.vue";
-import Content from '@/components/Content.vue';
-import Images from '@/components/Images.vue';
-import IdInputDialog from '@/components/IdInputDialog.vue';
-import ImageEditDialog from './components/ImageEditDialog.vue';
-import LinkEditorDialog from '@/components/LinkEditorDialog.vue';
-import { initNotification } from '@/modules/notifications';
+import Content from "@/components/Content.vue";
+import Images from "@/components/Images.vue";
+import IdInputDialog from "@/components/IdInputDialog.vue";
+import ImageEditDialog from "@/components/ImageEditDialog.vue";
+import LinkEditorDialog from "@/components/LinkEditorDialog.vue";
+import { initNotification } from "@/modules/notifications";
 
 const loaded = ref(false);
 const current = ref("");

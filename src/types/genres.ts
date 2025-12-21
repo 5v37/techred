@@ -4,19 +4,19 @@ import { missingGenre } from "@/modules/notifications";
 const genresTree: TreeNode[] = [
 	{
 		label: "Деловая литература",
-		key: '00',
+		key: "00",
 		selectable: false,
 		children: [
 			{ label: "Деловая литература", key: "economics_ref" },
 			{ label: "Карьера, кадры", key: "popular_business" },
 			{ label: "Маркетинг, PR", key: "org_behavior" },
 			{ label: "Финансы", key: "banking" },
-			{ label: "Экономика", key: "economics" },
+			{ label: "Экономика", key: "economics" }
 		]
 	},
 	{
 		label: "Детективы и Триллеры",
-		key: '01',
+		key: "01",
 		selectable: false,
 		children: [
 			{ label: "Боевик", key: "det_action" },
@@ -36,7 +36,7 @@ const genresTree: TreeNode[] = [
 	},
 	{
 		label: "Документальная литература",
-		key: '02',
+		key: "02",
 		selectable: false,
 		children: [
 			{ label: "Биографии и Мемуары", key: "nonf_biography" },
@@ -49,7 +49,7 @@ const genresTree: TreeNode[] = [
 	},
 	{
 		label: "Дом и семья",
-		key: '03',
+		key: "03",
 		selectable: false,
 		children: [
 			{ label: "Автомобили и ПДД", key: "auto_regulations" },
@@ -70,7 +70,7 @@ const genresTree: TreeNode[] = [
 	},
 	{
 		label: "Драматургия",
-		key: '04',
+		key: "04",
 		selectable: false,
 		children: [
 			{ label: "Античная драма", key: "drama_antique" },
@@ -84,7 +84,7 @@ const genresTree: TreeNode[] = [
 	},
 	{
 		label: "Искусство, Искусствоведение, Дизайн",
-		key: '05',
+		key: "05",
 		selectable: false,
 		children: [
 			{ label: "Живопись, альбомы, иллюстрированные каталоги", key: "painting" },
@@ -102,7 +102,7 @@ const genresTree: TreeNode[] = [
 	},
 	{
 		label: "Компьютеры и Интернет",
-		key: '06',
+		key: "06",
 		selectable: false,
 		children: [
 			{ label: "Компьютерная литература", key: "computers" },
@@ -114,7 +114,7 @@ const genresTree: TreeNode[] = [
 	},
 	{
 		label: "Литература для детей",
-		key: '07',
+		key: "07",
 		selectable: false,
 		children: [
 			{ label: "Детская литература", key: "children" },
@@ -132,7 +132,7 @@ const genresTree: TreeNode[] = [
 	},
 	{
 		label: "Любовные романы",
-		key: '08',
+		key: "08",
 		selectable: false,
 		children: [
 			{ label: "Исторические любовные романы", key: "love_history" },
@@ -147,7 +147,7 @@ const genresTree: TreeNode[] = [
 	},
 	{
 		label: "Наука, Образование",
-		key: '09',
+		key: "09",
 		selectable: false,
 		children: [
 			{ label: "Альтернативная медицина", key: "sci_medicine_alternative" },
@@ -181,7 +181,7 @@ const genresTree: TreeNode[] = [
 	},
 	{
 		label: "Поэзия",
-		key: '10',
+		key: "10",
 		selectable: false,
 		children: [
 			{ label: "Визуальная и экспериментальная поэзия, верлибры, палиндромы", key: "palindromes" },
@@ -201,7 +201,7 @@ const genresTree: TreeNode[] = [
 	},
 	{
 		label: "Приключения",
-		key: '11',
+		key: "11",
 		selectable: false,
 		children: [
 			{ label: "Авантюрный роман", key: "adv_story" },
@@ -218,7 +218,7 @@ const genresTree: TreeNode[] = [
 	},
 	{
 		label: "Проза",
-		key: '12',
+		key: "12",
 		selectable: false,
 		children: [
 			{ label: "Афоризмы, цитаты", key: "aphorisms" },
@@ -246,7 +246,7 @@ const genresTree: TreeNode[] = [
 	},
 	{
 		label: "Прочее",
-		key: '13',
+		key: "13",
 		selectable: false,
 		children: [
 			{ label: "Журналы, газеты", key: "periodic" },
@@ -259,7 +259,7 @@ const genresTree: TreeNode[] = [
 	},
 	{
 		label: "Религия, духовность, эзотерика",
-		key: '14',
+		key: "14",
 		selectable: false,
 		children: [
 			{ label: "Астрология и хиромантия", key: "astrology" },
@@ -280,7 +280,7 @@ const genresTree: TreeNode[] = [
 	},
 	{
 		label: "Справочная литература",
-		key: '15',
+		key: "15",
 		selectable: false,
 		children: [
 			{ label: "Путеводители, карты, атласы", key: "geo_guides" },
@@ -293,7 +293,7 @@ const genresTree: TreeNode[] = [
 	},
 	{
 		label: "Старинное",
-		key: '16',
+		key: "16",
 		selectable: false,
 		children: [
 			{ label: "Античная литература", key: "antique_ant" },
@@ -304,7 +304,7 @@ const genresTree: TreeNode[] = [
 	},
 	{
 		label: "Техника",
-		key: '17',
+		key: "17",
 		selectable: false,
 		children: [
 			{ label: "Автодело", key: "auto_business" },
@@ -319,7 +319,7 @@ const genresTree: TreeNode[] = [
 	},
 	{
 		label: "Учебники и пособия",
-		key: '18',
+		key: "18",
 		selectable: false,
 		children: [
 			{ label: "Учебники и пособия", key: "sci_textbook" },
@@ -330,7 +330,7 @@ const genresTree: TreeNode[] = [
 	},
 	{
 		label: "Фантастика",
-		key: '19',
+		key: "19",
 		selectable: false,
 		children: [
 			{ label: "Альтернативная история", key: "sf_history" },
@@ -361,7 +361,7 @@ const genresTree: TreeNode[] = [
 	},
 	{
 		label: "Фольклор",
-		key: '20',
+		key: "20",
 		selectable: false,
 		children: [
 			{ label: "Былины, эпопея", key: "epic" },
@@ -376,7 +376,7 @@ const genresTree: TreeNode[] = [
 	},
 	{
 		label: "Юмор",
-		key: '21',
+		key: "21",
 		selectable: false,
 		children: [
 			{ label: "Анекдоты", key: "humor_anecdote" },

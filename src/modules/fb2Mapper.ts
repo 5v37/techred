@@ -1,8 +1,8 @@
-import { formatXML } from '@/modules/utils';
-import { textBlocks, markBlocks, xmlTemplate } from '@/modules/fb2Model';
-import modificationTracker from './modificationTracker';
+import { formatXML } from "@/modules/utils";
+import { textBlocks, markBlocks, xmlTemplate } from "@/modules/fb2Model";
+import modificationTracker from "@/modules/modificationTracker";
 
-type DocumentBlocks = { [key: string]: Element | undefined }
+type DocumentBlocks = { [key: string]: Element | undefined };
 type ParseHandler = (source: Element | undefined) => void;
 type SerializeHandler = (xmlDoc: Document, target: Element) => void;
 type Preprocessor = (xmlDoc: Document, method: string) => DocumentBlocks;
@@ -11,10 +11,10 @@ type Processor = {
 	serializeHandler: SerializeHandler,
 	elementId: string,
 	order: number
-}
+};
 
 class fb2Mapper {
-	private preprocessors: Array<Preprocessor> = []
+	private preprocessors: Array<Preprocessor> = [];
 	private processors: Processor[] = [];
 	private updateProcessors?: () => Promise<void>;
 
@@ -85,8 +85,8 @@ class fb2Mapper {
 }
 
 function fixMarks(xml: string) {
-	const regex = new RegExp('<(' + markBlocks.join("|") + ')>([  ]*)</\\1>', 'g');
-	return xml.replace(regex, '$2'); // убираем пустые теги
+	const regex = new RegExp("<(" + markBlocks.join("|") + ")>([  ]*)</\\1>", "g");
+	return xml.replace(regex, "$2"); // убираем пустые теги
 };
 
 export type { DocumentBlocks };

@@ -8,8 +8,8 @@
 <script setup lang="ts">
 import { useTemplateRef } from "vue";
 
-import Editor from "./Editor.vue";
-import EditorToolbar from "./EditorToolbar.vue";
+import Editor from "@/components/Editor.vue";
+import EditorToolbar from "@/components/EditorToolbar.vue";
 
 const props = defineProps<{ editorId: string }>();
 const editor = useTemplateRef<InstanceType<typeof Editor>>("editor");

@@ -1,8 +1,10 @@
+import { ref } from "vue";
+
 import { Plugin, PluginKey } from "prosemirror-state";
 import { undoDepth } from "prosemirror-history";
-import { ref } from "vue";
-import modificationTracker from "../modules/modificationTracker";
-import { CircularBuffer } from "../modules/utils";
+
+import modificationTracker from "@/modules/modificationTracker";
+import { CircularBuffer } from "@/modules/utils";
 
 class MonitorState {
 	public lastUndo: number;
@@ -31,7 +33,7 @@ class MonitorState {
 	}
 
 	dispose() {
-		modificationTracker.unregister(this.id)
+		modificationTracker.unregister(this.id);
 	}
 }
 

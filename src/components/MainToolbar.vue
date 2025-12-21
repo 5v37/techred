@@ -17,28 +17,28 @@
 </template>
 
 <script setup lang="ts">
-import { ref, useTemplateRef, watchEffect } from 'vue';
+import { ref, useTemplateRef, watchEffect } from "vue";
 
-import { Toolbar, Button } from 'primevue';
+import { Toolbar, Button } from "primevue";
 
-import { getCurrentWindow } from '@tauri-apps/api/window';
-import { confirm } from '@tauri-apps/plugin-dialog';
-import { supported as fileAPIsupported } from 'browser-fs-access';
+import { getCurrentWindow } from "@tauri-apps/api/window";
+import { confirm } from "@tauri-apps/plugin-dialog";
+import { supported as fileAPIsupported } from "browser-fs-access";
 
-import Settings from '@/components/Settings.vue';
-import fb2Mapper from '@/modules/fb2Mapper';
-import { openInitialFictionBook, openFictionBookDialog, saveFictionBookDialog } from '@/modules/fileAccess';
-import { openFileError, saveFileError, saveFileInfo, UnexpectedError } from '@/modules/notifications';
-import { isTauriMode } from '@/modules/utils';
-import modificationTracker from '@/modules/modificationTracker';
+import Settings from "@/components/Settings.vue";
+import fb2Mapper from "@/modules/fb2Mapper";
+import { openInitialFictionBook, openFictionBookDialog, saveFictionBookDialog } from "@/modules/fileAccess";
+import { openFileError, saveFileError, saveFileInfo, UnexpectedError } from "@/modules/notifications";
+import { isTauriMode } from "@/modules/utils";
+import modificationTracker from "@/modules/modificationTracker";
 
-const emit = defineEmits(['loaded']);
+const emit = defineEmits(["loaded"]);
 
 const currentFilePath = ref("");
 const saveButtonAvailable = isTauriMode || fileAPIsupported;
 let fileHandle: FileSystemFileHandle | undefined;
 
-const settings = useTemplateRef<InstanceType<typeof Settings>>('settings');
+const settings = useTemplateRef<InstanceType<typeof Settings>>("settings");
 const showSettings = () => { settings.value?.show() };
 
 openInitialFictionBook().then(async file => {
@@ -96,7 +96,7 @@ if (isTauriMode) {
 		}
 	});
 } else {
-	addEventListener('beforeunload', (event: BeforeUnloadEvent) => {
+	addEventListener("beforeunload", (event: BeforeUnloadEvent) => {
 		if (modificationTracker.docModified.value) {
 			event.preventDefault();
 			return "";

@@ -30,7 +30,7 @@ import type { TreeNode } from "primevue/treenode";
 
 import Splitter from "@/components/Splitter.vue";
 import Editor from "@/components/Editor.vue";
-import EditorToolbar from "./EditorToolbar.vue";
+import EditorToolbar from "@/components/EditorToolbar.vue";
 
 import fb2Mapper, { DocumentBlocks } from "@/modules/fb2Mapper";
 import editorState from "@/modules/editorState";
@@ -46,9 +46,9 @@ for (const element of Object.values(editorState.bodies)) {
 }
 const hasTabs = computed(() => children.length > 2);
 editorState.menu.push({
-	key: 'content',
-	label: 'Содержание',
-	icon: 'pi pi-fw pi-book',
+	key: "content",
+	label: "Содержание",
+	icon: "pi pi-fw pi-book",
 	children: children
 });
 

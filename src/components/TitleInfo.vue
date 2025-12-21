@@ -157,7 +157,7 @@ function genreSelect(node: TreeNode) {
 }
 
 function genreRemove(mark: string) {
-	model.value.selectedGenres = model.value.selectedGenres.filter(genre => genre.mark != mark)
+	model.value.selectedGenres = model.value.selectedGenres.filter(genre => genre.mark != mark);
 }
 
 function parseContent(descElement: Element | undefined) {
@@ -248,8 +248,8 @@ function serializeContent(xmlDoc: Document, titleInfo: Element) {
 		if (series.name) {
 			const attrs = [
 				{ key: "name", value: series.name },
-				{ key: "number", value: series.number?.toString() },
-			]
+				{ key: "number", value: series.number?.toString() }
+			];
 			addElement(titleInfo, "sequence", "", true, attrs);
 		};
 	};

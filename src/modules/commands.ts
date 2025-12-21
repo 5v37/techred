@@ -215,7 +215,7 @@ export function wrapPoem(): Command {
 						stanzaNode.length = 0;
 					}
 				} else {
-					stanzaNode.push(element)
+					stanzaNode.push(element);
 				};
 			};
 			poemNode.push(stanzaType.create(null, stanzaNode.length ? stanzaNode : selectedText));
@@ -285,7 +285,7 @@ export function addInlineImage(image?: Node): Command {
 		};
 
 		return true;
-	}
+	};
 }
 
 export function setMark(markType: MarkType, isMarked?: boolean, attrs?: Attrs): Command {
@@ -309,7 +309,7 @@ export function setMark(markType: MarkType, isMarked?: boolean, attrs?: Attrs): 
 		}
 
 		return true;
-	}
+	};
 }
 
 export function setLink(): Command {
@@ -335,7 +335,7 @@ export function setLink(): Command {
 		};
 
 		return true;
-	}
+	};
 }
 
 export function setId(block: boolean): Command {
@@ -357,7 +357,7 @@ export function setId(block: boolean): Command {
 		};
 
 		return true;
-	}
+	};
 }
 
 export function deleteTableSafety(): Command {
@@ -438,7 +438,7 @@ function getTextFromSelection(selection: Selection, textType: NodeType) {
 					if (node.isText) {
 						textNodes.push(node);
 					} else {
-						getText(node.content, parts)
+						getText(node.content, parts);
 					};
 				};
 				if (textNodes.length) {
@@ -473,10 +473,10 @@ function incrementId(input: string): string | undefined {
 		newNumberStr = num.toString();
 
 		if (newNumberStr.length < numberStr.length) {
-			newNumberStr = newNumberStr.padStart(numberStr.length, '0');
+			newNumberStr = newNumberStr.padStart(numberStr.length, "0");
 		};
 		newId = prefix + newNumberStr;
-	} while (ids.has(newId))
+	} while (ids.has(newId));
 
 	return newId;
 }
@@ -491,7 +491,7 @@ export type SectionRange = {
 	parent?: Node,
 	parentStart: number,
 	parentEnd: number
-}
+};
 
 function sectionRangeByUID(uid: string, state: EditorState) {
 	const sectionType = state.schema.nodes.section;
@@ -621,7 +621,7 @@ function joinSection(range?: SectionRange): Command {
 		};
 
 		if (dispatch) {
-			const tr = state.tr
+			const tr = state.tr;
 			tr.delete(range.from, range.to);
 			if (isTitleFirst) {
 				const nodes = [];
@@ -647,7 +647,7 @@ function moveUpSection(range?: SectionRange): Command {
 		}
 
 		if (dispatch) {
-			const tr = state.tr
+			const tr = state.tr;
 			tr.delete(range.from, range.to);
 			tr.insert(range.before, range.node);
 			dispatch(tr);
@@ -663,7 +663,7 @@ function moveDownSection(range?: SectionRange): Command {
 		}
 
 		if (dispatch) {
-			const tr = state.tr
+			const tr = state.tr;
 			tr.insert(range.after, range.node);
 			tr.delete(range.from, range.to);
 			dispatch(tr);
@@ -691,4 +691,4 @@ function deleteSection(range?: SectionRange): Command {
 	};
 }
 
-export { sectionRangeByUID, excludeSection, includeSection, joinSection, moveUpSection, moveDownSection, deleteSection }
+export { sectionRangeByUID, excludeSection, includeSection, joinSection, moveUpSection, moveDownSection, deleteSection };

@@ -12,15 +12,15 @@
 </template>
 
 <script setup lang="ts">
-import { useTemplateRef } from 'vue';
+import { useTemplateRef } from "vue";
 
-import { Tree } from 'primevue';
-import type { TreeNode } from 'primevue/treenode';
+import { Tree } from "primevue";
+import type { TreeNode } from "primevue/treenode";
 
-import TreeContextMenu from '@/components/TreeContextMenu.vue';
-import editorState from '@/modules/editorState';
+import TreeContextMenu from "@/components/TreeContextMenu.vue";
+import editorState from "@/modules/editorState";
 
-const contentMenu = useTemplateRef<InstanceType<typeof TreeContextMenu>>('contextMenu');
+const contentMenu = useTemplateRef<InstanceType<typeof TreeContextMenu>>("contextMenu");
 function onContextRightClick(event: Event, node: TreeNode) {
 	contentMenu.value?.show(event, node);
 };

@@ -11,19 +11,19 @@
 </template>
 
 <script setup lang="ts">
-import { ref, useTemplateRef } from 'vue';
+import { ref, useTemplateRef } from "vue";
 
-import { ContextMenu, Dialog, Button, InputText } from 'primevue';
-import type { MenuItem } from 'primevue/menuitem';
-import type { TreeNode } from 'primevue/treenode';
+import { ContextMenu, Dialog, Button, InputText } from "primevue";
+import type { MenuItem } from "primevue/menuitem";
+import type { TreeNode } from "primevue/treenode";
 
-import type { EditorView } from 'prosemirror-view';
+import type { EditorView } from "prosemirror-view";
 
-import { SectionRange, sectionRangeByUID, excludeSection, includeSection, joinSection, moveUpSection, moveDownSection, deleteSection, addNode } from '@/modules/commands';
-import { openImageDialog } from '@/modules/fileAccess';
-import editorState from '@/modules/editorState';
-import { openFileError } from '@/modules/notifications';
-import ui from '@/modules/ui';
+import { SectionRange, sectionRangeByUID, excludeSection, includeSection, joinSection, moveUpSection, moveDownSection, deleteSection, addNode } from "@/modules/commands";
+import { openImageDialog } from "@/modules/fileAccess";
+import editorState from "@/modules/editorState";
+import { openFileError } from "@/modules/notifications";
+import ui from "@/modules/ui";
 
 let view: EditorView;
 let nodeTypes: typeof view.state.schema.nodes;
@@ -35,7 +35,7 @@ const nameDialog = ref(false);
 
 function changeName() {
 	let tr = view.state.tr;
-	tr.setDocAttribute("name", bodyName.value)
+	tr.setDocAttribute("name", bodyName.value);
 	view.dispatch(tr);
 
 	nameDialog.value = false;
@@ -46,8 +46,8 @@ const contextMenuItems = ref<MenuItem[]>([]);
 
 const sectionItems = () => [
 	{
-		label: 'Указать идентификатор',
-		icon: 'pi pi-hashtag',
+		label: "Указать идентификатор",
+		icon: "pi pi-hashtag",
 		disabled: range === undefined,
 		command: () => {
 			if (range) {
@@ -59,35 +59,35 @@ const sectionItems = () => [
 		separator: true
 	},
 	{
-		label: 'Исключить',
-		icon: 'pi pi-angle-double-left',
+		label: "Исключить",
+		icon: "pi pi-angle-double-left",
 		disabled: !excludeSection(range)(view.state),
 		command: () => excludeSection(range)(view.state, view.dispatch)
 	},
 	{
-		label: 'Включить',
-		icon: 'pi pi-angle-double-right',
+		label: "Включить",
+		icon: "pi pi-angle-double-right",
 		disabled: !includeSection(range)(view.state),
 		command: () => includeSection(range)(view.state, view.dispatch)
 	},
 	{
-		label: 'Объединить',
-		icon: 'pi pi-chevron-circle-up',
+		label: "Объединить",
+		icon: "pi pi-chevron-circle-up",
 		disabled: !joinSection(range)(view.state),
 		command: () => joinSection(range)(view.state, view.dispatch)
 	},
 	{
-		label: 'Вставить',
-		icon: 'pi pi-plus-circle',
+		label: "Вставить",
+		icon: "pi pi-plus-circle",
 		disabled: range === undefined,
 		items: [
 			{
-				label: 'Заголовок',
+				label: "Заголовок",
 				disabled: !addNode(range!.node, nodeTypes.title, startPos)(view.state),
 				command: () => addNode(range!.node, nodeTypes.title, startPos)(view.state, view.dispatch)
 			},
 			{
-				label: 'Изображение',
+				label: "Изображение",
 				disabled: !addNode(range!.node, nodeTypes.image, startPos)(view.state),
 				command: () =>
 					openImageDialog().then(file => {
@@ -99,34 +99,34 @@ const sectionItems = () => [
 					}).catch((error) => openFileError(error))
 			},
 			{
-				label: 'Эпиграф',
+				label: "Эпиграф",
 				disabled: !addNode(range!.node, nodeTypes.epigraph, startPos)(view.state),
 				command: () => addNode(range!.node, nodeTypes.epigraph, startPos)(view.state, view.dispatch)
 			},
 			{
-				label: 'Аннотацию',
+				label: "Аннотацию",
 				disabled: !addNode(range!.node, nodeTypes.annotation, startPos)(view.state),
 				command: () => addNode(range!.node, nodeTypes.annotation, startPos)(view.state, view.dispatch)
 			},
 			{
-				label: 'Секцию',
+				label: "Секцию",
 				disabled: !addNode(range!.node, nodeTypes.section, startPos)(view.state),
 				command: () => {
 					const section = nodeTypes.section.create({ uid: self.crypto.randomUUID() }, nodeTypes.p.create());
 					addNode(range!.node, nodeTypes.section, startPos, section)(view.state, view.dispatch);
 				}
-			},
+			}
 		]
 	},
 	{
-		label: 'Сместить вверх',
-		icon: 'pi pi-arrow-up',
+		label: "Сместить вверх",
+		icon: "pi pi-arrow-up",
 		disabled: !moveUpSection(range)(view.state),
 		command: () => moveUpSection(range)(view.state, view.dispatch)
 	},
 	{
-		label: 'Сместить вниз',
-		icon: 'pi pi-arrow-down',
+		label: "Сместить вниз",
+		icon: "pi pi-arrow-down",
 		disabled: !moveDownSection(range)(view.state),
 		command: () => moveDownSection(range)(view.state, view.dispatch)
 	},
@@ -134,8 +134,8 @@ const sectionItems = () => [
 		separator: true
 	},
 	{
-		label: 'Удалить',
-		icon: 'pi pi-trash',
+		label: "Удалить",
+		icon: "pi pi-trash",
 		disabled: !deleteSection(range)(view.state),
 		command: () => deleteSection(range)(view.state, view.dispatch)
 	}
@@ -143,22 +143,22 @@ const sectionItems = () => [
 
 const bodyItems = () => [
 	{
-		label: 'Указать имя',
-		icon: 'pi pi-tag',
+		label: "Указать имя",
+		icon: "pi pi-tag",
 		command: () => nameDialog.value = true
 	},
 	{
 		separator: true
 	},
 	{
-		label: 'Вставить заголовок',
-		icon: 'pi pi-plus-circle',
+		label: "Вставить заголовок",
+		icon: "pi pi-plus-circle",
 		disabled: !addNode(view.state.doc, nodeTypes.title, startPos)(view.state),
 		command: () => addNode(view.state.doc, nodeTypes.title, startPos)(view.state, view.dispatch)
 	},
 	{
-		label: 'Вставить изображение',
-		icon: 'pi pi-plus-circle',
+		label: "Вставить изображение",
+		icon: "pi pi-plus-circle",
 		disabled: !addNode(view.state.doc, nodeTypes.image, startPos)(view.state),
 		command: () =>
 			openImageDialog().then(file => {
@@ -170,20 +170,20 @@ const bodyItems = () => [
 			}).catch((error) => openFileError(error))
 	},
 	{
-		label: 'Вставить эпиграф',
-		icon: 'pi pi-plus-circle',
+		label: "Вставить эпиграф",
+		icon: "pi pi-plus-circle",
 		disabled: !addNode(view.state.doc, nodeTypes.epigraph, startPos)(view.state),
 		command: () => addNode(view.state.doc, nodeTypes.epigraph, startPos)(view.state, view.dispatch)
 	},
 	{
-		label: 'Вставить секцию',
-		icon: 'pi pi-plus-circle',
+		label: "Вставить секцию",
+		icon: "pi pi-plus-circle",
 		disabled: !addNode(view.state.doc, nodeTypes.section, startPos)(view.state),
 		command: () => {
 			const section = nodeTypes.section.create({ uid: self.crypto.randomUUID() }, nodeTypes.p.create());
 			addNode(view.state.doc, nodeTypes.section, startPos, section)(view.state, view.dispatch);
 		}
-	},
+	}
 ];
 
 function show(event: Event, node: TreeNode) {

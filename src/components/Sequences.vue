@@ -18,8 +18,8 @@
 </template>
 
 <script setup lang="ts">
-import { Chip, FloatLabel, InputText, InputNumber, Button } from 'primevue';
-import Series from '@/types/series';
+import { Chip, FloatLabel, InputText, InputNumber, Button } from "primevue";
+import Series from "@/types/series";
 
 const model = defineModel<Series[]>({ required: true });
 

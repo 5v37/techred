@@ -40,7 +40,7 @@ export async function unpack(fileData: ArrayBuffer) {
 			if (endOfCentralDirView.getUint32(i, true) === EOCD_SIGNATURE) {
 				const commentLength = endOfCentralDirView.getUint16(i + 20, true);
 				if (i + MIN_EOCD_SIZE + commentLength === endOfCentralDirView.byteLength) {
-					const entriesCount = endOfCentralDirView.getUint16(i + 10, true)
+					const entriesCount = endOfCentralDirView.getUint16(i + 10, true);
 					if (entriesCount === 0) {
 						throw new Error("Файл архива пустой");
 					} else if (entriesCount > 1) {

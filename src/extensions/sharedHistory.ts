@@ -126,4 +126,4 @@ const sharedUndo = createCommand(true);
 const sharedRedo = createCommand(false);
 const historyTrace: { undo: RingBuffer, redo: RingBuffer } = { undo: new RingBuffer(traceDepth), redo: new RingBuffer(traceDepth) };
 
-export { sharedUndo, sharedRedo, sharedHistory, resetSharedHistory, startHistoryGroup, endHistoryGroup }
+export { sharedUndo, sharedRedo, sharedHistory, resetSharedHistory, startHistoryGroup, endHistoryGroup };

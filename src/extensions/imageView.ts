@@ -77,11 +77,11 @@ class ImageView implements NodeView {
 	}
 
 	private updateCaption() {
-		const caption = this.dom.querySelector('figcaption');
+		const caption = this.dom.querySelector("figcaption");
 		const title: string | null = this.node.attrs.title;
 		if (title) {
-			const element = caption || document.createElement('figcaption');
-			element.className = 'image-caption';
+			const element = caption || document.createElement("figcaption");
+			element.className = "image-caption";
 			element.textContent = title;
 			if (!caption) {
 				this.dom.appendChild(element);
@@ -122,8 +122,8 @@ class ImageView implements NodeView {
 		const removeButton = this.dom.querySelector(".image-remove") as HTMLElement;
 
 		this.idLabel.addEventListener("mousedown", this.handleSetId);
-		editButton.addEventListener('mousedown', this.handleEdit);
-		removeButton.addEventListener('mousedown', this.handleRemove);
+		editButton.addEventListener("mousedown", this.handleEdit);
+		removeButton.addEventListener("mousedown", this.handleRemove);
 	}
 
 	private removeEventListeners() {
@@ -143,7 +143,7 @@ class ImageView implements NodeView {
 				ui.openIdInputDialog(this.view.state, this.view.dispatch, pos, this.node.attrs.id);
 			};
 		};
-	}
+	};
 
 	private handleEdit = (event: MouseEvent) => {
 		if (event.button === 0) {
@@ -153,7 +153,7 @@ class ImageView implements NodeView {
 				ui.openImageEditDialog(this.view.state, this.view.dispatch, pos, this.node.attrs.title);
 			};
 		};
-	}
+	};
 
 	private handleRemove = (event: MouseEvent) => {
 		if (event.button === 0) {
@@ -165,7 +165,7 @@ class ImageView implements NodeView {
 				this.view.dispatch(tr.scrollIntoView());
 			};
 		};
-	}
+	};
 }
 
 export default ImageView;

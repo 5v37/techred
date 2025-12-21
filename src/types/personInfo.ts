@@ -21,16 +21,16 @@ class PersonInfo implements Record<PersonProps, string> {
 	props() {
 		const props = [];
 		for (const key in this) {
-			if (key !== "id" && typeof this[key] !== 'function') {
+			if (key !== "id" && typeof this[key] !== "function") {
 				const required = key === "first-name" && !this.isShort() || key === "nickname" && this.isShort();
-				props.push({ key: `${key}`, value: `${this[key]}`, required: required })
+				props.push({ key: `${key}`, value: `${this[key]}`, required: required });
 			};
 		};
 		return props;
 	};
 
 	isShort(): boolean {
-		return !this['first-name'] && !this['middle-name'] && !this['last-name'];
+		return !this["first-name"] && !this["middle-name"] && !this["last-name"];
 	};
 }
 

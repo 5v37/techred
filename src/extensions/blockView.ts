@@ -72,7 +72,7 @@ class BlockView implements NodeView {
 				ui.openIdInputDialog(this.view.state, this.view.dispatch, pos, this.node.attrs.id);
 			};
 		};
-	}
+	};
 }
 
 export default BlockView;

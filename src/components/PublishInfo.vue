@@ -45,7 +45,7 @@ import { ref } from "vue";
 
 import { Panel, InputText, DatePicker } from "primevue";
 
-import Sequences from "./Sequences.vue";
+import Sequences from "@/components/Sequences.vue";
 
 import { addingNodes } from "@/modules/utils";
 import { fb2ns } from "@/modules/fb2Model";
@@ -118,8 +118,8 @@ function serializeContent(xmlDoc: Document, publishInfo: Element) {
 		if (series.name) {
 			const attrs = [
 				{ key: "name", value: series.name },
-				{ key: "number", value: series.number?.toString() },
-			]
+				{ key: "number", value: series.number?.toString() }
+			];
 			addElement(publishInfo, "sequence", "", true, attrs);
 		};
 	};

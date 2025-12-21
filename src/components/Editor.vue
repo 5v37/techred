@@ -79,7 +79,7 @@ onMounted(() => {
 				"Mod-;": chainCommands(setId(false), () => true),
 				"Mod-Shift-;": chainCommands(setId(true), () => true),
 				"Tab": goToNextCell(1),
-				"Shift-Tab": goToNextCell(-1),
+				"Shift-Tab": goToNextCell(-1)
 			}),
 			linkTooltip(editor.value!),
 			monitor,
@@ -108,7 +108,7 @@ onMounted(() => {
 				setTimeout(() => {
 					const doc = view.state.doc;
 					const range = wordBoundaries(doc.resolve(pos));
-					const selection = TextSelection.create(doc, range.from, range.to)
+					const selection = TextSelection.create(doc, range.from, range.to);
 					if (!view.state.selection.eq(selection)) {
 						let tr = view.state.tr;
 						tr.setSelection(selection);

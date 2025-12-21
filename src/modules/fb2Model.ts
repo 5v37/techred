@@ -19,10 +19,10 @@ const inlineImageSelector = ":is(" + textBlocks.join(",") + ") > image";
 function getCellAttrs(dom: HTMLElement) {
 	return {
 		id: dom.getAttribute("id"),
-		colspan: Number(dom.getAttribute('colspan') || 1),
-		rowspan: Number(dom.getAttribute('rowspan') || 1),
+		colspan: Number(dom.getAttribute("colspan") || 1),
+		rowspan: Number(dom.getAttribute("rowspan") || 1),
 		align: dom.getAttribute("align"),
-		valign: dom.getAttribute("valign"),
+		valign: dom.getAttribute("valign")
 	};
 };
 
@@ -32,7 +32,7 @@ function setCellAttrs(node: Node) {
 		colspan: node.attrs.colspan !== 1 ? node.attrs.colspan : null,
 		rowspan: node.attrs.rowspan !== 1 ? node.attrs.rowspan : null,
 		align: node.attrs.align,
-		valign: node.attrs.valign,
+		valign: node.attrs.valign
 	};
 };
 
@@ -52,7 +52,7 @@ function template(topNode: string, toXML: boolean): Schema {
 			body: {
 				attrs: {
 					name: { default: null },
-					body: { default: null },
+					body: { default: null }
 				},
 				content: "image? title? epigraph* section+"
 			},
@@ -95,7 +95,7 @@ function template(topNode: string, toXML: boolean): Schema {
 							alt: node.attrs.alt,
 							title: node.attrs.title,
 							id: node.attrs.id
-						}]
+						}];
 					} else {
 						return ["figure", node.attrs];
 					}
@@ -273,7 +273,7 @@ function template(topNode: string, toXML: boolean): Schema {
 						return { id: dom.getAttribute("id") };
 					}
 				}],
-				toDOM(node) { return [defaultNameSpace + "table", node.attrs, 0] },
+				toDOM(node) { return [defaultNameSpace + "table", node.attrs, 0] }
 			},
 			tr: {
 				content: "(th | td)+",
@@ -287,7 +287,7 @@ function template(topNode: string, toXML: boolean): Schema {
 						return { align: dom.getAttribute("align") };
 					}
 				}],
-				toDOM(node) { return [defaultNameSpace + "tr", node.attrs, 0]; },
+				toDOM(node) { return [defaultNameSpace + "tr", node.attrs, 0] }
 			},
 			th: {
 				content: "(text | inlineimage)*",
@@ -295,7 +295,7 @@ function template(topNode: string, toXML: boolean): Schema {
 				tableRole: "header_cell",
 				isolating: true,
 				parseDOM: [{ tag: "th", getAttrs: (dom) => getCellAttrs(dom) }],
-				toDOM(node) { return [defaultNameSpace + "th", setCellAttrs(node), 0] },
+				toDOM(node) { return [defaultNameSpace + "th", setCellAttrs(node), 0] }
 			},
 			td: {
 				content: "(text | inlineimage)*",
@@ -303,7 +303,7 @@ function template(topNode: string, toXML: boolean): Schema {
 				tableRole: "cell",
 				isolating: true,
 				parseDOM: [{ tag: "td", getAttrs: (dom) => getCellAttrs(dom) }],
-				toDOM(node) { return [defaultNameSpace + "td", setCellAttrs(node), 0] },
+				toDOM(node) { return [defaultNameSpace + "td", setCellAttrs(node), 0] }
 			},
 			inlineimage: {
 				inline: true,
@@ -334,7 +334,7 @@ function template(topNode: string, toXML: boolean): Schema {
 						return [defaultNameSpace + "image", {
 							[xlinkns + " href"]: node.attrs.href,
 							alt: node.attrs.alt
-						}]
+						}];
 					} else {
 						return ["img", node.attrs];
 					}
@@ -411,7 +411,7 @@ function template(topNode: string, toXML: boolean): Schema {
 				toDOM() { return [defaultNameSpace + "sub"] }
 			}
 		}
-	})
+	});
 };
 
 const bodySchema = template("body", false);

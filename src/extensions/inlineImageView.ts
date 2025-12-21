@@ -14,7 +14,7 @@ class InlineImageView implements NodeView {
 	constructor(node: Node) {
 		this.node = node;
 
-		this.dom = document.createElement('img');
+		this.dom = document.createElement("img");
 		this.dom.onerror = () => this.dom.classList.add("t-img-broken");
 		this.updateSrc();
 		this.updateAlt();

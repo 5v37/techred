@@ -166,7 +166,7 @@ export function wordBoundaries($pos: ResolvedPos, markType?: MarkType, active?: 
 					wordStart = wordEnd - trimEnd;
 					canMarkup = false;
 				} else if (parentOffset < wordStart + trimmed.start) {
-					wordEnd = wordStart + trimmed.start
+					wordEnd = wordStart + trimmed.start;
 					canMarkup = false;
 				} else {
 					wordStart += trimmed.start;

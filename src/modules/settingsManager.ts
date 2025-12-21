@@ -13,7 +13,7 @@ type Setting<T extends string | number | boolean> = {
 	default: T,
 	options?: T[] | SelectOption<T>[],
 	reaction?: (newValue: T) => void
-}
+};
 
 type UserSettingsSchema = {
 	colorMode: Setting<ColorMode>,
@@ -22,7 +22,7 @@ type UserSettingsSchema = {
 	textFontSize: Setting<number>,
 	highlightEmphasis: Setting<boolean>,
 	spellCheck: Setting<boolean>
-}
+};
 
 type Settings = { [K in keyof UserSettingsSchema]: UserSettingsSchema[K] extends Setting<infer T> ? T : never };
 
@@ -89,7 +89,7 @@ if (hasLocalStorage) {
 		try {
 			localStorage.setItem(STORAGE_KEY, JSON.stringify(userSettings));
 		} catch (error) {
-			saveSettingsError(error)
+			saveSettingsError(error);
 		};
 	});
 };
@@ -126,13 +126,13 @@ function createSettings(schema: UserSettingsSchema, reset = false): Settings {
 }
 
 function resetUserSettings() {
-	Object.assign(userSettings, createSettings(userSettingsSchema, true))
+	Object.assign(userSettings, createSettings(userSettingsSchema, true));
 }
 
 function setColorMode(newValue: ColorMode) {
 	if (newValue === "Auto") {
 		applyColorMode(darkModeMediaQuery.matches);
-		darkModeMediaQuery.onchange = (mql: MediaQueryList | MediaQueryListEvent) => applyColorMode(mql.matches)
+		darkModeMediaQuery.onchange = (mql: MediaQueryList | MediaQueryListEvent) => applyColorMode(mql.matches);
 	} else {
 		darkModeMediaQuery.onchange = null;
 		applyColorMode(newValue === "Dark");
@@ -142,7 +142,7 @@ function setColorMode(newValue: ColorMode) {
 function applyColorMode(dark: boolean) {
 	const element = document.querySelector("html") as HTMLElement;
 	if (dark) {
-		element.classList.add("my-app-dark")
+		element.classList.add("my-app-dark");
 	} else {
 		element.classList.remove("my-app-dark");
 	};
@@ -151,4 +151,4 @@ function applyColorMode(dark: boolean) {
 // удаление старых настроек
 ["color-mode", "font", "font-size", "highlight-emphasis", "spell-check"].forEach(key => localStorage.removeItem(key));
 
-export { userSettings, userSettingsSchema, resetUserSettings }
+export { userSettings, userSettingsSchema, resetUserSettings };

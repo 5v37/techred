@@ -69,9 +69,9 @@ import { ref } from "vue";
 
 import { Panel, Chip, Button, InputText, InputNumber } from "primevue";
 
-import Persons from "./Persons.vue";
-import EmbeddedEditor from "./EmbeddedEditor.vue";
-import ComplexDatePicker from "./ComplexDatePicker.vue";
+import Persons from "@/components/Persons.vue";
+import EmbeddedEditor from "@/components/EmbeddedEditor.vue";
+import ComplexDatePicker from "@/components/ComplexDatePicker.vue";
 
 import PersonInfo from "@/types/personInfo";
 import { addingNodes } from "@/modules/utils";
@@ -100,7 +100,7 @@ function initialStateDescription() {
 		fileID: self.crypto.randomUUID() as string,
 		srcOCR: "",
 		srcURLs: new Array<{ url: string, id: number }>(),
-		publishers: new Array<PersonInfo>(),
+		publishers: new Array<PersonInfo>()
 	};
 };
 

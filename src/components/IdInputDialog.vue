@@ -13,14 +13,14 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
-import { Dialog, Button, InputText, Message } from 'primevue';
-import type { EditorState, Transaction } from 'prosemirror-state';
+import { computed, ref } from "vue";
+import { Dialog, Button, InputText, Message } from "primevue";
+import type { EditorState, Transaction } from "prosemirror-state";
 
-import { endHistoryGroup, startHistoryGroup } from '@/extensions/sharedHistory';
-import { NCNameFilter } from '@/modules/utils';
-import editorState from '@/modules/editorState';
-import ui from '@/modules/ui';
+import { endHistoryGroup, startHistoryGroup } from "@/extensions/sharedHistory";
+import { NCNameFilter } from "@/modules/utils";
+import editorState from "@/modules/editorState";
+import ui from "@/modules/ui";
 
 let params: {
 	state: EditorState,

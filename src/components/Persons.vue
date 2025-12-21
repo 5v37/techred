@@ -38,8 +38,8 @@
 </template>
 
 <script setup lang="ts">
-import { Chip, FloatLabel, InputText, Button } from 'primevue';
-import PersonInfo from '@/types/personInfo';
+import { Chip, FloatLabel, InputText, Button } from "primevue";
+import PersonInfo from "@/types/personInfo";
 
 const model = defineModel<PersonInfo[]>({ required: true });
 
