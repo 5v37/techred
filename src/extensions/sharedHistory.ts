@@ -3,6 +3,7 @@ import { undo, redo, history } from "prosemirror-history";
 import { RingBuffer } from "@toolbuilder/ring-buffer";
 import editorState from "@/modules/editorState";
 import type { EditorView } from "prosemirror-view";
+import { nextTick } from "vue";
 
 function createCommand(isUndo: boolean): Command {
 	return (_state, dispatch) => {
@@ -31,8 +32,12 @@ function createCommand(isUndo: boolean): Command {
 
 					groupSize--;
 					if (groupSize === focusGroup) {
-						editorState.setBody(body);
-						editorState.focusView(view); // !!! надо дождаться смены вкладки для правильной фокусировки
+						const changeBody = editorState.setBody(body);
+						if (changeBody) {
+							nextTick(() => editorState.focusView(view));
+						} else {
+							editorState.focusView(view);
+						};
 					};
 
 					command(view.state, view.dispatch);

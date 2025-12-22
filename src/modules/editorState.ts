@@ -52,7 +52,9 @@ class editorState {
 	setBody(key: string) {
 		if (key !== "body0" && key !== this.currentBody.value) {
 			this.currentBody.value = key;
+			return true;
 		};
+		return false;
 	}
 
 	focusView(view: EditorView) {
