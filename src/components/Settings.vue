@@ -13,12 +13,11 @@
 			</div>
 			<div class="t-setting-element">
 				<label>Шрифт текста</label>
-				<Select v-model="userSettings.textFont" :options="userSettingsSchema.textFont.options" checkmark />
+				<Select v-model="userSettings.textFont" :options="userSettingsSchema.textFont.options" />
 			</div>
 			<div class="t-setting-element">
 				<label>Размер шрифта текста</label>
-				<Select v-model="userSettings.textFontSize" :options="userSettingsSchema.textFontSize.options"
-					checkmark />
+				<Select v-model="userSettings.textFontSize" :options="userSettingsSchema.textFontSize.options" />
 			</div>
 			<div class="t-setting-element">
 				<label>Выделение границ курсива</label>

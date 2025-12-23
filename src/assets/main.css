@@ -5,7 +5,7 @@
 @import './ui.css';
 
 :root {
-	--t-ui-font-size: 90%;
+	--t-ui-font-size: 16px;
 	--t-splitter-bar-size: 4px;
 }
 

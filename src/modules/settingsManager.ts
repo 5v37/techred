@@ -2,12 +2,10 @@ import { reactive, watch } from "vue";
 import { isMac } from "@/modules/utils";
 import { saveSettingsError } from "@/modules/notifications";
 
-type ColorMode = "Auto" | "Light" | "Dark";
-
-interface SelectOption<T> {
+type SelectOption<T> = {
 	key: T,
 	name: string
-}
+};
 
 type Setting<T extends string | number | boolean> = {
 	default: T,
@@ -15,18 +13,26 @@ type Setting<T extends string | number | boolean> = {
 	reaction?: (newValue: T) => void
 };
 
+type Settings = { [K in keyof UserSettingsSchema]: UserSettingsSchema[K] extends Setting<infer T> ? T : never };
+
+type ColorMode = "Auto" | "Light" | "Dark";
+
 type UserSettingsSchema = {
 	colorMode: Setting<ColorMode>,
-	uiFontSize: Setting<string>,
+	uiFontSize: Setting<number>,
 	textFont: Setting<string>,
 	textFontSize: Setting<number>,
 	highlightEmphasis: Setting<boolean>,
 	spellCheck: Setting<boolean>
 };
 
-type Settings = { [K in keyof UserSettingsSchema]: UserSettingsSchema[K] extends Setting<infer T> ? T : never };
+const hasLocalStorage = typeof localStorage !== "undefined";
+const darkModeMediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
 
-const STORAGE_KEY = "t-user-settings" as const;
+const basePx = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+const ptScale = [8, 9, 10, 11, 12, 14, 16, 18, 20, 24, 28, 32, 36, 48, 72];
+
+const userSettingsKey = "t-user-settings";
 const userSettingsSchema: UserSettingsSchema = {
 	colorMode: {
 		default: "Auto",
@@ -38,15 +44,14 @@ const userSettingsSchema: UserSettingsSchema = {
 		reaction: setColorMode
 	},
 	uiFontSize: {
-		default: "90%",
+		default: closestValue(basePx * 0.875, [12, 14, 16, 18]),
 		options: [
-			{ name: "Авто", key: "90%" },
-			{ name: "Компактный", key: "12px" },
-			{ name: "Умеренный", key: "14px" },
-			{ name: "Просторный", key: "16px" },
-			{ name: "Крупный", key: "18px" }
+			{ name: "Компактный", key: 12 },
+			{ name: "Умеренный", key: 14 },
+			{ name: "Просторный", key: 16 },
+			{ name: "Крупный", key: 18 }
 		],
-		reaction: (newValue) => document.documentElement.style.setProperty("--t-ui-font-size", `${newValue}`)
+		reaction: (newValue) => document.documentElement.style.setProperty("--t-ui-font-size", `${newValue}px`)
 	},
 	textFont: {
 		default: "PT Serif",
@@ -58,8 +63,8 @@ const userSettingsSchema: UserSettingsSchema = {
 		reaction: (newValue) => document.documentElement.style.setProperty("--t-text-font", `${newValue}`)
 	},
 	textFontSize: {
-		default: 12,
-		options: [8, 9, 10, 11, 12, 14, 16, 18, 20, 24, 28, 32, 36, 48, 72],
+		default: closestValue(basePx / 1.333, ptScale),
+		options: ptScale,
 		reaction: (newValue) => document.documentElement.style.setProperty("--t-text-font-size", `${newValue}pt`)
 	},
 	highlightEmphasis: {
@@ -70,10 +75,7 @@ const userSettingsSchema: UserSettingsSchema = {
 	}
 } as const;
 
-const hasLocalStorage = typeof localStorage !== "undefined";
-const darkModeMediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-const userSettings = reactive(createSettings(userSettingsSchema));
-
+const userSettings = reactive(createUserSettings());
 for (const key in userSettingsSchema) {
 	const reaction = userSettingsSchema[key as keyof UserSettingsSchema].reaction;
 	if (reaction) {
@@ -84,32 +86,34 @@ for (const key in userSettingsSchema) {
 		);
 	};
 };
+
+let isUpdateUserSettings = false;
 if (hasLocalStorage) {
 	watch(userSettings, () => {
-		try {
-			localStorage.setItem(STORAGE_KEY, JSON.stringify(userSettings));
-		} catch (error) {
-			saveSettingsError(error);
+		if (isUpdateUserSettings) {
+			isUpdateUserSettings = false;
+			return;
 		};
+		saveUserSettings();
 	});
+	addEventListener("storage", updateUserSettings);
 };
-addEventListener("storage", () => Object.assign(userSettings, createSettings(userSettingsSchema)));
 
-function createSettings(schema: UserSettingsSchema, reset = false): Settings {
-	const stored = !reset && hasLocalStorage && localStorage.getItem(STORAGE_KEY);
+function createUserSettings(): Settings {
+	const stored = hasLocalStorage && localStorage.getItem(userSettingsKey);
 	let parsed = undefined;
 	if (stored) {
 		try { parsed = JSON.parse(stored) } catch { /* empty */ }
 	};
 
 	const settings = Object.create(null);
-	for (const key in schema) {
-		const defaultValue = schema[key as keyof UserSettingsSchema].default;
+	for (const key in userSettingsSchema) {
+		const defaultValue = userSettingsSchema[key as keyof UserSettingsSchema].default;
 		settings[key] = defaultValue;
 
 		if (typeof parsed === "object" && typeof parsed[key] === typeof defaultValue) {
 			const storedValue = parsed[key] as typeof defaultValue;
-			const options = schema[key as keyof UserSettingsSchema].options;
+			const options = userSettingsSchema[key as keyof UserSettingsSchema].options;
 			if (options) {
 				if (options.some(option =>
 					typeof option === "object" && "key" in option
@@ -125,8 +129,30 @@ function createSettings(schema: UserSettingsSchema, reset = false): Settings {
 	return settings;
 }
 
+function saveUserSettings() {
+	try {
+		localStorage.setItem(userSettingsKey, JSON.stringify(userSettings));
+	} catch (error) {
+		saveSettingsError(error);
+	};
+}
+
+function updateUserSettings() {
+	isUpdateUserSettings = true;
+	Object.assign(userSettings, createUserSettings());
+}
+
 function resetUserSettings() {
-	Object.assign(userSettings, createSettings(userSettingsSchema, true));
+	if (hasLocalStorage) {
+		localStorage.removeItem(userSettingsKey);
+	};
+	updateUserSettings();
+}
+
+function closestValue(value: number, options: Array<number>) {
+	return options.reduce((prev, curr) =>
+		Math.abs(curr - value) < Math.abs(prev - value) ? curr : prev
+	);
 }
 
 function setColorMode(newValue: ColorMode) {
@@ -149,6 +175,8 @@ function applyColorMode(dark: boolean) {
 }
 
 // удаление старых настроек
-["color-mode", "font", "font-size", "highlight-emphasis", "spell-check"].forEach(key => localStorage.removeItem(key));
+if (hasLocalStorage) {
+	["color-mode", "font", "font-size", "highlight-emphasis", "spell-check"].forEach(key => localStorage.removeItem(key));
+};
 
 export { userSettings, userSettingsSchema, resetUserSettings };
