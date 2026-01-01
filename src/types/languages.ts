@@ -36,7 +36,7 @@ const languages: Language[] = [
 	{ name: "Ганда", code: "lg" },
 	{ name: "Гереро", code: "hz" },
 	{ name: "Гренландский", code: "kl" },
-	{ name: "Греческий (новогреческий)", code: "el" },
+	{ name: "Греческий", code: "el" },
 	{ name: "Грузинский", code: "ka" },
 	{ name: "Гуарани", code: "gn" },
 	{ name: "Гуджарати", code: "gu" },
@@ -44,6 +44,9 @@ const languages: Language[] = [
 	{ name: "Датский", code: "da" },
 	{ name: "Дзонг-кэ", code: "dz" },
 	{ name: "Дивехи (Мальдивский)", code: "dv" },
+	{ name: "Древнегреческий", code: "grc" },
+	{ name: "Древнеегипетский", code: "egy" },
+	{ name: "Древнерусский", code: "orv" },
 	{ name: "Зулу", code: "zu" },
 	{ name: "Иврит", code: "he" },
 	{ name: "Игбо", code: "ig" },
@@ -92,9 +95,8 @@ const languages: Language[] = [
 	{ name: "Маратхи", code: "mr" },
 	{ name: "Маршалльский", code: "mh" },
 	{ name: "Мерянский", code: "me" },
-	{ name: "Молдавский", code: "mo" },
 	{ name: "Монгольский", code: "mn" },
-	{ name: "Мэнский (Мэнкский)", code: "gv" },
+	{ name: "Мэнский", code: "gv" },
 	{ name: "Навахо", code: "nv" },
 	{ name: "Науру", code: "na" },
 	{ name: "Ндебеле северный", code: "nd" },
@@ -136,13 +138,11 @@ const languages: Language[] = [
 	{ name: "Сото южный", code: "st" },
 	{ name: "Суахили", code: "sw" },
 	{ name: "Сунданский", code: "su" },
-	{ name: "Тагальский", code: "tl" },
 	{ name: "Таджикский", code: "tg" },
 	{ name: "Таитянский", code: "ty" },
 	{ name: "Тайский", code: "th" },
 	{ name: "Тамильский", code: "ta" },
 	{ name: "Татарский", code: "tt" },
-	{ name: "Тви", code: "tw" },
 	{ name: "Телугу", code: "te" },
 	{ name: "Тибетский", code: "bo" },
 	{ name: "Тигринья", code: "ti" },
@@ -158,7 +158,7 @@ const languages: Language[] = [
 	{ name: "Фарерский", code: "fo" },
 	{ name: "Фиджи", code: "fj" },
 	{ name: "Филиппинский", code: "fl" },
-	{ name: "Финский (Suomi)", code: "fi" },
+	{ name: "Финский", code: "fi" },
 	{ name: "Французский", code: "fr" },
 	{ name: "Фризский", code: "fy" },
 	{ name: "Фулах", code: "ff" },
@@ -181,8 +181,17 @@ const languages: Language[] = [
 	{ name: "Японский", code: "ja" }
 ];
 
+function normalizeLangCode(code: string): string {
+	try {
+		const locale = new Intl.Locale(code);
+		return locale.language;
+	} catch {
+		return code;
+	}
+}
+
 function findLanguage(code: string): Language {
-	const key = code.split("-")[0];
+	let key = normalizeLangCode(code);
 	for (const lang of languages) {
 		if (lang.code === key) {
 			return lang;
