@@ -21,7 +21,7 @@ import type { TreeNode } from "primevue/treenode";
 
 import { annotationSchemaXML, annotationSchema, bodySchemaXML, bodySchema } from "@/modules/fb2Model";
 import { setId, setLink, setMark, splitBlock } from "@/modules/commands";
-import { wordBoundaries } from "@/modules/transform";
+import { removeEmptyMarks, wordBoundaries } from "@/modules/transform";
 import fb2Mapper from "@/modules/fb2Mapper";
 import editorState from "@/modules/editorState";
 import { userSettings } from "@/modules/settingsManager";
@@ -32,6 +32,7 @@ import InlineImageView from "@/extensions/inlineImageView";
 import linkTooltip from "@/extensions/linkTooltip";
 import toolbar from "@/extensions/toolbar";
 import modificationMonitor from "@/extensions/modificationMonitor";
+
 const props = defineProps<{
 	editorId: string,
 	annotation?: boolean
@@ -172,7 +173,12 @@ function hasContent(): boolean {
 }
 function parseContent(bodyElement: Element | undefined) {
 	const name = !props.annotation ? bodyElement?.getAttribute("name") || "" : undefined;
-	root = !bodyElement || !bodyElement.textContent ? emptyDoc(name) : pmDOMParser.fromSchema(schema).parse(bodyElement, { topNode: emptyDoc(name) });
+	if (!bodyElement || !bodyElement.textContent) {
+		root = emptyDoc(name);
+	} else {
+		root = pmDOMParser.fromSchema(schema).parse(bodyElement, { topNode: emptyDoc(name) });
+		root = removeEmptyMarks(root, schema);
+	}
 	if (!props.annotation) {
 		updateTOC(root);
 		if (editor.value) {
@@ -195,7 +201,8 @@ function serializeContent(xmlDoc: Document, target: Element) {
 		if (view.state.doc.attrs.name) {
 			target.setAttribute("name", view.state.doc.attrs.name);
 		};
-		pmDOMSerializer.fromSchema(schemaXML).serializeFragment(view.state.doc.content, { document: xmlDoc }, target as HTMLElement);
+		const doc = removeEmptyMarks(view.state.doc, schema);
+		pmDOMSerializer.fromSchema(schemaXML).serializeFragment(doc.content, { document: xmlDoc }, target as HTMLElement);
 	} else {
 		target.remove();
 	}

@@ -1,5 +1,48 @@
 import { Mark } from "prosemirror-model";
-import { MarkType, ResolvedPos } from "prosemirror-model";
+import type { Node, Schema } from "prosemirror-model";
+import type { MarkType, ResolvedPos } from "prosemirror-model";
+
+function getCommonMarks(marksA: readonly Mark[], marksB: readonly Mark[]) {
+	const len = Math.min(marksA.length, marksB.length);
+
+	let depth = 0;
+	while (depth < len && marksA[depth].eq(marksB[depth])) {
+		depth++;
+	};
+
+	return Mark.setFrom(marksA.slice(0, depth));
+}
+
+export function removeEmptyMarks(doc: Node, schema: Schema) {
+	const cleanNode = (node: Node, marks: readonly Mark[]): Node => {
+		if (node.isText) {
+			if (node.marks.length && node.text && /^[\p{Z}]*$/u.test(node.text)) {
+				const crossMark = getCommonMarks(marks, node.marks);
+				return schema.text(node.text, crossMark);
+			};
+			return node;
+		};
+
+		if (node.childCount === 0) {
+			return node;
+		};
+
+		let prevMark = Mark.none;
+		let childrenChanged = false;
+		const newChildren: Node[] = [];
+
+		node.forEach(child => {
+			const cleaned = cleanNode(child, prevMark);
+			newChildren.push(cleaned);
+			childrenChanged = childrenChanged || cleaned !== child;
+			prevMark = cleaned.marks;
+		});
+
+		return childrenChanged ? schema.node(node.type, node.attrs, newChildren) : node;
+	};
+
+	return cleanNode(doc, Mark.none);
+}
 
 export function isSameMark($from: ResolvedPos, $to: ResolvedPos, mark: Mark | MarkType) {
 	let isSame = true;

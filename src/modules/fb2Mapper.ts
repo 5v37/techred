@@ -1,5 +1,5 @@
 import { formatXML } from "@/modules/utils";
-import { textBlocks, markBlocks, xmlTemplate } from "@/modules/fb2Model";
+import { textBlocks, xmlTemplate } from "@/modules/fb2Model";
 import modificationTracker from "@/modules/modificationTracker";
 
 type DocumentBlocks = { [key: string]: Element | undefined };
@@ -36,7 +36,7 @@ class fb2Mapper {
 
 	async parse(xml: string) {
 		const parser = new DOMParser();
-		const xmlDoc = parser.parseFromString(fixMarks(xml), "text/xml");
+		const xmlDoc = parser.parseFromString(xml, "text/xml");
 		const errorNode = xmlDoc.querySelector("parsererror");
 		if (errorNode) {
 			throw new Error(errorNode.textContent?.split("\n")[0]);
@@ -68,7 +68,7 @@ class fb2Mapper {
 		const xmlStr = serializer.serializeToString(xmlDoc).replace(/  +/g, " ");
 
 		modificationTracker.reset(false);
-		return formatXML(fixMarks(xmlStr), textBlocks);
+		return formatXML(xmlStr, textBlocks);
 	}
 
 	async reset() {
@@ -83,11 +83,6 @@ class fb2Mapper {
 		return Object.assign({}, ...blocks);
 	}
 }
-
-function fixMarks(xml: string) {
-	const regex = new RegExp("<(" + markBlocks.join("|") + ")>([  ]*)</\\1>", "g");
-	return xml.replace(regex, "$2"); // убираем пустые теги
-};
 
 export type { DocumentBlocks };
 export default new fb2Mapper();

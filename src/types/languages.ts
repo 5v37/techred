@@ -181,6 +181,7 @@ const languages: Language[] = [
 	{ name: "Японский", code: "ja" }
 ];
 
+// CLDR
 function normalizeLangCode(code: string): string {
 	try {
 		const locale = new Intl.Locale(code);
@@ -191,7 +192,7 @@ function normalizeLangCode(code: string): string {
 }
 
 function findLanguage(code: string): Language {
-	let key = normalizeLangCode(code);
+	const key = normalizeLangCode(code);
 	for (const lang of languages) {
 		if (lang.code === key) {
 			return lang;
