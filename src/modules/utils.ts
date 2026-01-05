@@ -1,7 +1,7 @@
 export function formatXML(xml: string, textBlocks: string[] = [], tab = " ", nl = "\n") {
 	let formatted = "", indent = "", mixedMode = false, mixedContent = "";
-	const mixedNodeStart = textBlocks.map(tag => tag + ">");
-	const mixedNodeEnd = textBlocks.map(tag => "/" + tag);
+	const mixedNodeStart = new RegExp(`^(${textBlocks.join("|")})([\\s>]|$)`);
+	const mixedNodeEnd = new RegExp(`/(${textBlocks.join("|")})$`);
 	const nodes = xml.slice(1, -1).split(/>\s*</);
 	const spaces = xml.match(/>\s*</g)!;
 	if (nodes[0][0] === "?") {
@@ -11,11 +11,11 @@ export function formatXML(xml: string, textBlocks: string[] = [], tab = " ", nl 
 	for (let i = 0; i < nodes.length; i++) {
 		let node = nodes[i];
 
-		if (!mixedMode && mixedNodeStart.some(tag => (node + ">").startsWith(tag))) {
+		if (!mixedMode && mixedNodeStart.test(node)) {
 			mixedMode = true;
 			mixedContent = "";
 		};
-		if (mixedMode && mixedNodeEnd.some(tag => node.endsWith(tag))) {
+		if (mixedMode && mixedNodeEnd.test(node)) {
 			mixedMode = false;
 			node = (mixedContent) ? mixedContent + node : node;
 		};
