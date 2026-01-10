@@ -9,7 +9,7 @@ import { useTemplateRef, onMounted, onUnmounted } from "vue";
 
 import { EditorState, TextSelection, Transaction } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
-import { Node, DOMParser as pmDOMParser, DOMSerializer as pmDOMSerializer } from "prosemirror-model";
+import { Node, DOMParser as ProseDOMParser } from "prosemirror-model";
 import { DocAttrStep, ReplaceAroundStep, ReplaceStep } from "prosemirror-transform";
 import { undo, redo, history } from "prosemirror-history";
 import { keymap } from "prosemirror-keymap";
@@ -22,6 +22,7 @@ import type { TreeNode } from "primevue/treenode";
 import { annotationSchemaXML, annotationSchema, bodySchemaXML, bodySchema } from "@/modules/fb2Model";
 import { setId, setLink, setMark, splitBlock } from "@/modules/commands";
 import { removeEmptyMarks, wordBoundaries } from "@/modules/transform";
+import PrettyDOMSerializer from "@/modules/prettyDOMSerializer";
 import fb2Mapper from "@/modules/fb2Mapper";
 import editorState from "@/modules/editorState";
 import { userSettings } from "@/modules/settingsManager";
@@ -171,12 +172,13 @@ onUnmounted(() => {
 function hasContent(): boolean {
 	return view.state.doc.textContent !== "";
 }
+
 function parseContent(bodyElement: Element | undefined) {
 	const name = !props.annotation ? bodyElement?.getAttribute("name") || "" : undefined;
 	if (!bodyElement || !bodyElement.textContent) {
 		root = emptyDoc(name);
 	} else {
-		root = pmDOMParser.fromSchema(schema).parse(bodyElement, { topNode: emptyDoc(name) });
+		root = ProseDOMParser.fromSchema(schema).parse(bodyElement, { topNode: emptyDoc(name) });
 		root = removeEmptyMarks(root, schema);
 	}
 	if (!props.annotation) {
@@ -195,6 +197,7 @@ function parseContent(bodyElement: Element | undefined) {
 		view.dispatch(view.state.tr.deleteSelection());
 	};
 }
+
 function serializeContent(xmlDoc: Document, target: Element) {
 	const schemaXML = props.annotation ? annotationSchemaXML : bodySchemaXML;
 	if (props.editorId === "body0" || hasContent()) {
@@ -202,10 +205,10 @@ function serializeContent(xmlDoc: Document, target: Element) {
 			target.setAttribute("name", view.state.doc.attrs.name);
 		};
 		const doc = removeEmptyMarks(view.state.doc, schema);
-		pmDOMSerializer.fromSchema(schemaXML).serializeFragment(doc.content, { document: xmlDoc }, target as HTMLElement);
+		PrettyDOMSerializer.fromSchema(schemaXML).serializeFragment(doc.content, { document: xmlDoc }, target as HTMLElement);		
 	} else {
 		target.remove();
-	}
+	};
 }
 
 function emptyDoc(name?: string) {
