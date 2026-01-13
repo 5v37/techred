@@ -2,13 +2,13 @@
 	<div ref="binary" class="t-images-container">
 		<div class="t-images-panel">
 			<div v-for="(value, key) in images.items" :key="key" class="t-images-block">
-				<div class="t-images-errorwrapper">
+				<div class="t-images-error_wrapper">
 					<Image class="img" :src=value.dataURL preview width="200" />
-					<Message v-if="hasErrorId(value.newId, key)" severity="error" icon="pi pi-times-circle"
-						class="t-images-errorId">{{ errorMessage }}</Message>
+					<Message v-if="value.id.invalid" severity="error" icon="pi pi-times-circle"
+						class="t-images-error_id">{{ value.id.error }}</Message>
 				</div>
-				<InputText v-model="value.newId" v-keyfilter=NCNameFilter class="t-images-caption"
-					@focus="getContext(value.newId, key)" @change="validateId(value, key)" />
+				<InputText v-model="value.id.draftValue" v-keyfilter=NCNameFilter class="t-images-caption"
+					@input="updateMessage(value)" @change="confirmImageId(value)" />
 			</div>
 		</div>
 	</div>
@@ -23,44 +23,27 @@ import fb2Mapper, { DocumentBlocks } from "@/modules/fb2Mapper";
 import editorState from "@/modules/editorState";
 import { addingNodes } from "@/modules/utils";
 import { fb2ns, xlinkns } from "@/modules/fb2Model";
-import { NCNameFilter } from "@/modules/utils";
+import { NCNameFilter, validateId, getIds, clearIdCache } from "@/modules/idManager";
 import type { ImageSpec } from "@/types/images";
 import modificationTracker from "@/modules/modificationTracker";
 
 const images = editorState.images;
-const errorMessage = ref("");
 const isModified = ref(false);
 
-let currentKey: string | number;
-let oldId: string;
-let ids: Set<string>;
-
-function getContext(id: string, key: string | number) {
-	currentKey = key;
-	oldId = id;
-	ids = editorState.getIds();
+function updateMessage(image: ImageSpec) {
+	const ids = getIds(image.id.validValue);
+	Object.assign(image.id, validateId(image.id.draftValue, ids, false));
 }
 
-function validateId(image: ImageSpec, key: string | number) {
-	if (hasErrorId(image.newId, key)) {
-		image.newId = oldId;
+function confirmImageId(image: ImageSpec) {
+	if (image.id.invalid) {
+		image.id.draftValue = image.id.validValue;
+		updateMessage(image);
 	} else {
+		image.id.validValue = image.id.draftValue;
+		clearIdCache();
 		isModified.value = true;
 	};
-}
-
-function hasErrorId(id: string, key: string | number) {
-	if (key === currentKey && id !== oldId) {
-		if (!id || !NCNameFilter.pattern.test(id)) {
-			errorMessage.value = "Значение некорректно";
-			return true;
-		};
-		if (ids.has(id)) {
-			errorMessage.value = "Значение не уникально";
-			return true;
-		};
-	}
-	return false;
 }
 
 let toTop = false;
@@ -86,7 +69,6 @@ function getBlocks(xmlDoc: Document, method: string) {
 	toTop = method === "parse";
 
 	const [fb2] = xmlDoc.getElementsByTagName("FictionBook");
-
 	const parts: DocumentBlocks = {
 		"fiction-book": fb2
 	};
@@ -97,14 +79,12 @@ function getBlocks(xmlDoc: Document, method: string) {
 function parseContent(descElements: Element | undefined) {
 	images.value.clear();
 	isModified.value = false;
-	currentKey = "";
-	oldId = "";
 
 	if (!descElements) {
 		return;
 	};
 
-	ids = editorState.getIds(true);
+	const ids = editorState.getIds(true);
 	let id, newId = undefined;
 	for (const item of descElements.children) {
 		if (item.tagName === "binary") {
@@ -130,8 +110,8 @@ function serializeContent(xmlDoc: Document, target: Element) {
 		if (id) {
 			image = images.value.items[id];
 			if (image) {
-				if (image.newId && image.newId !== id) {
-					id = image.newId;
+				if (image.id.validValue !== id) {
+					id = image.id.validValue;
 					element.setAttributeNS(xlinkns, "href", "#" + id);
 				};
 				if (!idToSave.has(id)) {
@@ -182,12 +162,12 @@ defineExpose({ getBlocks, parseContent, serializeContent });
 	margin-top: 0.5rem;
 }
 
-.t-images-errorwrapper {
+.t-images-error_wrapper {
 	display: flex;
 	position: relative;
 }
 
-.t-images-errorId {
+.t-images-error_id {
 	position: absolute;
 	bottom: 0;
 	width: 100%;

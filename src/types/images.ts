@@ -1,13 +1,17 @@
-import editorState from "@/modules/editorState";
-import { invalidId } from "@/modules/notifications";
 import { base64toData, imageFileType, parseDataURL } from "@/modules/utils";
-import { NCNameFilter } from "@/modules/utils";
+import { invalidId } from "@/modules/notifications";
+import { validateId, getIds } from "@/modules/idManager";
 
 type ImageSpec = {
 	type: string,
 	content: string,
 	dataURL: string,
-	newId: string
+	id: {
+		validValue: string,
+		invalid: boolean,
+		draftValue: string,
+		error: string
+	}
 };
 type ImageList = {
 	[id: string]: ImageSpec
@@ -23,11 +27,10 @@ function getExt(mime: string) {
 }
 
 let idx = 0;
-function getValidId(id: string, mime: string, ids?: Set<string>) {
-	ids ??= editorState.getIds();
-	if (NCNameFilter.pattern.test(id) && !ids.has(id)) {
-		return id;
-	} else {
+function getValidId(id: string, mime: string) {
+	const ids = getIds();
+	const { invalid } = validateId(id, ids);
+	if (invalid) {
 		const ext = getExt(mime) || id.split(".").pop();
 		let newId: string;
 		while (newId = `img_${idx}.${ext}`, ids.has(newId)) {
@@ -35,37 +38,49 @@ function getValidId(id: string, mime: string, ids?: Set<string>) {
 		};
 		invalidId(id, newId);
 		return newId;
+	} else {
+		return id;
 	};
 }
 
 class Images {
 	items: ImageList = Object.create(null);
 
-	addAsDataURL(name: string, dataURL?: string, ids?: Set<string>) {
+	addAsDataURL(name: string, dataURL: string) {
 		const data = parseDataURL(dataURL);
 		if (data?.base64) {
-			const validId = getValidId(name, data.mime, ids);
+			const validId = getValidId(name, data.mime);
 			this.items[validId] = {
 				content: data.data,
 				type: data.mime,
-				dataURL: dataURL!,
-				newId: validId
+				dataURL: dataURL,
+				id: {
+					validValue: validId,
+					invalid: false,
+					draftValue: validId,
+					error: ""
+				}
 			};
 			return validId;
 		};
 	};
 
-	addAsContent(id: string, content: string, type?: string | null, ids?: Set<string>) {
+	addAsContent(id: string, content: string, type: string | null, ids: Set<string>) {
 		const validType = type || imageFileType(base64toData(content.slice(0, 12)).buffer);
 		if (content && validType) {
-			const validId = getValidId(id, validType, ids);
-			this.items[ids && ids.has(id) ? validId : id] = {
+			const idValidation = validateId(id, ids, false);
+			this.items[id] = {
 				content: content,
 				type: validType,
-				dataURL: "data:" + type + ";base64," + content,
-				newId: validId
+				dataURL: "data:" + validType + ";base64," + content,
+				id: {
+					validValue: id,
+					invalid: idValidation.invalid,
+					draftValue: id,
+					error: idValidation.error
+				}
 			};
-			return validId;
+			return id;
 		};
 	};
 
@@ -77,8 +92,24 @@ class Images {
 		}
 	};
 
-	getIds() {
-		return Object.entries(this.items).map(item => item[1].newId ? item[1].newId : item[0]);
+	getIds(targetId?: string) {
+		const result = new Set<string>();
+		let targetCount = 0;
+
+		for (const key in this.items) {
+			const id = this.items[key].id.validValue;
+			if (id === targetId) {
+				targetCount++;
+			} else {
+				result.add(id);
+			}
+		}
+
+		if (targetCount > 1 && targetId) {
+			result.add(targetId);
+		}
+
+		return result;
 	}
 
 	clear() {

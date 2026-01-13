@@ -18,16 +18,24 @@ class editorState {
 
 	private focusedView?: EditorView;
 
-	getIds(noImage = false) {
-		const ids = new Set<string>(noImage ? undefined : this.images.value.getIds());
+	getIds(skipImages = false, targetId?: string) {
+		const result = skipImages ? new Set<string>() : this.images.value.getIds(targetId);
+		let targetCount = 0;
 		for (const body of Object.keys(this.bodies)) {
 			this.views[body].state.doc.descendants((node) => {
 				if (node.attrs.id) {
-					ids.add(node.attrs.id);
+					if (node.attrs.id === targetId) {
+						targetCount++;
+					} else {
+						result.add(node.attrs.id);
+					};
 				};
 			});
 		};
-		return ids;
+		if (targetCount > 1 && targetId) {
+			result.add(targetId);
+		};
+		return result;
 	}
 
 	saveViewFocus() {

@@ -18,7 +18,7 @@ import { Dialog, Button, InputText, Message } from "primevue";
 import type { EditorState, Transaction } from "prosemirror-state";
 
 import { endHistoryGroup, startHistoryGroup } from "@/extensions/sharedHistory";
-import { NCNameFilter } from "@/modules/utils";
+import { NCNameFilter, validateId, getIds } from "@/modules/idManager";
 import editorState from "@/modules/editorState";
 import ui from "@/modules/ui";
 
@@ -29,19 +29,10 @@ let params: {
 	id: string,
 	key: string
 };
-let ids: Set<string>;
 
 const visible = ref(false);
 const newId = ref("");
-const idValidation = computed(() => {
-	if (newId.value && !NCNameFilter.pattern.test(newId.value)) {
-		return { invalid: true, error: "Значение некорректно" };
-	};
-	if (newId.value !== params.id && ids.has(newId.value)) {
-		return { invalid: true, error: "Значение не уникально" };
-	};
-	return { invalid: false, error: "" };
-});
+const idValidation = computed(() => validateId(newId.value, getIds(params.id)));
 
 ui.openIdInputDialog = openDialog;
 
@@ -63,7 +54,6 @@ function keyListener(event: KeyboardEvent) {
 function openDialog(state: EditorState, dispatch: (tr: Transaction) => void, pos: number, id: string, key = "id") {
 	params = { state, dispatch, pos, id, key };
 	newId.value = params.id;
-	ids = editorState.getIds();
 
 	editorState.saveViewFocus();
 	visible.value = true;

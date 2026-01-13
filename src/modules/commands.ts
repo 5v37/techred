@@ -1,10 +1,11 @@
 import { Attrs, Fragment, MarkType, Node, NodeType } from "prosemirror-model";
 import { Command, Selection, AllSelection, NodeSelection, TextSelection, EditorState } from "prosemirror-state";
 import { canSplit, findWrapping } from "prosemirror-transform";
-import { wordBoundaries, markBoundaries, isSameMark, marksInPos } from "@/modules/transform";
-import ui from "@/modules/ui";
-import editorState from "@/modules/editorState";
 import { deleteTable } from "prosemirror-tables";
+
+import { wordBoundaries, markBoundaries, isSameMark, marksInPos } from "@/modules/transform";
+import { incrementId } from "@/modules/idManager";
+import ui from "@/modules/ui";
 
 export function splitBlock(shift: boolean): Command {
 	return (state, dispatch) => {
@@ -456,29 +457,6 @@ function getTextFromSelection(selection: Selection, textType: NodeType) {
 	} else {
 		return [textType.create()];
 	};
-}
-
-function incrementId(input: string): string | undefined {
-	const match = input.match(/(\d+)$/);
-	if (!match) return undefined;
-
-	const ids = editorState.getIds();
-	const prefix = input.slice(0, match.index);
-	const numberStr = match[0];
-
-	let num = BigInt(numberStr);
-	let newNumberStr: string, newId: string;
-	do {
-		num = num + 1n;
-		newNumberStr = num.toString();
-
-		if (newNumberStr.length < numberStr.length) {
-			newNumberStr = newNumberStr.padStart(numberStr.length, "0");
-		};
-		newId = prefix + newNumberStr;
-	} while (ids.has(newId));
-
-	return newId;
 }
 
 export type SectionRange = {

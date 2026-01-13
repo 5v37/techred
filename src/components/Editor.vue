@@ -33,6 +33,7 @@ import InlineImageView from "@/extensions/inlineImageView";
 import linkTooltip from "@/extensions/linkTooltip";
 import toolbar from "@/extensions/toolbar";
 import modificationMonitor from "@/extensions/modificationMonitor";
+import { clearIdCache } from "@/modules/idManager";
 
 const props = defineProps<{
 	editorId: string,
@@ -146,6 +147,7 @@ onMounted(() => {
 			if (needUpdateTOC(transaction)) {
 				updateTOC(view.state.doc);
 			};
+			clearIdCache();
 		}
 	});
 	editorState.views[props.editorId] = view;

@@ -216,6 +216,12 @@ export function isMac() {
 		: typeof os != "undefined" && os.platform ? os.platform() == "darwin" : false;
 }
 
-export const NCNameFilter = { pattern: /^[\p{L}_][\p{L}\p{N}_.-]*$/u, validateOnly: true };
+export function measure<T>(fn: () => T, label: string = "Operation"): T {
+	const start = performance.now();
+	const result = fn();
+	const end = performance.now();
+	console.log(`${label}: ${(end - start).toFixed(2)} ms`);
+	return result;
+}
 
 export const isTauriMode = __APP_TAURI_MODE__;
