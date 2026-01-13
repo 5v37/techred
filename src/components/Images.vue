@@ -97,6 +97,7 @@ function parseContent(descElements: Element | undefined) {
 			};
 		};
 	};
+	clearIdCache();
 }
 
 function serializeContent(xmlDoc: Document, target: Element) {

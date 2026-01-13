@@ -96,17 +96,48 @@ export function decodeXML(xmlData: ArrayBuffer) {
 	return new TextDecoder(encoding).decode(xmlData);
 }
 
+const extensionFromMimeType: Record<MIMEType, string> = {
+	"image/jpeg": "jpg",
+	"image/jpg": "jpg",
+	"image/png": "png",
+	"image/gif": "gif"
+};
+
+const extensionSynonyms: Record<string, string> = {
+	jpeg: "jpg",
+	jpe: "jpg"
+};
+
+export function resolveFileExtension(originalName: string, mimeType: MIMEType) {
+	const separator = originalName.lastIndexOf(".");
+	let name = separator > -1 ? originalName.slice(0, separator) : originalName;
+	let ext = separator > -1 ? originalName.slice(separator + 1).toLowerCase() : "";
+
+	if (ext && extensionSynonyms[ext]) {
+		ext = extensionSynonyms[ext];
+	} else {
+		const expectedExt = extensionFromMimeType[mimeType];
+
+		if (expectedExt && !ext || ext !== expectedExt) {
+			ext = expectedExt;
+			name = originalName;
+		};
+	};
+
+	return { name, ext };
+}
+
 export function parseDataURL(dataURL: string | undefined) {
 	if (dataURL?.startsWith("data:")) {
-		const [mediatype, data] = dataURL.substring(5).split(",");
-		const parameters = mediatype.split(";");
+		const [mediaType, data] = dataURL.substring(5).split(",");
+		const parameters = mediaType.split(";");
 		const params: { [key: string]: string; } = {};
-		let mime = "text/plain";
+		let mime: MIMEType = "text/plain";
 		let base64 = false;
 		if (parameters.length) {
 			let idx = 0, end = parameters.length;
 			if (parameters[0].length && parameters[0].includes("/")) {
-				mime = parameters[0];
+				mime = parameters[0] as MIMEType;
 				idx++;
 			};
 			if (parameters[end - 1] === "base64") {

@@ -1,6 +1,6 @@
 import { base64toData, imageFileType, parseDataURL } from "@/modules/utils";
+import { validateId, generateUniqueFileName, clearIdCache } from "@/modules/idManager";
 import { invalidId } from "@/modules/notifications";
-import { validateId, getIds } from "@/modules/idManager";
 
 type ImageSpec = {
 	type: string,
@@ -13,35 +13,10 @@ type ImageSpec = {
 		error: string
 	}
 };
+
 type ImageList = {
 	[id: string]: ImageSpec
 };
-
-function getExt(mime: string) {
-	if (mime === "image/png")
-		return "png";
-	else if (mime === "image/jpeg" || mime === "image/jpg")
-		return "jpg";
-	else if (mime === "image/gif")
-		return "gif";
-}
-
-let idx = 0;
-function getValidId(id: string, mime: string) {
-	const ids = getIds();
-	const { invalid } = validateId(id, ids);
-	if (invalid) {
-		const ext = getExt(mime) || id.split(".").pop();
-		let newId: string;
-		while (newId = `img_${idx}.${ext}`, ids.has(newId)) {
-			idx++;
-		};
-		invalidId(id, newId);
-		return newId;
-	} else {
-		return id;
-	};
-}
 
 class Images {
 	items: ImageList = Object.create(null);
@@ -49,7 +24,7 @@ class Images {
 	addAsDataURL(name: string, dataURL: string) {
 		const data = parseDataURL(dataURL);
 		if (data?.base64) {
-			const validId = getValidId(name, data.mime);
+			const validId = generateUniqueFileName(name, data.mime);
 			this.items[validId] = {
 				content: data.data,
 				type: data.mime,
@@ -61,6 +36,10 @@ class Images {
 					error: ""
 				}
 			};
+			if (validId !== name) {
+				invalidId(name, validId);
+			}
+			clearIdCache();
 			return validId;
 		};
 	};
