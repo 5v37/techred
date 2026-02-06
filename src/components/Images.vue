@@ -1,7 +1,7 @@
 <template>
 	<div ref="binary" class="t-images-container">
 		<div class="t-images-panel">
-			<div v-for="(value, key) in images.items" :key="key" class="t-images-block">
+			<div v-for="value in imageStore.getActiveImages()" :key="value.imgid" class="t-images-block">
 				<div class="t-images-error_wrapper">
 					<Image class="img" :src=value.dataURL preview width="200" />
 					<Message v-if="value.id.invalid" severity="error" icon="pi pi-times-circle"
@@ -15,43 +15,36 @@
 </template>
 
 <script setup lang="ts">
-import { onUpdated, ref, useTemplateRef } from "vue";
+import { ref, useTemplateRef, watch, nextTick } from "vue";
 
 import { Image, InputText, Message } from "primevue";
 
 import fb2Mapper, { DocumentBlocks } from "@/modules/fb2Mapper";
 import editorState from "@/modules/editorState";
 import { addingNodes } from "@/modules/utils";
-import { fb2ns, xlinkns } from "@/modules/fb2Model";
-import { NCNameFilter, validateId, getIds, clearIdCache } from "@/modules/idManager";
-import type { ImageSpec } from "@/types/images";
+import { fb2ns } from "@/modules/fb2Model";
+import { NCNameFilter, validateId, getIds } from "@/modules/idManager";
+import type { ImageSpec } from "@/modules/imageStore";
 import modificationTracker from "@/modules/modificationTracker";
+import imageStore from "@/modules/imageStore";
 
-const images = editorState.images;
+const props = defineProps<{ active: boolean; }>();
+const binary = useTemplateRef("binary");
 const isModified = ref(false);
 
-function updateMessage(image: ImageSpec) {
-	const ids = getIds(image.id.validValue);
-	Object.assign(image.id, validateId(image.id.draftValue, ids, false));
-}
-
-function confirmImageId(image: ImageSpec) {
-	if (image.id.invalid) {
-		image.id.draftValue = image.id.validValue;
-		updateMessage(image);
-	} else {
-		image.id.validValue = image.id.draftValue;
-		clearIdCache();
-		isModified.value = true;
-	};
-}
-
 let toTop = false;
-const binary = useTemplateRef("binary");
-onUpdated(() => {
-	if (toTop && binary.value && !binary.value.style.display) {
-		binary.value.scrollTop = 0;
-		toTop = false;
+let idsCache: Set<string> | undefined = undefined;
+let idsCacheKey: string | undefined = undefined;
+
+watch(() => props.active, async (isActive) => {
+	if (isActive) {
+		imageStore.collectActiveImages();
+
+		if (toTop && binary.value) {
+			await nextTick();
+			binary.value.scrollTop = 0;
+			toTop = false;
+		}
 	}
 });
 
@@ -65,8 +58,38 @@ fb2Mapper.addPreprocessor(getBlocks);
 fb2Mapper.addProcessor(parseContent, serializeContent, "fiction-book", 2);
 modificationTracker.register(isModified);
 
+function updateMessage(image: ImageSpec) {
+	const ids = getCachedIds(image.id.validValue);
+	Object.assign(image.id, validateId(image.id.draftValue, ids, false));
+}
+
+function confirmImageId(image: ImageSpec) {
+	if (image.id.invalid) {
+		image.id.draftValue = image.id.validValue;
+		updateMessage(image);
+	} else {
+		image.id.validValue = image.id.draftValue;
+		isModified.value = true;
+	};
+
+	idsCache = undefined;
+	idsCacheKey = undefined;
+}
+
+function getCachedIds(excludeId?: string) {
+	if (!idsCache || idsCacheKey !== excludeId) {
+		idsCache = getIds(excludeId);
+		idsCacheKey = excludeId;
+	}
+
+	return idsCache;
+}
+
 function getBlocks(xmlDoc: Document, method: string) {
-	toTop = method === "parse";
+	if (method === "parse") {
+		toTop = true;
+		imageStore.clear();
+	};
 
 	const [fb2] = xmlDoc.getElementsByTagName("FictionBook");
 	const parts: DocumentBlocks = {
@@ -77,55 +100,43 @@ function getBlocks(xmlDoc: Document, method: string) {
 }
 
 function parseContent(descElements: Element | undefined) {
-	images.value.clear();
 	isModified.value = false;
 
 	if (!descElements) {
 		return;
 	};
 
-	const ids = editorState.getIds(true);
-	let id, newId = undefined;
+	const ids = getIds(undefined, true);
+	let id;
 	for (const item of descElements.children) {
 		if (item.tagName === "binary") {
 			id = item.getAttribute("id");
 			if (id && item.textContent) {
-				newId = images.value.addAsContent(id, item.textContent.replace(/[\n\r]/g, ""), item.getAttribute("content-type"), ids);
-				if (newId) {
-					ids.add(newId);
+				imageStore.addAsContent(id, item.textContent.replace(/[\n\r]/g, ""), item.getAttribute("content-type"), ids);
+				if (id) {
+					ids.add(id);
 				};
 			};
 		};
 	};
-	clearIdCache();
+
+	if (props.active) {
+		imageStore.collectActiveImages();
+	}
 }
 
 function serializeContent(xmlDoc: Document, target: Element) {
 	const addElement = addingNodes(xmlDoc, fb2ns);
 	isModified.value = false;
 
-	let image, id;
-	let idToSave: Set<string> = new Set;
-	xmlDoc.querySelectorAll("image, inlineimage").forEach(element => {
-		id = element.getAttributeNS(xlinkns, "href")?.slice(1);
-		if (id) {
-			image = images.value.items[id];
-			if (image) {
-				if (image.id.validValue !== id) {
-					id = image.id.validValue;
-					element.setAttributeNS(xlinkns, "href", "#" + id);
-				};
-				if (!idToSave.has(id)) {
-					idToSave.add(id);
-					const attrs = [
-						{ key: "id", value: id },
-						{ key: "content-type", value: image.type }
-					];
-					addElement(target, "binary", image.content, false, attrs);
-				}
-			};
-		};
-	});
+	imageStore.collectActiveImages();
+	for (const image of imageStore.getActiveImages()) {
+		const attrs = [
+			{ key: "id", value: image.id.validValue },
+			{ key: "content-type", value: image.type }
+		];
+		addElement(target, "binary", image.content, false, attrs);
+	};
 }
 
 defineExpose({ getBlocks, parseContent, serializeContent });
@@ -135,6 +146,7 @@ defineExpose({ getBlocks, parseContent, serializeContent });
 .t-images-container {
 	display: flex;
 	flex-grow: 1;
+	overflow-y: auto;
 	padding: 0.75rem;
 }
 
@@ -145,9 +157,9 @@ defineExpose({ getBlocks, parseContent, serializeContent });
 	justify-content: space-evenly;
 	flex-wrap: wrap;
 	gap: 1rem;
-	overflow-y: auto;
 	padding: 1.125rem;
 	width: 100%;
+	min-height: min-content;
 	border: thin solid var(--p-panel-border-color);
 	border-radius: var(--p-panel-border-radius);
 	background: var(--p-panel-background);

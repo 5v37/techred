@@ -1,4 +1,5 @@
 import { AttributeSpec, Node, Schema } from "prosemirror-model";
+import imageStore from "@/modules/imageStore";
 
 const xmlTemplate =
 	`<?xml version="1.0" encoding="UTF-8"?>
@@ -60,7 +61,7 @@ function template(topNode: string, toXML: boolean): Schema {
 			image: {
 				inline: false,
 				attrs: {
-					href: { default: null },
+					imgid: { default: null },
 					alt: { default: null },
 					title: { default: null },
 					id: { default: null }
@@ -70,7 +71,7 @@ function template(topNode: string, toXML: boolean): Schema {
 					tag: `image:not(${inlineImageSelector})`,
 					getAttrs(dom) {
 						return {
-							href: dom.getAttributeNS(xlinkns, "href"),
+							imgid: imageStore.getImgid(dom.getAttributeNS(xlinkns, "href")),
 							alt: dom.getAttribute("alt"),
 							title: dom.getAttribute("title"),
 							id: dom.getAttribute("id")
@@ -80,7 +81,7 @@ function template(topNode: string, toXML: boolean): Schema {
 					tag: "figure",
 					getAttrs(dom) {
 						return {
-							href: dom.getAttribute("href"),
+							imgid: dom.getAttribute("imgid"),
 							alt: dom.getAttribute("alt"),
 							title: dom.getAttribute("title"),
 							id: dom.getAttribute("id")
@@ -91,7 +92,7 @@ function template(topNode: string, toXML: boolean): Schema {
 				toDOM(node) {
 					if (defaultNameSpace) {
 						return [defaultNameSpace + "image", {
-							[xlinkns + " href"]: node.attrs.href,
+							[xlinkns + " href"]: imageStore.getHref(node.attrs.imgid),
 							alt: node.attrs.alt,
 							title: node.attrs.title,
 							id: node.attrs.id
@@ -308,14 +309,14 @@ function template(topNode: string, toXML: boolean): Schema {
 			inlineimage: {
 				inline: true,
 				attrs: {
-					href: { default: null },
+					imgid: { default: null },
 					alt: { default: null }
 				},
 				parseDOM: [{
 					tag: inlineImageSelector,
 					getAttrs(dom) {
 						return {
-							href: dom.getAttributeNS(xlinkns, "href"),
+							imgid: imageStore.getImgid(dom.getAttributeNS(xlinkns, "href")),
 							alt: dom.getAttribute("alt")
 						};
 					}
@@ -323,7 +324,7 @@ function template(topNode: string, toXML: boolean): Schema {
 					tag: "img",
 					getAttrs(dom) {
 						return {
-							href: dom.getAttribute("href"),
+							imgid: dom.getAttribute("imgid"),
 							alt: dom.getAttribute("alt")
 						};
 					}
@@ -332,7 +333,7 @@ function template(topNode: string, toXML: boolean): Schema {
 				toDOM(node) {
 					if (defaultNameSpace) {
 						return [defaultNameSpace + "image", {
-							[xlinkns + " href"]: node.attrs.href,
+							[xlinkns + " href"]: imageStore.getHref(node.attrs.imgid),
 							alt: node.attrs.alt
 						}];
 					} else {

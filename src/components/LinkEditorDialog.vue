@@ -28,9 +28,10 @@ import { Dialog, SelectButton, InputText, Button, Select } from "primevue";
 import { Mark } from "prosemirror-model";
 import { EditorState, Transaction } from "prosemirror-state";
 
+import ui from "@/modules/ui";
 import editorState from "@/modules/editorState";
 import { updateLink } from "@/modules/commands";
-import ui from "@/modules/ui";
+import { getIds } from "@/modules/idManager";
 
 const typeLinkOptions = ref(["Сноска", "Гиперссылка"]);
 const typeLink = ref(typeLinkOptions.value[0]);
@@ -68,7 +69,7 @@ function keyListener(event: KeyboardEvent) {
 
 function openDialog(state: EditorState, dispatch: (tr: Transaction) => void, mark?: Mark) {
 	params = { state, dispatch, mark };
-	notes = Array.from(editorState.getIds(true));
+	notes = Array.from(getIds(undefined, true));
 	href.value = "";
 	selectedId.value = "";
 

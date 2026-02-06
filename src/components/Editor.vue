@@ -33,7 +33,6 @@ import InlineImageView from "@/extensions/inlineImageView";
 import linkTooltip from "@/extensions/linkTooltip";
 import toolbar from "@/extensions/toolbar";
 import modificationMonitor from "@/extensions/modificationMonitor";
-import { clearIdCache } from "@/modules/idManager";
 
 const props = defineProps<{
 	editorId: string,
@@ -147,7 +146,6 @@ onMounted(() => {
 			if (needUpdateTOC(transaction)) {
 				updateTOC(view.state.doc);
 			};
-			clearIdCache();
 		}
 	});
 	editorState.views[props.editorId] = view;
@@ -207,7 +205,7 @@ function serializeContent(xmlDoc: Document, target: Element) {
 			target.setAttribute("name", view.state.doc.attrs.name);
 		};
 		const doc = removeEmptyMarks(view.state.doc, schema);
-		PrettyDOMSerializer.fromSchema(schemaXML).serializeFragment(doc.content, { document: xmlDoc }, target as HTMLElement);		
+		PrettyDOMSerializer.fromSchema(schemaXML).serializeFragment(doc.content, { document: xmlDoc }, target as HTMLElement);
 	} else {
 		target.remove();
 	};

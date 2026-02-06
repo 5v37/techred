@@ -22,6 +22,7 @@ import { NCNameFilter, validateId, getIds } from "@/modules/idManager";
 import editorState from "@/modules/editorState";
 import ui from "@/modules/ui";
 
+let ids: Set<string>;
 let params: {
 	state: EditorState,
 	dispatch: (tr: Transaction) => void,
@@ -32,7 +33,7 @@ let params: {
 
 const visible = ref(false);
 const newId = ref("");
-const idValidation = computed(() => validateId(newId.value, getIds(params.id)));
+const idValidation = computed(() => validateId(newId.value, ids));
 
 ui.openIdInputDialog = openDialog;
 
@@ -54,6 +55,7 @@ function keyListener(event: KeyboardEvent) {
 function openDialog(state: EditorState, dispatch: (tr: Transaction) => void, pos: number, id: string, key = "id") {
 	params = { state, dispatch, pos, id, key };
 	newId.value = params.id;
+	ids = getIds(params.id);
 
 	editorState.saveViewFocus();
 	visible.value = true;

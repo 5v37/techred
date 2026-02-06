@@ -3,8 +3,8 @@ import { watchEffect, WatchHandle } from "vue";
 import type { Node } from "prosemirror-model";
 import type { EditorView, NodeView } from "prosemirror-view";
 
-import editorState from "@/modules/editorState";
 import ui from "@/modules/ui";
+import imageStore from "@/modules/imageStore";
 
 class ImageView implements NodeView {
 	private node: Node;
@@ -44,7 +44,7 @@ class ImageView implements NodeView {
 		if (oldAttrs.title !== this.node.attrs.title) {
 			this.updateCaption();
 		};
-		if (oldAttrs.href !== this.node.attrs.href) {
+		if (oldAttrs.imgid !== this.node.attrs.imgid) {
 			this.updateSrc();
 		};
 		if (oldAttrs.alt !== this.node.attrs.alt) {
@@ -92,8 +92,7 @@ class ImageView implements NodeView {
 	}
 
 	private updateSrc() {
-		const href: string | null = this.node.attrs.href;
-		const src = href && editorState.images.value.getDataByHref(href);
+		const src = imageStore.getSrc(this.node.attrs.imgid);
 		if (src) {
 			this.imageContent.classList.remove("t-img-broken");
 			this.imageContent.setAttribute("src", src);

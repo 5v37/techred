@@ -12,7 +12,7 @@
 			<div class="t-app-pane">
 				<Description v-show="current === 'description'" />
 				<Content v-show="current === 'content'" />
-				<Images v-show="current === 'images'" />
+				<Images v-show="current === 'images'" :active="current === 'images'" />
 			</div>
 		</template>
 	</Splitter>

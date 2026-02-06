@@ -19,11 +19,12 @@ import type { TreeNode } from "primevue/treenode";
 
 import type { EditorView } from "prosemirror-view";
 
+import ui from "@/modules/ui";
+import editorState from "@/modules/editorState";
+import imageStore from "@/modules/imageStore";
 import { SectionRange, sectionRangeByUID, excludeSection, includeSection, joinSection, moveUpSection, moveDownSection, deleteSection, addNode } from "@/modules/commands";
 import { openImageDialog } from "@/modules/fileAccess";
-import editorState from "@/modules/editorState";
 import { openFileError } from "@/modules/notifications";
-import ui from "@/modules/ui";
 
 let view: EditorView;
 let nodeTypes: typeof view.state.schema.nodes;
@@ -91,9 +92,9 @@ const sectionItems = () => [
 				disabled: !addNode(range!.node, nodeTypes.image, startPos)(view.state),
 				command: () =>
 					openImageDialog().then(file => {
-						const id = editorState.images.value.addAsDataURL(file.name, file.content);
-						if (id) {
-							const image = nodeTypes.image.create({ href: "#" + id });
+						const imgid = imageStore.addAsDataURL(file.name, file.content);
+						if (imgid) {
+							const image = nodeTypes.image.create({ imgid });
 							addNode(range!.node, nodeTypes.image, startPos, image)(view.state, view.dispatch);
 						};
 					}).catch((error) => openFileError(error))
@@ -162,9 +163,9 @@ const bodyItems = () => [
 		disabled: !addNode(view.state.doc, nodeTypes.image, startPos)(view.state),
 		command: () =>
 			openImageDialog().then(file => {
-				const id = editorState.images.value.addAsDataURL(file.name, file.content);
-				if (id) {
-					const image = nodeTypes.image.create({ href: "#" + id });
+				const imgid = imageStore.addAsDataURL(file.name, file.content);
+				if (imgid) {
+					const image = nodeTypes.image.create({ imgid });
 					addNode(view.state.doc, nodeTypes.image, startPos, image)(view.state, view.dispatch);
 				};
 			}).catch((error) => openFileError(error))

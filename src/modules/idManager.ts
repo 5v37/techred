@@ -1,5 +1,6 @@
 import editorState from "@/modules/editorState";
-import { resolveFileExtension } from "./utils";
+import { resolveFileExtension } from "@/modules/utils";
+import imageStore from "@/modules/imageStore";
 
 const NCNameFilter = { pattern: /^[\p{L}_][\p{L}\p{N}_.-]*$/u, validateOnly: true };
 
@@ -40,7 +41,7 @@ function incrementId(input: string): string | undefined {
 	return newId;
 }
 
-export function generateUniqueFileName(originalName: string, mimeType: MIMEType): string {
+function generateUniqueFileName(originalName: string, mimeType: MIMEType): string {
 	const file = resolveFileExtension(originalName, mimeType);
 
 	let cleanName = file.name.trim()
@@ -64,20 +65,41 @@ export function generateUniqueFileName(originalName: string, mimeType: MIMEType)
 	};
 }
 
-let idCache: Set<string> | undefined = undefined;
-let idKey: string | undefined = undefined;
-
-function clearIdCache() {
-	idCache = undefined;
-	idKey = undefined;
-}
-
-function getIds(exclude?: string): Set<string> {
-	if (!idCache || exclude !== idKey) {
-		idKey = exclude;
-		idCache = editorState.getIds(false, exclude);
+function getIds(targetId?: string, skipImages = false) {
+	let targetCount = 0;
+	const result = new Set<string>();
+	const processId = (id: string) => {
+		if (id === targetId) {
+			targetCount++;
+		} else if (id !== "") {
+			result.add(id);
+		};
 	};
-	return idCache;
+
+	const usedImgids = imageStore.getTrackedImgids();
+	if (!skipImages) {
+		for (const imgId of usedImgids) {
+			processId(imageStore.getId(imgId));
+		};
+	};
+
+	for (const view of Object.values(editorState.views)) {
+		view.state.doc.descendants((node) => {
+			if (node.attrs.id) {
+				processId(node.attrs.id);
+			};
+			if (!skipImages && node.attrs.imgid && !usedImgids.has(node.attrs.imgid)) {
+				processId(imageStore.getId(node.attrs.imgid));
+				usedImgids.add(node.attrs.imgid);
+			};
+		});
+	};
+
+	if (targetCount > 1 && targetId) {
+		result.add(targetId);
+	};
+
+	return result;
 }
 
-export { NCNameFilter, validateId, incrementId, getIds, clearIdCache };
+export { NCNameFilter, validateId, incrementId, getIds, generateUniqueFileName };

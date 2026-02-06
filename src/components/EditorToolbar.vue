@@ -56,17 +56,18 @@ import { Button, ButtonGroup, Menu, TieredMenu } from "primevue";
 import type { MenuItem } from "primevue/menuitem";
 import type { Command } from "prosemirror-state";
 import type { EditorView } from "prosemirror-view";
+import type { NodeType } from "prosemirror-model";
 import { redo as localRedo, undo as localUndo } from "prosemirror-history";
 import { setBlockType, wrapIn } from "prosemirror-commands";
 
 import editorState from "@/modules/editorState";
+import imageStore from "@/modules/imageStore";
 import { addInlineImage, addNodeAfterSelection, addTextautor, addTitle, changeToSection, deleteTableSafety, setId, setLink, setMark, wrapPoem } from "@/modules/commands";
 import { openImageDialog } from "@/modules/fileAccess";
 import { openFileError } from "@/modules/notifications";
 import { isSameMark, marksInPos } from "@/modules/transform";
 import { sharedRedo, sharedUndo } from "@/extensions/sharedHistory";
 import { addColumnAfter, addColumnBefore, addRowAfter, addRowBefore, deleteColumn, deleteRow, isInTable, mergeCells, setCellAttr, splitCell, toggleHeaderCell, toggleHeaderColumn, toggleHeaderRow } from "prosemirror-tables";
-import { NodeType } from "prosemirror-model";
 
 const props = defineProps<{ editorId: string }>();
 
@@ -108,9 +109,9 @@ const createInsertMenuItems = () => [
 		disabled: !addNodeAfterSelection(nodes.image)(editorView.state),
 		command: () => {
 			openImageDialog().then(file => {
-				const id = editorState.images.value.addAsDataURL(file.name, file.content);
-				if (id) {
-					const image = nodes.image.create({ href: "#" + id });
+				const imgid = imageStore.addAsDataURL(file.name, file.content);
+				if (imgid) {
+					const image = nodes.image.create({ imgid });
 					insertCommand(addNodeAfterSelection(nodes.image, image));
 				};
 			}).catch((error) => openFileError(error));
@@ -121,9 +122,9 @@ const createInsertMenuItems = () => [
 		disabled: !addInlineImage()(editorView.state),
 		command: () => {
 			openImageDialog().then(file => {
-				const id = editorState.images.value.addAsDataURL(file.name, file.content);
-				if (id) {
-					const image = nodes.inlineimage.create({ href: "#" + id });
+				const imgid = imageStore.addAsDataURL(file.name, file.content);
+				if (imgid) {
+					const image = nodes.inlineimage.create({ imgid });
 					insertCommand(addInlineImage(image));
 				};
 			}).catch((error) => openFileError(error));
