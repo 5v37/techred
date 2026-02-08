@@ -193,7 +193,6 @@ export function wrapPoem(): Command {
 		}
 
 		const poemType = state.schema.nodes.poem;
-
 		if (!parentNode.canReplaceWith($from.index($from.depth - 1), $to.index($from.depth - 1), poemType)) {
 			return false;
 		};
@@ -207,23 +206,28 @@ export function wrapPoem(): Command {
 			));
 			const selectedText = getTextFromSelection(tr.selection, state.schema.nodes.v);
 			const stanzaType = state.schema.nodes.stanza;
-			const poemNode: Node[] = [];
-			const stanzaNode: Node[] = [];
+
+			let vNodes: Node[] = [];
+			const stanzaNodes: Node[] = [];
 			for (const element of selectedText) {
-				if (element.textContent === "") {
-					if (stanzaNode.length) {
-						poemNode.push(stanzaType.create(null, stanzaNode));
-						stanzaNode.length = 0;
-					}
+				if (element.textContent.trim() === "") {
+					if (vNodes.length) {
+						stanzaNodes.push(stanzaType.create(null, vNodes));
+						vNodes = [];
+					};
 				} else {
-					stanzaNode.push(element);
+					vNodes.push(element);
 				};
 			};
-			poemNode.push(stanzaType.create(null, stanzaNode.length ? stanzaNode : selectedText));
+			if (vNodes.length) {
+				stanzaNodes.push(stanzaType.create(null, vNodes));
+			};
 
-			tr.replaceSelectionWith(poemType.create(null, poemNode));
+			const start = tr.selection.from;
+			const poem = poemType.create(null, stanzaNodes.length ? stanzaNodes : stanzaType.createAndFill());
 
-			// передвинуть курсор ?
+			tr.replaceSelectionWith(poem);
+			tr.setSelection(new TextSelection(tr.doc.resolve(start + poem.nodeSize - 2)));
 
 			dispatch(tr.scrollIntoView());
 		};
@@ -436,7 +440,7 @@ function getTextFromSelection(selection: Selection, textType: NodeType) {
 			if (text.size) {
 				const textNodes: Node[] = [];
 				for (const node of text.content) {
-					if (node.isText) {
+					if (node.isInline) {
 						textNodes.push(node);
 					} else {
 						getText(node.content, parts);
