@@ -50,7 +50,7 @@ const noteLink = computed(() => {
 	return typeLink.value === typeLinkOptions.value[0];
 });
 
-ui.openLinkEditorDialog = openDialog;
+ui.openLinkEditDialog = openDialog;
 
 function keyListener(event: KeyboardEvent) {
 	if (event.defaultPrevented) {

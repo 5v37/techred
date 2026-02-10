@@ -17,9 +17,7 @@
 		</template>
 	</Splitter>
 
-	<IdInputDialog />
-	<ImageEditDialog />
-	<LinkEditorDialog />
+	<AppDialogs />
 </template>
 
 <script setup lang="ts">
@@ -33,9 +31,7 @@ import Sidebar from "@/components/Sidebar.vue";
 import Description from "@/components/Description.vue";
 import Content from "@/components/Content.vue";
 import Images from "@/components/Images.vue";
-import IdInputDialog from "@/components/IdInputDialog.vue";
-import ImageEditDialog from "@/components/ImageEditDialog.vue";
-import LinkEditorDialog from "@/components/LinkEditorDialog.vue";
+import AppDialogs from "@/components/AppDialogs.vue";
 import { initNotification } from "@/modules/notifications";
 
 const loaded = ref(false);

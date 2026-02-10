@@ -52,7 +52,7 @@ const sectionItems = () => [
 		disabled: range === undefined,
 		command: () => {
 			if (range) {
-				ui.openIdInputDialog(view.state, view.dispatch, range.from, range.node.attrs.id);
+				ui.openElementIdDialog(view.state, view.dispatch, range.from, range.node.attrs.id);
 			};
 		}
 	},

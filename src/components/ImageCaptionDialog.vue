@@ -26,7 +26,7 @@ let params: {
 	caption: string
 };
 
-ui.openImageEditDialog = openDialog;
+ui.openImageCaptionDialog = openDialog;
 
 function keyListener(event: KeyboardEvent) {
 	if (event.defaultPrevented) {

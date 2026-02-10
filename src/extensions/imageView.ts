@@ -139,7 +139,7 @@ class ImageView implements NodeView {
 			event.preventDefault();
 			const pos = this.getPos();
 			if (pos !== undefined) {
-				ui.openIdInputDialog(this.view.state, this.view.dispatch, pos, this.node.attrs.id);
+				ui.openElementIdDialog(this.view.state, this.view.dispatch, pos, this.node.attrs.id);
 			};
 		};
 	};
@@ -149,7 +149,7 @@ class ImageView implements NodeView {
 			event.preventDefault();
 			const pos = this.getPos();
 			if (pos !== undefined) {
-				ui.openImageEditDialog(this.view.state, this.view.dispatch, pos, this.node.attrs.title);
+				ui.openElementIdDialog(this.view.state, this.view.dispatch, pos, this.node.attrs.title);
 			};
 		};
 	};

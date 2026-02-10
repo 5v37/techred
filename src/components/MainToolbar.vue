@@ -22,7 +22,6 @@ import { ref, useTemplateRef, watchEffect } from "vue";
 import { Toolbar, Button } from "primevue";
 
 import { getCurrentWindow } from "@tauri-apps/api/window";
-import { confirm } from "@tauri-apps/plugin-dialog";
 import { supported as fileAPIsupported } from "browser-fs-access";
 
 import Settings from "@/components/Settings.vue";
@@ -31,6 +30,7 @@ import { openInitialFictionBook, openFictionBookDialog, saveFictionBookDialog } 
 import { openFileError, saveFileError, saveFileInfo, UnexpectedError } from "@/modules/notifications";
 import { isTauriMode } from "@/modules/utils";
 import modificationTracker from "@/modules/modificationTracker";
+import ui from "@/modules/ui";
 
 const emit = defineEmits(["loaded"]);
 
@@ -85,15 +85,10 @@ addEventListener("error", UnexpectedError);
 
 if (isTauriMode) {
 	getCurrentWindow().onCloseRequested(async (event) => {
-		if (modificationTracker.docModified.value) {
-			const confirmation = await confirm(
-				"Все несохранённые изменения будут потеряны. Продолжить?",
-				{ title: "Техред", kind: "warning" }
-			);
-			if (!confirmation) {
-				event.preventDefault();
-			};
-		}
+		const confirmed = await confirmDiscardChanges();
+		if (!confirmed) {
+			event.preventDefault();
+		};
 	});
 } else {
 	addEventListener("beforeunload", (event: BeforeUnloadEvent) => {
@@ -105,33 +100,74 @@ if (isTauriMode) {
 	});
 };
 
+function confirmDiscardChanges(): Promise<boolean> {
+	if (!modificationTracker.docModified.value) {
+		return Promise.resolve(true);
+	}
+
+	return ui.openSaveChangesDialog().then((choice) => {
+		if (choice === "save") {
+			const saveDirectly = currentFilePath.value ? { fileHandle } : undefined;
+			return saveFictionBookDialog(fb2Mapper.serialize(), currentFilePath.value || "Новый", saveDirectly).then((file) => {
+				currentFilePath.value = file.path;
+				fileHandle = file.handle;
+				modificationTracker.reset(false);
+				saveFileInfo();
+				return true;
+			}).catch(error => {
+				saveFileError(error);
+				return false;
+			});
+		} else if (choice === "discard") {
+			return true;
+		} else {
+			return false;
+		};
+	}).catch(() => false);
+}
+
 function newFile() {
-	fb2Mapper.reset().then(() => {
-		currentFilePath.value = "";
-		fileHandle = undefined;
+	confirmDiscardChanges().then((confirmed) => {
+		if (!confirmed) return;
+
+		return fb2Mapper.reset().then(() => {
+			currentFilePath.value = "";
+			fileHandle = undefined;
+			modificationTracker.reset(true);
+		});
 	});
 }
+
 function openFile() {
-	openFictionBookDialog().then(async file => {
-		await fb2Mapper.parse(file.content);
-		currentFilePath.value = file.path;
-		fileHandle = file.handle;
-	}).catch((error) => {
-		openFileError(error);
-		newFile();
+	confirmDiscardChanges().then((confirmed) => {
+		if (!confirmed) return;
+
+		return openFictionBookDialog().then(async (file) => {
+			await fb2Mapper.parse(file.content);
+			currentFilePath.value = file.path;
+			fileHandle = file.handle;
+			modificationTracker.reset(true);
+		}).catch((error) => {
+			openFileError(error);
+			newFile();
+		});
 	});
 }
+
 function saveFile() {
 	if (currentFilePath.value && saveButtonAvailable) {
 		saveFictionBookDialog(fb2Mapper.serialize(), currentFilePath.value, { fileHandle }).then(() => {
+			modificationTracker.reset(false);
 			saveFileInfo();
 		}).catch(error => saveFileError(error));
 	};
 }
+
 function saveFileAs() {
-	saveFictionBookDialog(fb2Mapper.serialize(), currentFilePath.value || "Новый").then(file => {
+	saveFictionBookDialog(fb2Mapper.serialize(), currentFilePath.value || "Новый").then((file) => {
 		currentFilePath.value = file.path;
 		fileHandle = file.handle;
+		modificationTracker.reset(false);
 		saveFileInfo();
 	}).catch(error => saveFileError(error));
 }

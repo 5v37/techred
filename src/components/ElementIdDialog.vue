@@ -35,7 +35,7 @@ const visible = ref(false);
 const newId = ref("");
 const idValidation = computed(() => validateId(newId.value, ids));
 
-ui.openIdInputDialog = openDialog;
+ui.openElementIdDialog = openDialog;
 
 function keyListener(event: KeyboardEvent) {
 	if (event.defaultPrevented) {

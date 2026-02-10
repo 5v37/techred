@@ -336,7 +336,7 @@ export function setLink(): Command {
 		};
 
 		if (dispatch) {
-			ui.openLinkEditorDialog(state, dispatch, linkMark);
+			ui.openLinkEditDialog(state, dispatch, linkMark);
 		};
 
 		return true;
@@ -358,7 +358,7 @@ export function setId(block: boolean): Command {
 		};
 
 		if (dispatch) {
-			ui.openIdInputDialog(state, dispatch, $from.start(depth) - 1, node.attrs.id);
+			ui.openElementIdDialog(state, dispatch, $from.start(depth) - 1, node.attrs.id);
 		};
 
 		return true;
