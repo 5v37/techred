@@ -7,8 +7,12 @@
 					<Message v-if="value.id.invalid" severity="error" icon="pi pi-times-circle"
 						class="t-images-error_id">{{ value.id.error }}</Message>
 				</div>
-				<InputText v-model="value.id.draftValue" v-keyfilter=NCNameFilter class="t-images-caption"
-					@input="updateMessage(value)" @change="confirmImageId(value)" />
+				<div class="t-images-controls">
+					<InputText v-model="value.id.draftValue" v-keyfilter=NCNameFilter class="t-images-caption"
+						@input="updateMessage(value)" @change="confirmImageId(value)" />
+					<Button icon="pi pi-upload" severity="contrast" v-tooltip="'Сохранить...'" class="t-images-save"
+						@click="saveImage(value)" />
+				</div>
 			</div>
 		</div>
 	</div>
@@ -17,7 +21,7 @@
 <script setup lang="ts">
 import { ref, useTemplateRef, watch, nextTick } from "vue";
 
-import { Image, InputText, Message } from "primevue";
+import { Image, InputText, Message, Button } from "primevue";
 
 import fb2Mapper, { DocumentBlocks } from "@/modules/fb2Mapper";
 import editorState from "@/modules/editorState";
@@ -27,6 +31,8 @@ import { NCNameFilter, validateId, getIds } from "@/modules/idManager";
 import type { ImageSpec } from "@/modules/imageStore";
 import modificationTracker from "@/modules/modificationTracker";
 import imageStore from "@/modules/imageStore";
+import { saveImageDialog } from "@/modules/fileAccess";
+import { saveFileError, saveFileInfo } from "@/modules/notifications";
 
 const props = defineProps<{ active: boolean; }>();
 const binary = useTemplateRef("binary");
@@ -83,6 +89,12 @@ function getCachedIds(excludeId?: string) {
 	}
 
 	return idsCache;
+}
+
+function saveImage(image: ImageSpec) {
+	saveImageDialog(image.dataURL, image.id.validValue).then(() => {
+		saveFileInfo();
+	}).catch((error) => saveFileError(error));
 }
 
 function getBlocks(xmlDoc: Document, method: string) {
@@ -171,8 +183,20 @@ defineExpose({ getBlocks, parseContent, serializeContent });
 	flex-direction: column;
 }
 
-.t-images-caption {
+.t-images-controls {
+	display: flex;
+	width: 200px;
+	gap: 0.25rem;
 	margin-top: 0.5rem;
+}
+
+.t-images-caption {
+	flex: 1;
+	min-width: 0;
+}
+
+.t-images-save {
+	flex-shrink: 0;
 }
 
 .t-images-error_wrapper {
