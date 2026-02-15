@@ -227,7 +227,10 @@ export function wrapPoem(): Command {
 			const poem = poemType.create(null, stanzaNodes.length ? stanzaNodes : stanzaType.createAndFill());
 
 			tr.replaceSelectionWith(poem);
-			tr.setSelection(new TextSelection(tr.doc.resolve(start + poem.nodeSize - 2)));
+			const cursor = Selection.findFrom(tr.doc.resolve(start + poem.nodeSize - 1), -1);
+			if (cursor) {
+				tr.setSelection(cursor);
+			};
 
 			dispatch(tr.scrollIntoView());
 		};
