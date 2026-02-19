@@ -256,22 +256,19 @@ function updateTOC(doc: Node) {
 function needUpdateTOC(transaction: Transaction) {
 	if (transaction.docChanged) {
 		let hasChange = false;
+		const isRelevantNode = (node: Node) => {
+			return node.attrs.uid || (node.type === schema.nodes.title && node.textContent !== "");
+		};
 		for (const step of transaction.steps) {
 			if (step instanceof ReplaceStep || step instanceof ReplaceAroundStep) {
-				step.slice.content.forEach(node => {
-					if (node.attrs.uid || node.type === schema.nodes.title && node.textContent !== "") {
-						hasChange = true;
-						return;
-					};
-				});
-				if (!hasChange && step.slice.size === 0) {
-					transaction.before.slice(step.from, step.to).content.forEach(node => {
-						if (node.attrs.uid || node.type === schema.nodes.title && node.textContent !== "") {
-							hasChange = true;
-							return;
-						}
-					});
-				};
+				// Проверяем вставленный контент
+				hasChange = step.slice.content.content.some(isRelevantNode);
+				// Проверяем удаленный контент
+				if (!hasChange) {
+					const deletedFragment = transaction.before.slice(step.from, step.to).content;
+					hasChange = deletedFragment.content.some(isRelevantNode);
+				}
+				// Проверяем редактирование внутри заголовка
 				if (!hasChange) {
 					const pos = transaction.doc.resolve(step.from);
 					if (pos.depth > 1 && pos.node(pos.depth - 1).type === schema.nodes.title) {
