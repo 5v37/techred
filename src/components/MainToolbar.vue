@@ -45,6 +45,7 @@ openInitialFictionBook().then(async file => {
 	if (file) {
 		await fb2Mapper.parse(file.content);
 		currentFilePath.value = file.path;
+		modificationTracker.reset(false);
 	};
 }).catch((error) => {
 	openFileError(error);
