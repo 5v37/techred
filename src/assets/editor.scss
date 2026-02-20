@@ -54,6 +54,15 @@
 	line-height: 1.4;
 	outline: none;
 
+	.block-wrapper {
+		display: block;
+		position: relative;
+
+		&:not(:first-child) {
+			margin-top: 1rem;
+		}
+	}
+
 	section {
 		@include block(rgb(221, 144, 0));
 	}
@@ -65,7 +74,6 @@
 	header {
 		@include block(rgb(22, 231, 84));
 		padding-block: 0.25rem;
-		margin-top: 0rem;
 		text-align: center;
 	}
 
@@ -132,6 +140,7 @@
 
 	subtitle {
 		@include block(rgb(68, 92, 68));
+		padding-block: 0.25rem;
 		text-align: center;
 	}
 
@@ -227,10 +236,33 @@
 		user-select: none;
 		cursor: pointer;
 	}
+
+	block-delete {
+		position: absolute;
+		line-height: 1rem;
+		top: -0.5rem;
+		right: 0.5rem;
+		font-size: 1rem;
+		font-family: 'Nunito', sans-serif;
+		color: var(--p-text-muted-color);
+		background: var(--p-content-background);
+		user-select: none;
+		cursor: pointer;
+		opacity: 0;
+		transition: opacity var(--p-button-transition-duration);
+	}
+
+	.block-wrapper:hover > block-delete {
+		opacity: 1;
+	}
+
+	& > block-section:only-of-type > block-delete {
+		display: none;
+	}
 }
 
 .highlight-emphasis {
 	em {
-		outline: thin solid rgb(255, 88, 88);
+		border: thin solid rgb(255, 88, 88);
 	}
 }

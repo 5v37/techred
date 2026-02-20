@@ -2,6 +2,7 @@ import type { NodeView, EditorView } from "prosemirror-view";
 import type { Node } from "prosemirror-model";
 
 import ui from "@/modules/ui";
+import { deleteNodeByPos } from "@/modules/transform";
 
 class BlockView implements NodeView {
 	private node: Node;
@@ -11,14 +12,15 @@ class BlockView implements NodeView {
 	dom: HTMLElement;
 	contentDOM: HTMLElement;
 	private idLabel: HTMLElement;
+	private delete: HTMLElement;
 
 	constructor(node: Node, view: EditorView, getPos: () => number | undefined) {
 		this.node = node;
 		this.view = view;
 		this.getPos = getPos;
 
-		this.dom = document.createElement("div");
-		this.dom.style.position = "relative";
+		this.dom = document.createElement(`block-${node.type.name}`);
+		this.dom.classList.add("block-wrapper");
 
 		this.contentDOM = document.createElement(node.type.name);
 		if (node.attrs.uid) {
@@ -29,9 +31,14 @@ class BlockView implements NodeView {
 		this.idLabel.contentEditable = "false";
 		this.updateIdLabel();
 
-		this.idLabel.addEventListener("mousedown", this.handleSetId);
+		this.delete = document.createElement("block-delete");
+		this.delete.contentEditable = "false";
+		this.delete.textContent = "[x]";
 
-		this.dom.append(this.contentDOM, this.idLabel);
+		this.idLabel.addEventListener("mousedown", this.handleSetId);
+		this.delete.addEventListener("mousedown", this.handleDelete);
+
+		this.dom.append(this.contentDOM, this.idLabel, this.delete);
 	}
 
 	update(node: Node): boolean {
@@ -52,6 +59,7 @@ class BlockView implements NodeView {
 
 	destroy() {
 		this.idLabel.removeEventListener("mousedown", this.handleSetId);
+		this.delete.removeEventListener("mousedown", this.handleDelete);
 	}
 
 	private updateIdLabel() {
@@ -70,6 +78,16 @@ class BlockView implements NodeView {
 			const pos = this.getPos();
 			if (pos !== undefined) {
 				ui.openElementIdDialog(this.view.state, this.view.dispatch, pos, this.node.attrs.id);
+			};
+		};
+	};
+
+	private handleDelete = (event: MouseEvent) => {
+		if (event.button === 0) {
+			event.preventDefault();
+			const pos = this.getPos();
+			if (pos !== undefined) {
+				deleteNodeByPos(this.view, this.node, pos);
 			};
 		};
 	};

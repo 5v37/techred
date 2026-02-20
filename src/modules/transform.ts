@@ -1,6 +1,7 @@
 import { Mark } from "prosemirror-model";
-import type { Node, Schema } from "prosemirror-model";
-import type { MarkType, ResolvedPos } from "prosemirror-model";
+import type { Node, Schema, MarkType, ResolvedPos } from "prosemirror-model";
+import { Selection } from "prosemirror-state";
+import { EditorView } from "prosemirror-view";
 
 function getCommonMarks(marksA: readonly Mark[], marksB: readonly Mark[]) {
 	const len = Math.min(marksA.length, marksB.length);
@@ -285,4 +286,42 @@ function trimPunctuation(str: string) {
 	};
 
 	return (start === end || (start === 0 && end === str.length)) ? undefined : { start, end };
+}
+
+export function deleteNodeByPos(view: EditorView, node: Node, pos: number) {
+	const { state, dispatch } = view;
+	const nodeTypes = state.schema.nodes;
+	const $pos = state.doc.resolve(pos);
+	const defaultType = $pos.parent.type.contentMatch.defaultType;
+	const isLastContent = (() => {
+		if ($pos.parent.childCount === 1) return true;
+
+		if (node.type !== nodeTypes.section) return false;
+
+		let sectionCount = 0;
+		$pos.parent.forEach((child) => {
+			if (child.type === nodeTypes.section) {
+				sectionCount++;
+			}
+		});
+		return sectionCount === 1;
+	})();
+
+	if ($pos.depth === 0 && isLastContent) {
+		return;
+	}
+
+	// Перед удалением установим отдельно курсор, для правильного позиционирования при отмене/возврате изменений
+	const trCursor = state.tr;
+	trCursor.setSelection(Selection.near(trCursor.doc.resolve(pos)));
+	view.dispatch(trCursor);
+
+	const tr = view.state.tr;
+	if (isLastContent && defaultType) {
+		tr.replaceWith(pos, pos + node.nodeSize, defaultType.create());
+	} else {
+		tr.delete(pos, pos + node.nodeSize);
+	}
+
+	dispatch(tr.scrollIntoView());
 }
