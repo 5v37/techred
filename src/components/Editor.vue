@@ -294,5 +294,6 @@ function needUpdateTOC(transaction: Transaction) {
 	position: relative;
 	overflow-y: auto;
 	flex-grow: 1;
+	background: var(--p-inputtext-background);
 }
 </style>

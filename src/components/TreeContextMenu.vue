@@ -194,7 +194,7 @@ function show(event: Event, node: TreeNode) {
 		nodeTypes = view.state.schema.nodes;
 		if (node.data) {
 			range = sectionRangeByUID(node.key, view.state);
-			startPos = range ? range.from + 1 : 0;
+			startPos = range ? range.from : 0;
 			contextMenuItems.value = sectionItems();
 		} else {
 			bodyName.value = view.state.doc.attrs.name;

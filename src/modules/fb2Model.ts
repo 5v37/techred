@@ -59,6 +59,7 @@ function template(topNode: string, toXML: boolean): Schema {
 			},
 
 			image: {
+				label: "Изображение",
 				inline: false,
 				attrs: {
 					imgid: { default: null },
@@ -103,6 +104,7 @@ function template(topNode: string, toXML: boolean): Schema {
 				}
 			},
 			title: {
+				label: "Заголовок",
 				content: "p+",
 				parseDOM: [{ tag: "title, header" }],
 				toDOM() {
@@ -114,7 +116,8 @@ function template(topNode: string, toXML: boolean): Schema {
 				}
 			},
 			epigraph: {
-				content: "(p+ | poem | cite)* textauthor*",
+				label: "Эпиграф",
+				content: "(p | poem | cite)* textauthor*",
 				attrs: {
 					id: { default: null }
 				},
@@ -127,6 +130,7 @@ function template(topNode: string, toXML: boolean): Schema {
 				toDOM(node) { return [defaultNameSpace + "epigraph", node.attrs, 0] }
 			},
 			section: {
+				label: "Секцию",
 				content: "title? epigraph* image? annotation? (section+ | ((p | poem | subtitle | cite | table)? (p | image | poem | subtitle | cite | table)*))",
 				attrs: {
 					id: { default: null },
@@ -151,6 +155,7 @@ function template(topNode: string, toXML: boolean): Schema {
 			},
 
 			p: {
+				label: "Абзац",
 				content: "(text | inlineimage)*",
 				attrs: {
 					id: { default: null }
@@ -173,11 +178,13 @@ function template(topNode: string, toXML: boolean): Schema {
 				}
 			},
 			textauthor: {
+				label: "Автора",
 				content: "(text | inlineimage)*",
 				parseDOM: [{ tag: "text-author" }],
 				toDOM() { return [defaultNameSpace + "text-author", 0] }
 			},
 			poem: {
+				label: "Стих",
 				content: "title? epigraph* (subtitle | stanza)+ textauthor* date?",
 				attrs: {
 					id: { default: null }
@@ -191,11 +198,13 @@ function template(topNode: string, toXML: boolean): Schema {
 				toDOM(node) { return [defaultNameSpace + "poem", node.attrs, 0] }
 			},
 			stanza: {
+				label: "Строфу",
 				content: "title? subtitle?  v+",
 				parseDOM: [{ tag: "stanza" }],
 				toDOM() { return [defaultNameSpace + "stanza", 0] }
 			},
 			v: {
+				label: "Строку",
 				content: "(text | inlineimage)*",
 				attrs: {
 					id: { default: null }
@@ -209,6 +218,7 @@ function template(topNode: string, toXML: boolean): Schema {
 				toDOM(node) { return [defaultNameSpace + "v", node.attrs, defaultNameSpace && !node.firstChild ? " " : 0] }
 			},
 			date: {
+				label: "Дату",
 				attrs: {
 					value: { default: null }
 				},
@@ -223,6 +233,7 @@ function template(topNode: string, toXML: boolean): Schema {
 				toDOM(node) { return [defaultNameSpace + "date", node.attrs, 0] }
 			},
 			cite: {
+				label: "Цитату",
 				content: "(p | poem | subtitle | table)* textauthor*",
 				attrs: {
 					id: { default: null }
@@ -236,6 +247,7 @@ function template(topNode: string, toXML: boolean): Schema {
 				toDOM(node) { return [defaultNameSpace + "cite", node.attrs, 0] }
 			},
 			subtitle: {
+				label: "Подзаголовок",
 				content: "(text | inlineimage)*",
 				attrs: {
 					id: { default: null }
@@ -249,6 +261,7 @@ function template(topNode: string, toXML: boolean): Schema {
 				toDOM(node) { return [defaultNameSpace + "subtitle", node.attrs, 0] }
 			},
 			annotation: {
+				label: "Аннотацию",
 				content: "(p | poem | cite | subtitle | table)+",
 				attrs: {
 					id: { default: null }
@@ -262,6 +275,7 @@ function template(topNode: string, toXML: boolean): Schema {
 				toDOM(node) { return [defaultNameSpace + "annotation", node.attrs, 0] }
 			},
 			table: {
+				label: "Таблицу",
 				content: "tr+",
 				attrs: {
 					id: { default: null }

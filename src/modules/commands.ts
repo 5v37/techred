@@ -378,26 +378,30 @@ export function deleteTableSafety(): Command {
 	};
 }
 
-export function addNode(parentNode: Node, nodeType: NodeType, startPos: number, node?: Node): Command {
+export function addNode(parentNode: Node, nodeType: NodeType, pos: number, node?: Node): Command {
 	return (state, dispatch) => {
-		let pos = -1;
-		let insertPos = startPos;
-		for (let idx = 0; idx < parentNode.childCount; idx++) {
+		let insertIndex = -1;
+		let insertPos = parentNode === state.doc ? pos : pos + 1;
+		for (let idx = 0; idx <= parentNode.childCount; idx++) {
 			if (parentNode.canReplaceWith(idx, idx, nodeType)) {
-				pos = idx;
+				insertIndex = idx;
 				break;
 			};
-			insertPos += parentNode.children[idx].nodeSize;
+			if (idx < parentNode.childCount) {
+				insertPos += parentNode.children[idx].nodeSize;
+			};
 		};
 
-		if (pos === -1) {
+		if (insertIndex === -1) {
 			return false;
 		}
 
 		if (dispatch) {
 			const tr = state.tr;
-			tr.insert(insertPos, node ?? nodeType.create(null, state.schema.nodes.p.create()));
+			const newNode = node ?? nodeType.createAndFill();
+			if (!newNode) return false;
 
+			tr.insert(insertPos, newNode);
 			dispatch(tr.scrollIntoView());
 		};
 

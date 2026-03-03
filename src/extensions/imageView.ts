@@ -5,6 +5,7 @@ import type { EditorView, NodeView } from "prosemirror-view";
 
 import ui from "@/modules/ui";
 import imageStore from "@/modules/imageStore";
+import { deleteNodeByPos } from "@/modules/transform";
 
 class ImageView implements NodeView {
 	private node: Node;
@@ -12,6 +13,7 @@ class ImageView implements NodeView {
 	private getPos: () => number | undefined;
 
 	dom: HTMLElement;
+	private figure: HTMLElement;
 	private imageContent: HTMLImageElement;
 	private idLabel: HTMLElement;
 	private unwatch: WatchHandle;
@@ -21,15 +23,37 @@ class ImageView implements NodeView {
 		this.view = view;
 		this.getPos = getPos;
 
-		this.dom = this.createView();
+		this.dom = document.createElement(`block-${node.type.name}`);
+		this.dom.className = "block-wrapper";
 
-		this.idLabel = this.dom.querySelector("id-label")!;
-		this.imageContent = this.dom.querySelector(".image-content")!;
+		this.figure = document.createElement("figure");
+
+		this.imageContent = document.createElement("img");
+		this.imageContent.className = "image-content";
 		this.imageContent.onerror = () => this.imageContent.classList.add("t-img-broken");
 
-		this.updateCaption();
-		this.updateAlt();
+		this.figure.appendChild(this.imageContent);
+
+		this.idLabel = document.createElement("id-label");
+		this.idLabel.contentEditable = "false";
 		this.updateIdLabel();
+
+		this.updateAlt();
+		this.updateCaption();
+
+		const actions = document.createElement("context-actions");
+		actions.contentEditable = "false";
+
+		const captionBtn = document.createElement("caption-button");
+		captionBtn.className = "action-command";
+		captionBtn.textContent = "[~]";
+
+		const deleteBtn = document.createElement("delete-button");
+		deleteBtn.className = "action-command";
+		deleteBtn.textContent = "[x]";
+
+		actions.append(captionBtn, deleteBtn);
+		this.dom.append(this.figure, this.idLabel, actions);
 
 		this.addEventListeners();
 		this.unwatch = watchEffect(() => this.updateSrc());
@@ -62,29 +86,15 @@ class ImageView implements NodeView {
 		this.unwatch();
 	}
 
-	private createView() {
-		const figure = document.createElement("figure");
-		figure.className = "t-image_view";
-		figure.innerHTML = `
-        <id-label content-editable="false"></id-label>
-        <div class="image-actions">
-            <button class="t-button-secondary image-edit"><span class="pi pi-pencil"></span></button>
-            <button class="t-button-secondary image-remove"><span class="pi pi-trash"></span></button>
-        </div>
-        <img class="image-content"/>`;
-
-		return figure;
-	}
-
 	private updateCaption() {
-		const caption = this.dom.querySelector("figcaption");
+		const caption = this.figure.querySelector("figcaption");
 		const title: string | null = this.node.attrs.title;
 		if (title) {
 			const element = caption || document.createElement("figcaption");
 			element.className = "image-caption";
 			element.textContent = title;
 			if (!caption) {
-				this.dom.appendChild(element);
+				this.figure.appendChild(element);
 			};
 		} else {
 			caption?.remove();
@@ -117,21 +127,21 @@ class ImageView implements NodeView {
 	}
 
 	private addEventListeners() {
-		const editButton = this.dom.querySelector(".image-edit") as HTMLElement;
-		const removeButton = this.dom.querySelector(".image-remove") as HTMLElement;
+		const captionBtn = this.dom.querySelector("caption-button") as HTMLElement;
+		const deleteBtn = this.dom.querySelector("delete-button") as HTMLElement;
 
 		this.idLabel.addEventListener("mousedown", this.handleSetId);
-		editButton.addEventListener("mousedown", this.handleEdit);
-		removeButton.addEventListener("mousedown", this.handleRemove);
+		captionBtn.addEventListener("mousedown", this.handleSetCaption);
+		deleteBtn.addEventListener("click", this.handleDelete);
 	}
 
 	private removeEventListeners() {
-		const editButton = this.dom.querySelector(".image-edit") as HTMLElement;
-		const removeButton = this.dom.querySelector(".image-remove") as HTMLElement;
+		const captionBtn = this.dom.querySelector("caption-button") as HTMLElement;
+		const deleteBtn = this.dom.querySelector("delete-button") as HTMLElement;
 
 		this.idLabel.removeEventListener("mousedown", this.handleSetId);
-		editButton.removeEventListener("mousedown", this.handleEdit);
-		removeButton.removeEventListener("mousedown", this.handleRemove);
+		captionBtn.removeEventListener("mousedown", this.handleSetCaption);
+		deleteBtn.removeEventListener("click", this.handleDelete);
 	}
 
 	private handleSetId = (event: MouseEvent) => {
@@ -144,24 +154,22 @@ class ImageView implements NodeView {
 		};
 	};
 
-	private handleEdit = (event: MouseEvent) => {
+	private handleSetCaption = (event: MouseEvent) => {
 		if (event.button === 0) {
 			event.preventDefault();
 			const pos = this.getPos();
 			if (pos !== undefined) {
-				ui.openElementIdDialog(this.view.state, this.view.dispatch, pos, this.node.attrs.title);
+				ui.openImageCaptionDialog(this.view.state, this.view.dispatch, pos, this.node.attrs.title);
 			};
 		};
 	};
 
-	private handleRemove = (event: MouseEvent) => {
+	private handleDelete = (event: MouseEvent) => {
 		if (event.button === 0) {
 			event.preventDefault();
-			const tr = this.view.state.tr;
 			const pos = this.getPos();
 			if (pos !== undefined) {
-				tr.delete(pos, pos + 1);
-				this.view.dispatch(tr.scrollIntoView());
+				deleteNodeByPos(this.view, this.node, pos);
 			};
 		};
 	};

@@ -1,5 +1,6 @@
-import { Mark } from "prosemirror-model";
-import { EditorState, Transaction } from "prosemirror-state";
+import type { Mark, Node } from "prosemirror-model";
+import type { EditorState, Transaction } from "prosemirror-state";
+import type { EditorView } from "prosemirror-view";
 
 class ui {
 	public openImageCaptionDialog: (state: EditorState, dispatch: (tr: Transaction) => void, pos: number, caption: string) => void =
@@ -10,6 +11,9 @@ class ui {
 		() => { throw new Error("[UI] openLinkEditDialog not initialized.") };
 	public openSaveChangesDialog: () => Promise<"save" | "discard" | "cancel"> =
 		() => Promise.reject(new Error("[UI] openSaveChangesDialog not initialized."));
+
+	public showInsertBlockMenu: (event: Event, view: EditorView, node: Node, pos: number) => Promise<void> =
+		() => Promise.reject(new Error("[UI] showInsertBlockMenu not initialized."));
 };
 
 export default new ui();

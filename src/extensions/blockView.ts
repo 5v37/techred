@@ -1,4 +1,4 @@
-import type { NodeView, EditorView } from "prosemirror-view";
+import type { NodeView, EditorView, ViewMutationRecord } from "prosemirror-view";
 import type { Node } from "prosemirror-model";
 
 import ui from "@/modules/ui";
@@ -12,7 +12,7 @@ class BlockView implements NodeView {
 	dom: HTMLElement;
 	contentDOM: HTMLElement;
 	private idLabel: HTMLElement;
-	private delete: HTMLElement;
+	private actions: HTMLElement;
 
 	constructor(node: Node, view: EditorView, getPos: () => number | undefined) {
 		this.node = node;
@@ -20,7 +20,7 @@ class BlockView implements NodeView {
 		this.getPos = getPos;
 
 		this.dom = document.createElement(`block-${node.type.name}`);
-		this.dom.classList.add("block-wrapper");
+		this.dom.className = "block-wrapper";
 
 		this.contentDOM = document.createElement(node.type.name);
 		if (node.attrs.uid) {
@@ -31,14 +31,25 @@ class BlockView implements NodeView {
 		this.idLabel.contentEditable = "false";
 		this.updateIdLabel();
 
-		this.delete = document.createElement("block-delete");
-		this.delete.contentEditable = "false";
-		this.delete.textContent = "[x]";
+		this.actions = document.createElement("context-actions");
+		this.actions.contentEditable = "false";
 
-		this.idLabel.addEventListener("mousedown", this.handleSetId);
-		this.delete.addEventListener("mousedown", this.handleDelete);
+		const insertBtn = document.createElement("insert-button");
+		insertBtn.className = "action-command";
+		insertBtn.textContent = "[+]";
 
-		this.dom.append(this.contentDOM, this.idLabel, this.delete);
+		// const menuBtn = document.createElement("block-menu");
+		// menuBtn.className = "action-command";
+		// menuBtn.textContent = "[...]";
+
+		const deleteBtn = document.createElement("delete-button");
+		deleteBtn.className = "action-command";
+		deleteBtn.textContent = "[x]";
+
+		this.actions.append(insertBtn, deleteBtn);
+		this.dom.append(this.contentDOM, this.idLabel, this.actions);
+
+		this.addEventListeners();
 	}
 
 	update(node: Node): boolean {
@@ -58,8 +69,7 @@ class BlockView implements NodeView {
 	}
 
 	destroy() {
-		this.idLabel.removeEventListener("mousedown", this.handleSetId);
-		this.delete.removeEventListener("mousedown", this.handleDelete);
+		this.removeEventListeners();
 	}
 
 	private updateIdLabel() {
@@ -72,12 +82,43 @@ class BlockView implements NodeView {
 		this.idLabel.textContent = `#${id || "<не установлен>"}`;
 	}
 
+	private addEventListeners() {
+		const insertBtn = this.dom.querySelector("insert-button") as HTMLElement;
+		const deleteBtn = this.dom.querySelector("delete-button") as HTMLElement;
+
+		this.idLabel.addEventListener("mousedown", this.handleSetId);
+		insertBtn.addEventListener("mousedown", this.handleInsert);
+		deleteBtn.addEventListener("click", this.handleDelete);
+	}
+
+	private removeEventListeners() {
+		const insertBtn = this.dom.querySelector("insert-button") as HTMLElement;
+		const deleteBtn = this.dom.querySelector("delete-button") as HTMLElement;
+
+		this.idLabel.removeEventListener("mousedown", this.handleSetId);
+		insertBtn.removeEventListener("mousedown", this.handleInsert);
+		deleteBtn.removeEventListener("click", this.handleDelete);
+	}
+
 	private handleSetId = (event: MouseEvent) => {
 		if (event.button === 0) {
 			event.preventDefault();
 			const pos = this.getPos();
 			if (pos !== undefined) {
 				ui.openElementIdDialog(this.view.state, this.view.dispatch, pos, this.node.attrs.id);
+			};
+		};
+	};
+
+	private handleInsert = (event: MouseEvent) => {
+		if (event.button === 0) {
+			event.preventDefault();
+			const pos = this.getPos();
+			if (pos !== undefined) {
+				this.actions.classList.add("menu-showed");
+				ui.showInsertBlockMenu(event, this.view, this.node, pos).then(() => {
+					this.actions.classList.remove("menu-showed");
+				});
 			};
 		};
 	};
@@ -91,6 +132,13 @@ class BlockView implements NodeView {
 			};
 		};
 	};
+
+	ignoreMutation(mutation: ViewMutationRecord) {
+		if (mutation.target === this.actions) {
+			return true;
+		};
+		return false;
+	}
 }
 
 export default BlockView;

@@ -1,6 +1,5 @@
 @use './button.scss';
 @use './linkTooltip.scss';
-@use './imageView.scss';
 
 @import 'prosemirror-view/style/prosemirror.css';
 @import 'prosemirror-tables/style/tables.css';
@@ -21,7 +20,7 @@
 	font-size: 1rem;
 	font-family: 'Nunito', sans-serif;
 	color: var(--p-text-muted-color);
-	background: var(--p-content-background);
+	background: var(--p-form-field-background);
 }
 
 @mixin before() {
@@ -32,7 +31,7 @@
 	font-size: 1rem;
 	font-family: 'Nunito', sans-serif;
 	color: var(--p-text-muted-color);
-	background: var(--p-content-background);
+	background: var(--p-form-field-background);
 }
 
 @mixin block($color: rgb(0, 0, 0)) {
@@ -75,6 +74,10 @@
 		@include block(rgb(22, 231, 84));
 		padding-block: 0.25rem;
 		text-align: center;
+
+		& > p {
+			text-indent: 0;
+		}
 	}
 
 	header::after {
@@ -91,6 +94,7 @@
 
 	text-author {
 		@include block(rgb(29, 78, 214));
+		text-align: right;
 	}
 
 	text-author::after {
@@ -124,6 +128,7 @@
 
 	date {
 		@include block(rgb(48, 29, 214));
+		text-align: right;
 	}
 
 	date::after {
@@ -204,6 +209,27 @@
 	figure {
 		@include block(var(--p-image-border-color));
 		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: space-evenly;
+		min-height: 5rem;
+
+		.image-content {
+			border: thin solid var(--p-content-border-color);
+			background: repeating-conic-gradient(from 0deg,
+					transparent 0% 25%,
+					var(--p-button-secondary-background) 25% 50%);
+			background-size: 1rem 1rem;
+		}
+
+		.image-caption {
+			text-align: center;
+			text-wrap: balance;
+			font-style: italic;
+			font-size: smaller;
+			padding-top: 0.5rem;
+			user-select: none;
+		}
 	}
 
 	figure::after {
@@ -237,27 +263,42 @@
 		cursor: pointer;
 	}
 
-	block-delete {
+	context-actions {
 		position: absolute;
-		line-height: 1rem;
 		top: -0.5rem;
 		right: 0.5rem;
+
+		display: flex;
+		flex-direction: row;
+		gap: 0.5rem;
+		align-items: center;
+
+		line-height: 1rem;
 		font-size: 1rem;
 		font-family: 'Nunito', sans-serif;
 		color: var(--p-text-muted-color);
-		background: var(--p-content-background);
+
 		user-select: none;
-		cursor: pointer;
+
 		opacity: 0;
-		transition: opacity var(--p-button-transition-duration);
+		visibility: hidden;
+		transition: opacity var(--p-button-transition-duration), visibility 0s;
 	}
 
-	.block-wrapper:hover > block-delete {
+	.action-command {
+		background: var(--p-form-field-background);
+		cursor: pointer;
+	}
+
+	.block-wrapper:hover > context-actions,
+	context-actions.menu-showed {
 		opacity: 1;
+		visibility: visible;
 	}
 
-	& > block-section:only-of-type > block-delete {
-		display: none;
+	& > block-section:only-of-type > context-actions > delete-button {
+		color: rgb(from var(--p-text-muted-color) r g b / var(--p-disabled-opacity));
+		cursor: auto;
 	}
 }
 
