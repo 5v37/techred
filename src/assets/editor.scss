@@ -72,7 +72,6 @@
 
 	header {
 		@include block(rgb(22, 231, 84));
-		padding-block: 0.25rem;
 		text-align: center;
 
 		& > p {
@@ -145,7 +144,6 @@
 
 	subtitle {
 		@include block(rgb(68, 92, 68));
-		padding-block: 0.25rem;
 		text-align: center;
 	}
 

@@ -22,7 +22,7 @@ import type { EditorView } from "prosemirror-view";
 import ui from "@/modules/ui";
 import editorState from "@/modules/editorState";
 import imageStore from "@/modules/imageStore";
-import { SectionRange, sectionRangeByUID, excludeSection, includeSection, joinSection, moveUpSection, moveDownSection, deleteSection, addNode } from "@/modules/commands";
+import { SectionRange, sectionRangeByUID, excludeSection, includeSection, joinSection, moveUpSection, moveDownSection, addNodeByPos, deleteNodeByPos } from "@/modules/commands";
 import { openImageDialog } from "@/modules/fileAccess";
 import { openFileError } from "@/modules/notifications";
 
@@ -84,37 +84,36 @@ const sectionItems = () => [
 		items: [
 			{
 				label: "Заголовок",
-				disabled: !addNode(range!.node, nodeTypes.title, startPos)(view.state),
-				command: () => addNode(range!.node, nodeTypes.title, startPos)(view.state, view.dispatch)
+				disabled: !addNodeByPos(range!.node, nodeTypes.title, startPos)(view.state),
+				command: () => addNodeByPos(range!.node, nodeTypes.title, startPos)(view.state, view.dispatch)
 			},
 			{
 				label: "Изображение",
-				disabled: !addNode(range!.node, nodeTypes.image, startPos)(view.state),
+				disabled: !addNodeByPos(range!.node, nodeTypes.image, startPos)(view.state),
 				command: () =>
 					openImageDialog().then(file => {
 						const imgid = imageStore.addAsDataURL(file.name, file.content);
 						if (imgid) {
 							const image = nodeTypes.image.create({ imgid });
-							addNode(range!.node, nodeTypes.image, startPos, image)(view.state, view.dispatch);
+							addNodeByPos(range!.node, nodeTypes.image, startPos, image)(view.state, view.dispatch);
 						};
 					}).catch((error) => openFileError(error))
 			},
 			{
 				label: "Эпиграф",
-				disabled: !addNode(range!.node, nodeTypes.epigraph, startPos)(view.state),
-				command: () => addNode(range!.node, nodeTypes.epigraph, startPos)(view.state, view.dispatch)
+				disabled: !addNodeByPos(range!.node, nodeTypes.epigraph, startPos)(view.state),
+				command: () => addNodeByPos(range!.node, nodeTypes.epigraph, startPos)(view.state, view.dispatch)
 			},
 			{
 				label: "Аннотацию",
-				disabled: !addNode(range!.node, nodeTypes.annotation, startPos)(view.state),
-				command: () => addNode(range!.node, nodeTypes.annotation, startPos)(view.state, view.dispatch)
+				disabled: !addNodeByPos(range!.node, nodeTypes.annotation, startPos)(view.state),
+				command: () => addNodeByPos(range!.node, nodeTypes.annotation, startPos)(view.state, view.dispatch)
 			},
 			{
 				label: "Секцию",
-				disabled: !addNode(range!.node, nodeTypes.section, startPos)(view.state),
+				disabled: !addNodeByPos(range!.node, nodeTypes.section, startPos)(view.state),
 				command: () => {
-					const section = nodeTypes.section.create({ uid: self.crypto.randomUUID() }, nodeTypes.p.create());
-					addNode(range!.node, nodeTypes.section, startPos, section)(view.state, view.dispatch);
+					addNodeByPos(range!.node, nodeTypes.section, startPos)(view.state, view.dispatch);
 				}
 			}
 		]
@@ -137,8 +136,8 @@ const sectionItems = () => [
 	{
 		label: "Удалить",
 		icon: "pi pi-trash",
-		disabled: !deleteSection(range)(view.state),
-		command: () => deleteSection(range)(view.state, view.dispatch)
+		disabled: !(range?.node && deleteNodeByPos(range.node, range.from)(view.state)),
+		command: () => deleteNodeByPos(range!.node, range!.from)(view.state, view.dispatch)
 	}
 ];
 
@@ -154,35 +153,34 @@ const bodyItems = () => [
 	{
 		label: "Вставить заголовок",
 		icon: "pi pi-plus-circle",
-		disabled: !addNode(view.state.doc, nodeTypes.title, startPos)(view.state),
-		command: () => addNode(view.state.doc, nodeTypes.title, startPos)(view.state, view.dispatch)
+		disabled: !addNodeByPos(view.state.doc, nodeTypes.title, startPos)(view.state),
+		command: () => addNodeByPos(view.state.doc, nodeTypes.title, startPos)(view.state, view.dispatch)
 	},
 	{
 		label: "Вставить изображение",
 		icon: "pi pi-plus-circle",
-		disabled: !addNode(view.state.doc, nodeTypes.image, startPos)(view.state),
+		disabled: !addNodeByPos(view.state.doc, nodeTypes.image, startPos)(view.state),
 		command: () =>
 			openImageDialog().then(file => {
 				const imgid = imageStore.addAsDataURL(file.name, file.content);
 				if (imgid) {
 					const image = nodeTypes.image.create({ imgid });
-					addNode(view.state.doc, nodeTypes.image, startPos, image)(view.state, view.dispatch);
+					addNodeByPos(view.state.doc, nodeTypes.image, startPos, image)(view.state, view.dispatch);
 				};
 			}).catch((error) => openFileError(error))
 	},
 	{
 		label: "Вставить эпиграф",
 		icon: "pi pi-plus-circle",
-		disabled: !addNode(view.state.doc, nodeTypes.epigraph, startPos)(view.state),
-		command: () => addNode(view.state.doc, nodeTypes.epigraph, startPos)(view.state, view.dispatch)
+		disabled: !addNodeByPos(view.state.doc, nodeTypes.epigraph, startPos)(view.state),
+		command: () => addNodeByPos(view.state.doc, nodeTypes.epigraph, startPos)(view.state, view.dispatch)
 	},
 	{
 		label: "Вставить секцию",
 		icon: "pi pi-plus-circle",
-		disabled: !addNode(view.state.doc, nodeTypes.section, startPos)(view.state),
+		disabled: !addNodeByPos(view.state.doc, nodeTypes.section, startPos)(view.state),
 		command: () => {
-			const section = nodeTypes.section.create({ uid: self.crypto.randomUUID() }, nodeTypes.p.create());
-			addNode(view.state.doc, nodeTypes.section, startPos, section)(view.state, view.dispatch);
+			addNodeByPos(view.state.doc, nodeTypes.section, startPos)(view.state, view.dispatch);
 		}
 	}
 ];

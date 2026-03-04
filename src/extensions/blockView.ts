@@ -2,7 +2,7 @@ import type { NodeView, EditorView, ViewMutationRecord } from "prosemirror-view"
 import type { Node } from "prosemirror-model";
 
 import ui from "@/modules/ui";
-import { deleteNodeByPos } from "@/modules/transform";
+import { deleteNodeByPos } from "@/modules/commands";
 
 class BlockView implements NodeView {
 	private node: Node;
@@ -128,7 +128,7 @@ class BlockView implements NodeView {
 			event.preventDefault();
 			const pos = this.getPos();
 			if (pos !== undefined) {
-				deleteNodeByPos(this.view, this.node, pos);
+				deleteNodeByPos(this.node, pos)(this.view.state, this.view.dispatch);
 			};
 		};
 	};

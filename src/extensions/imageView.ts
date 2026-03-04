@@ -5,7 +5,7 @@ import type { EditorView, NodeView } from "prosemirror-view";
 
 import ui from "@/modules/ui";
 import imageStore from "@/modules/imageStore";
-import { deleteNodeByPos } from "@/modules/transform";
+import { deleteNodeByPos } from "@/modules/commands";
 
 class ImageView implements NodeView {
 	private node: Node;
@@ -169,7 +169,7 @@ class ImageView implements NodeView {
 			event.preventDefault();
 			const pos = this.getPos();
 			if (pos !== undefined) {
-				deleteNodeByPos(this.view, this.node, pos);
+				deleteNodeByPos(this.node, pos)(this.view.state, this.view.dispatch);
 			};
 		};
 	};

@@ -13,7 +13,7 @@ import type { ContentMatch, Node, NodeType } from "prosemirror-model";
 
 import editorState from "@/modules/editorState";
 import imageStore from "@/modules/imageStore";
-import { addNode } from "@/modules/commands";
+import { addNodeByPos } from "@/modules/commands";
 import { openImageDialog } from "@/modules/fileAccess";
 import { openFileError } from "@/modules/notifications";
 import ui from "@/modules/ui";
@@ -66,38 +66,37 @@ function getAllowedChildren(node: Node) {
 			allowedTypes.add(type);
 			queue.push(next);
 		}
-	}
+	};
 
 	return allowedTypes;
 }
 
 function getInsertAction(node: Node, nodeType: NodeType, pos: number): Command {
 	const nodeTypes = editorView.state.schema.nodes;
-	let defaultNode = undefined;
-	if (nodeType === nodeTypes.image) {
-		return (state, dispatch) => {
-			if (dispatch) {
-				openImageDialog().then(file => {
-					const nodeTypes = state.schema.nodes;
-					const imgid = imageStore.addAsDataURL(file.name, file.content);
-					if (imgid) {
-						const image = nodeTypes.image.create({ imgid });
-						return addNode(node, nodeType, pos, image)(state, dispatch);
-					};
-				}).catch((error) => openFileError(error));
-			} else {
-				return addNode(node, nodeType, pos)(state);
-			};
-
-			return true;
-		};
-	} else if (nodeType === nodeTypes.poem) {
-		defaultNode = nodeType.create(null, nodeTypes.stanza.create(null, nodeTypes.v.create()));
-	} else if (nodeType === nodeTypes.cite || nodeType === nodeTypes.section || nodeType === nodeTypes.epigraph) {
-		defaultNode = nodeType.create(null, nodeTypes.p.create());
+	if (nodeType === nodeTypes.image || nodeType === nodeTypes.inlineimage) {
+		return addImageByPos(node, nodeType, pos);
 	};
 
-	return addNode(node, nodeType, pos, defaultNode);
+	return addNodeByPos(node, nodeType, pos);
+}
+
+function addImageByPos(node: Node, nodeType: NodeType, pos: number): Command {
+	return (state, dispatch) => {
+		if (!dispatch) {
+			return addNodeByPos(node, nodeType, pos)(state, dispatch);
+		};
+
+		openImageDialog()
+			.then(file => {
+				const imgid = imageStore.addAsDataURL(file.name, file.content);
+				if (imgid && dispatch) {
+					const imageNode = nodeType.create({ imgid });
+					addNodeByPos(node, nodeType, pos, imageNode)(state, dispatch);
+				}
+			})
+			.catch((error) => openFileError(error));
+		return true;
+	};
 }
 
 function show(event: Event, view: EditorView, node: Node, pos: number): Promise<void> {

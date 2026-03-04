@@ -1,4 +1,4 @@
-import { Attrs, Fragment, MarkType, Node, NodeType } from "prosemirror-model";
+import { Attrs, Fragment, MarkType, Node, NodeType, Schema } from "prosemirror-model";
 import { Command, Selection, AllSelection, NodeSelection, TextSelection, EditorState } from "prosemirror-state";
 import { canSplit, findWrapping } from "prosemirror-transform";
 import { deleteTable } from "prosemirror-tables";
@@ -378,7 +378,27 @@ export function deleteTableSafety(): Command {
 	};
 }
 
-export function addNode(parentNode: Node, nodeType: NodeType, pos: number, node?: Node): Command {
+function expectedChild(nodeType: NodeType, schema: Schema) {
+	const nodeTypes = schema.nodes;
+	if (nodeType === nodeTypes.poem) {
+		return nodeTypes.stanza.create(null, nodeTypes.v.create());
+	} else if (nodeType === nodeTypes.cite || nodeType === nodeTypes.section || nodeType === nodeTypes.epigraph) {
+		return nodeTypes.p.create();
+	} else if (nodeType.isTextblock) {
+		return null;
+	} else {
+		return nodeType.contentMatch.defaultType?.createAndFill();
+	};
+}
+
+function expectedAttrs(nodeType: NodeType, schema: Schema) {
+	const nodeTypes = schema.nodes;
+	if (nodeType === nodeTypes.section) {
+		return { uid: self.crypto.randomUUID() };
+	};
+}
+
+export function addNodeByPos(parentNode: Node, nodeType: NodeType, pos: number, node?: Node): Command {
 	return (state, dispatch) => {
 		let insertIndex = -1;
 		let insertPos = parentNode === state.doc ? pos : pos + 1;
@@ -394,14 +414,61 @@ export function addNode(parentNode: Node, nodeType: NodeType, pos: number, node?
 
 		if (insertIndex === -1) {
 			return false;
-		}
+		};
 
 		if (dispatch) {
 			const tr = state.tr;
-			const newNode = node ?? nodeType.createAndFill();
-			if (!newNode) return false;
+			tr.insert(insertPos, node ?? nodeType.create(expectedAttrs(nodeType, state.schema), expectedChild(nodeType, state.schema)));
+			dispatch(tr.scrollIntoView());
+		};
 
-			tr.insert(insertPos, newNode);
+		return true;
+	};
+}
+
+export function deleteNodeByPos(node: Node, pos: number): Command {
+	return (state, dispatch) => {
+		const $pos = state.doc.resolve(pos);
+		const parent = $pos.parent;
+
+		const childNode = expectedChild(parent.type, state.schema);
+		const isLastContent = $pos.parent.childCount === 1;
+
+		const defaultChildType = childNode?.type;
+		if (node.type === defaultChildType) {
+			if (isLastContent) return false;
+
+			let nodeCount = 0;
+			$pos.parent.forEach((child) => {
+				if (child.type === defaultChildType) {
+					nodeCount++;
+				}
+			});
+			if (nodeCount === 1) return false;
+		};
+
+		if (dispatch) {
+			const needSetCursor = state.selection.head > pos && state.selection.head < pos + node.nodeSize;
+
+			// Перед удалением установим отдельно курсор, для правильного позиционирования при отмене/возврате изменений
+			const trCursor = state.tr;
+			trCursor.setSelection(Selection.near(trCursor.doc.resolve(pos)));
+			dispatch(trCursor);
+
+			const tr = state.tr;
+			if (isLastContent && childNode) {
+				tr.replaceWith(pos, pos + node.nodeSize, childNode);
+
+				if (needSetCursor) {
+					const cursor = Selection.findFrom(tr.doc.resolve(pos + childNode.nodeSize - 1), -1);
+					if (cursor) {
+						tr.setSelection(cursor);
+					};
+				};
+			} else {
+				tr.delete(pos, pos + node.nodeSize);
+			}
+
 			dispatch(tr.scrollIntoView());
 		};
 
@@ -661,23 +728,4 @@ function moveDownSection(range?: SectionRange): Command {
 	};
 }
 
-function deleteSection(range?: SectionRange): Command {
-	return (state, dispatch) => {
-		if (!range || !range.parent && range.from === range.before && range.to === range.after) {
-			return false;
-		}
-
-		if (dispatch) {
-			const tr = state.tr;
-			if (range.from === range.before && range.to === range.after) {
-				tr.replaceWith(range.from, range.to, state.schema.nodes.p.create());
-			} else {
-				tr.delete(range.from, range.to);
-			};
-			dispatch(tr);
-		};
-		return true;
-	};
-}
-
-export { sectionRangeByUID, excludeSection, includeSection, joinSection, moveUpSection, moveDownSection, deleteSection };
+export { sectionRangeByUID, excludeSection, includeSection, joinSection, moveUpSection, moveDownSection };
