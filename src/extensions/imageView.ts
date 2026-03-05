@@ -29,7 +29,6 @@ class ImageView implements NodeView {
 		this.figure = document.createElement("figure");
 
 		this.imageContent = document.createElement("img");
-		this.imageContent.className = "image-content";
 		this.imageContent.onerror = () => this.imageContent.classList.add("t-img-broken");
 
 		this.figure.appendChild(this.imageContent);
@@ -91,7 +90,6 @@ class ImageView implements NodeView {
 		const title: string | null = this.node.attrs.title;
 		if (title) {
 			const element = caption || document.createElement("figcaption");
-			element.className = "image-caption";
 			element.textContent = title;
 			if (!caption) {
 				this.figure.appendChild(element);
@@ -109,6 +107,21 @@ class ImageView implements NodeView {
 		} else {
 			this.imageContent.classList.add("t-img-broken");
 			this.imageContent.removeAttribute("src");
+		};
+		this.updateInfo();
+	}
+
+	private updateInfo() {
+		const info = imageStore.getInfo(this.node.attrs.imgid);
+		const imgInfo = this.figure.querySelector("img-info");
+		if (info) {
+			const element = imgInfo || document.createElement("img-info");
+			element.textContent = info;
+			if (!imgInfo) {
+				this.figure.appendChild(element);
+			};
+		} else {
+			imgInfo?.remove();
 		};
 	}
 

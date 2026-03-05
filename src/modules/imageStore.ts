@@ -151,6 +151,19 @@ class ImageStore {
 		};
 	}
 
+	getInfo(imgid: string) {
+		const image = this.allImages.get(imgid);
+		if (image) {
+			if (image.kind === "external") {
+				return `(Ссылка: ${image.href})`;
+			} else {
+				return `(Файл: ${image.id.validValue})`;
+			};
+		} else {
+			return "";
+		};
+	}
+
 	collectActiveImages() {
 		this.activeIds = new Set<string>(this.trackedIds);
 

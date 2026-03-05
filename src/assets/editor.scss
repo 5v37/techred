@@ -212,7 +212,7 @@
 		justify-content: space-evenly;
 		min-height: 5rem;
 
-		.image-content {
+		img {
 			border: thin solid var(--p-content-border-color);
 			background: repeating-conic-gradient(from 0deg,
 					transparent 0% 25%,
@@ -220,12 +220,24 @@
 			background-size: 1rem 1rem;
 		}
 
-		.image-caption {
+		figcaption {
 			text-align: center;
 			text-wrap: balance;
 			font-style: italic;
 			font-size: smaller;
 			padding-top: 0.5rem;
+			user-select: none;
+		}
+
+		img-info {
+			position: absolute;
+			line-height: 1rem;
+			bottom: -0.5rem;
+			left: 1rem;
+			font-size: 1rem;
+			font-family: 'Nunito', sans-serif;
+			color: var(--p-text-muted-color);
+			background: var(--p-content-background);
 			user-select: none;
 		}
 	}
