@@ -21,13 +21,10 @@ import type { EditorView } from "prosemirror-view";
 
 import ui from "@/modules/ui";
 import editorState from "@/modules/editorState";
-import imageStore from "@/modules/imageStore";
-import { SectionRange, sectionRangeByUID, excludeSection, includeSection, joinSection, moveUpSection, moveDownSection, addNodeByPos, deleteNodeByPos } from "@/modules/commands";
-import { openImageDialog } from "@/modules/fileAccess";
-import { openFileError } from "@/modules/notifications";
+import { SectionRange, sectionRangeByUID, excludeSection, includeSection, joinSection, moveUpSection, moveDownSection, deleteNodeByPos } from "@/modules/commands";
+import { generateInsertMenuItems } from "@/modules/menuFactory";
 
 let view: EditorView;
-let nodeTypes: typeof view.state.schema.nodes;
 let range: SectionRange | undefined;
 let startPos = 0;
 
@@ -81,42 +78,7 @@ const sectionItems = () => [
 		label: "Вставить",
 		icon: "pi pi-plus-circle",
 		disabled: range === undefined,
-		items: [
-			{
-				label: "Заголовок",
-				disabled: !addNodeByPos(range!.node, nodeTypes.title, startPos)(view.state),
-				command: () => addNodeByPos(range!.node, nodeTypes.title, startPos)(view.state, view.dispatch)
-			},
-			{
-				label: "Изображение",
-				disabled: !addNodeByPos(range!.node, nodeTypes.image, startPos)(view.state),
-				command: () =>
-					openImageDialog().then(file => {
-						const imgid = imageStore.addAsDataURL(file.name, file.content);
-						if (imgid) {
-							const image = nodeTypes.image.create({ imgid });
-							addNodeByPos(range!.node, nodeTypes.image, startPos, image)(view.state, view.dispatch);
-						};
-					}).catch((error) => openFileError(error))
-			},
-			{
-				label: "Эпиграф",
-				disabled: !addNodeByPos(range!.node, nodeTypes.epigraph, startPos)(view.state),
-				command: () => addNodeByPos(range!.node, nodeTypes.epigraph, startPos)(view.state, view.dispatch)
-			},
-			{
-				label: "Аннотацию",
-				disabled: !addNodeByPos(range!.node, nodeTypes.annotation, startPos)(view.state),
-				command: () => addNodeByPos(range!.node, nodeTypes.annotation, startPos)(view.state, view.dispatch)
-			},
-			{
-				label: "Секцию",
-				disabled: !addNodeByPos(range!.node, nodeTypes.section, startPos)(view.state),
-				command: () => {
-					addNodeByPos(range!.node, nodeTypes.section, startPos)(view.state, view.dispatch);
-				}
-			}
-		]
+		items: generateInsertMenuItems(view, range!.node, startPos)
 	},
 	{
 		label: "Сместить вверх",
@@ -151,37 +113,10 @@ const bodyItems = () => [
 		separator: true
 	},
 	{
-		label: "Вставить заголовок",
+		label: "Вставить",
 		icon: "pi pi-plus-circle",
-		disabled: !addNodeByPos(view.state.doc, nodeTypes.title, startPos)(view.state),
-		command: () => addNodeByPos(view.state.doc, nodeTypes.title, startPos)(view.state, view.dispatch)
-	},
-	{
-		label: "Вставить изображение",
-		icon: "pi pi-plus-circle",
-		disabled: !addNodeByPos(view.state.doc, nodeTypes.image, startPos)(view.state),
-		command: () =>
-			openImageDialog().then(file => {
-				const imgid = imageStore.addAsDataURL(file.name, file.content);
-				if (imgid) {
-					const image = nodeTypes.image.create({ imgid });
-					addNodeByPos(view.state.doc, nodeTypes.image, startPos, image)(view.state, view.dispatch);
-				};
-			}).catch((error) => openFileError(error))
-	},
-	{
-		label: "Вставить эпиграф",
-		icon: "pi pi-plus-circle",
-		disabled: !addNodeByPos(view.state.doc, nodeTypes.epigraph, startPos)(view.state),
-		command: () => addNodeByPos(view.state.doc, nodeTypes.epigraph, startPos)(view.state, view.dispatch)
-	},
-	{
-		label: "Вставить секцию",
-		icon: "pi pi-plus-circle",
-		disabled: !addNodeByPos(view.state.doc, nodeTypes.section, startPos)(view.state),
-		command: () => {
-			addNodeByPos(view.state.doc, nodeTypes.section, startPos)(view.state, view.dispatch);
-		}
+		// disabled: range === undefined,
+		items: generateInsertMenuItems(view, view.state.doc, startPos)
 	}
 ];
 
@@ -189,7 +124,6 @@ function show(event: Event, node: TreeNode) {
 	const target = editorState.views[node.data || node.key];
 	if (target) {
 		view = target;
-		nodeTypes = view.state.schema.nodes;
 		if (node.data) {
 			range = sectionRangeByUID(node.key, view.state);
 			startPos = range ? range.from : 0;
