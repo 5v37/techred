@@ -41,10 +41,6 @@
 				icon="pi pi-angle-down" iconPos="right" v-show="isTable" />
 			<TieredMenu ref="tableMenu" :model="tableMenuItems" :popup="true"
 				:pt="{ root: { style: 'margin-top: -0.25rem' } }" />
-			<Button type="button" label="Превратить" text severity="secondary" @mousedown="toggleChangeMenu"
-				icon="pi pi-angle-down" iconPos="right" />
-			<Menu ref="changeMenu" :model="changeMenuItems" :popup="true"
-				:pt="{ root: { style: 'margin-top: -0.25rem' } }" />
 		</ButtonGroup>
 	</div>
 </template>
@@ -62,7 +58,7 @@ import { setBlockType, wrapIn } from "prosemirror-commands";
 
 import editorState from "@/modules/editorState";
 import imageStore from "@/modules/imageStore";
-import { addInlineImage, addNodeAfterSelection, addTextautor, addTitle, changeToSection, deleteTableSafety, setId, setLink, setMark, wrapPoem } from "@/modules/commands";
+import { addInlineImage, addNodeAfterSelection, deleteTableSafety, setId, setLink, setMark, wrapPoem } from "@/modules/commands";
 import { openImageDialog } from "@/modules/fileAccess";
 import { openFileError } from "@/modules/notifications";
 import { isSameMark, marksInPos } from "@/modules/transform";
@@ -73,8 +69,6 @@ const props = defineProps<{ editorId: string }>();
 
 const insertMenu = useTemplateRef<InstanceType<typeof Menu>>("insertMenu");
 const insertMenuItems = ref<Array<MenuItem>>();
-const changeMenu = useTemplateRef<InstanceType<typeof Menu>>("changeMenu");
-const changeMenuItems = ref<Array<MenuItem>>();
 const tableMenu = useTemplateRef<InstanceType<typeof TieredMenu>>("tableMenu");
 const tableMenuItems = ref<Array<MenuItem>>();
 
@@ -90,22 +84,7 @@ const insertCommand = (command: Command) => {
 };
 const createInsertMenuItems = () => [
 	{
-		label: "Заголовок",
-		disabled: !addTitle()(editorView.state),
-		command: () => insertCommand(addTitle())
-	},
-	{
-		label: "Автор",
-		disabled: !addTextautor()(editorView.state),
-		command: () => insertCommand(addTextautor())
-	},
-	{
-		label: "Абзац",
-		disabled: !addNodeAfterSelection(nodes.p)(editorView.state),
-		command: () => insertCommand(addNodeAfterSelection(nodes.p))
-	},
-	{
-		label: "Изображение",
+		label: nodes.image.spec.label,
 		disabled: !addNodeAfterSelection(nodes.image)(editorView.state),
 		command: () => {
 			openImageDialog().then(file => {
@@ -131,7 +110,17 @@ const createInsertMenuItems = () => [
 		}
 	},
 	{
-		label: "Таблица",
+		label: nodes.subtitle.spec.label,
+		disabled: !setBlockType(nodes.subtitle)(editorView.state),
+		command: () => insertCommand(setBlockType(nodes.subtitle))
+	},
+	{
+		label: nodes.poem.spec.label,
+		disabled: !wrapPoem()(editorView.state),
+		command: () => insertCommand(wrapPoem())
+	},
+	{
+		label: nodes.table.spec.label,
 		disabled: !addNodeAfterSelection(nodes.table)(editorView.state),
 		command: () => {
 			const tableTemplate = nodes.table.create(null,
@@ -139,33 +128,11 @@ const createInsertMenuItems = () => [
 				nodes.tr.create(null, [nodes.td.create(), nodes.td.create()])]);
 			insertCommand(addNodeAfterSelection(nodes.table, tableTemplate));
 		}
-	}
-];
-const createChangeMenuItems = () => [
-	{
-		label: "Подзаголовок",
-		disabled: !setBlockType(nodes.subtitle)(editorView.state),
-		command: () => insertCommand(setBlockType(nodes.subtitle))
 	},
 	{
-		label: "Цитата",
+		label: nodes.cite.spec.label,
 		disabled: !wrapIn(nodes.cite)(editorView.state),
 		command: () => insertCommand(wrapIn(nodes.cite))
-	},
-	{
-		label: "Стих",
-		disabled: !wrapPoem()(editorView.state),
-		command: () => insertCommand(wrapPoem())
-	},
-	{
-		label: "Абзац",
-		disabled: !setBlockType(nodes.p)(editorView.state),
-		command: () => insertCommand(setBlockType(nodes.p))
-	},
-	{
-		label: "Секция",
-		disabled: !changeToSection()(editorView.state),
-		command: () => insertCommand(changeToSection())
 	}
 ];
 const createTableMenuItems = () => [
@@ -359,16 +326,6 @@ function toggleInsertMenu(event: MouseEvent) {
 		insertMenuItems.value = createInsertMenuItems();
 		editorState.saveViewFocus();
 		insertMenu.value!.toggle(event);
-	}
-}
-
-function toggleChangeMenu(event: MouseEvent) {
-	if (event.button === 0) {
-		event.preventDefault();
-
-		changeMenuItems.value = createChangeMenuItems();
-		editorState.saveViewFocus();
-		changeMenu.value!.toggle(event);
 	}
 }
 

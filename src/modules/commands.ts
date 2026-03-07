@@ -108,77 +108,6 @@ export function updateLink(newMarkType?: MarkType, oldMarkType?: MarkType, attrs
 	};
 }
 
-export function addTitle(): Command {
-	return (state, dispatch) => {
-		const { $from } = state.selection;
-
-		if (!$from.depth || state.selection instanceof NodeSelection) {
-			return false;
-		};
-
-		const parentNode = $from.node($from.depth - 1);
-		const titleType = state.schema.nodes.title;
-
-		if (!parentNode.canReplaceWith(0, 0, titleType)) {
-			return false;
-		};
-
-		if (dispatch) {
-			const insertPos = $from.start($from.depth - 1);
-			const selectedText = getTextFromSelection(state.selection, state.schema.nodes.p);
-
-			const tr = state.tr;
-			if (state.selection instanceof TextSelection || state.selection instanceof AllSelection) {
-				tr.deleteSelection();
-			};
-			const startPos = tr.mapping.map(insertPos);
-			tr.insert(startPos, titleType.create(null, selectedText));
-
-			// передвинуть курсор на заглавие ?
-
-			dispatch(tr.scrollIntoView());
-		};
-
-		return true;
-	};
-}
-
-export function addTextautor(): Command {
-	return (state, dispatch) => {
-		const { $from } = state.selection;
-
-		if (!$from.depth || state.selection instanceof NodeSelection) {
-			return false;
-		};
-
-		const parentNode = $from.node($from.depth - 1);
-		const textauthorType = state.schema.nodes.textauthor;
-		const lastIndex = parentNode.childCount;
-
-		if (!parentNode.canReplaceWith(lastIndex, lastIndex, textauthorType)) {
-			return false;
-		};
-
-		if (dispatch) {
-			const insertPos = $from.end($from.depth - 1);
-			const selectedText = getTextFromSelection(state.selection, textauthorType);
-
-			const tr = state.tr;
-			if (state.selection instanceof TextSelection || state.selection instanceof AllSelection) {
-				tr.deleteSelection();
-			};
-			const startPos = tr.mapping.map(insertPos);
-			tr.insert(startPos, selectedText);
-
-			// передвинуть курсор ?
-
-			dispatch(tr.scrollIntoView());
-		};
-
-		return true;
-	};
-}
-
 export function wrapPoem(): Command {
 	return (state, dispatch) => {
 		const { $from, $to } = state.selection;
@@ -233,35 +162,6 @@ export function wrapPoem(): Command {
 			};
 
 			dispatch(tr.scrollIntoView());
-		};
-
-		return true;
-	};
-}
-
-export function changeToSection(): Command {
-	return (state, dispatch) => {
-		const { $from } = state.selection;
-
-		if (!$from.depth) {
-			return false;
-		};
-
-		const parentNode = $from.node($from.depth - 2);
-		const sectionType = state.schema.nodes.section;
-		const nodeIndex = $from.index($from.depth - 2);
-
-		if (!parentNode.canReplaceWith(nodeIndex, nodeIndex + 1, sectionType) || parentNode.children[nodeIndex].type === sectionType) {
-			return false;
-		};
-
-		if (dispatch) {
-			const tr = state.tr;
-
-			const section = sectionType.create({ uid: self.crypto.randomUUID() }, parentNode.children[nodeIndex].children);
-			tr.replaceWith($from.start($from.depth - 1) - 1, $from.end($from.depth - 1) + 1, section);
-
-			dispatch(tr);
 		};
 
 		return true;
