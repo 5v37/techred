@@ -105,6 +105,7 @@ function template(topNode: string, toXML: boolean): Schema {
 			},
 			title: {
 				label: "Заголовок",
+				tag: "header",
 				content: "p+",
 				parseDOM: [{ tag: "title, header" }],
 				toDOM() {
@@ -179,6 +180,7 @@ function template(topNode: string, toXML: boolean): Schema {
 			},
 			textauthor: {
 				label: "Автора",
+				tag: "text-author",
 				content: "(text | inlineimage)*",
 				parseDOM: [{ tag: "text-author" }],
 				toDOM() { return [defaultNameSpace + "text-author", 0] }

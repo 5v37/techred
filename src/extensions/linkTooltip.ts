@@ -1,6 +1,7 @@
-import { Plugin } from "prosemirror-state";
 import type { EditorView } from "prosemirror-view";
 import type { Node, Mark } from "prosemirror-model";
+import { Plugin } from "prosemirror-state";
+import { DOMSerializer } from "prosemirror-model";
 import { openUrl } from "@tauri-apps/plugin-opener";
 
 import { setLink, updateLink } from "@/modules/commands";
@@ -96,19 +97,20 @@ class LinkTooltipView {
 		if (this.target) {
 			let header = "", block = "";
 			const view = editorState.views[this.target.body];
+			const serializer = DOMSerializer.fromSchema(view.state.schema);
 			if (this.target.node.isTextblock) {
-				const text = view.nodeDOM(this.target!.pos)! as HTMLElement;
+				const text = serializer.serializeNode(this.target.node) as HTMLElement;
 				block = text.innerHTML;
 			} else {
 				try {
-					this.target.node.descendants((node, pos) => {
-						if (node.type === view.state.schema.nodes.title) {
-							const title = view.nodeDOM(this.target!.pos + pos + 1)!.firstChild! as HTMLElement;
+					this.target.node.descendants((node) => {
+						if (node.type === view.state.schema.nodes.title && node.childCount) {
+							const title = serializer.serializeNode(node.firstChild!) as HTMLElement;
 							header = `<strong>${title.innerHTML}</strong>   `;
 							return false;
 						};
 						if (node.type.isTextblock) {
-							const text = view.nodeDOM(this.target!.pos + pos + 1)! as HTMLElement;
+							const text = serializer.serializeNode(node) as HTMLElement;
 							block = text.innerHTML;
 							throw block;
 						};

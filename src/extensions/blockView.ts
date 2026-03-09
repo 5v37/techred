@@ -11,7 +11,7 @@ class BlockView implements NodeView {
 
 	dom: HTMLElement;
 	contentDOM: HTMLElement;
-	private idLabel: HTMLElement;
+	private idLabel: HTMLElement | undefined;
 	private actions: HTMLElement;
 
 	constructor(node: Node, view: EditorView, getPos: () => number | undefined) {
@@ -22,21 +22,28 @@ class BlockView implements NodeView {
 		this.dom = document.createElement(`block-${node.type.name}`);
 		this.dom.className = "block-wrapper";
 
-		this.contentDOM = document.createElement(node.type.name);
+		this.contentDOM = document.createElement(node.type.spec.tag ?? node.type.name);
 		if (node.attrs.uid) {
 			this.contentDOM.setAttribute("uid", node.attrs.uid);
 		};
+		this.dom.appendChild(this.contentDOM);
 
-		this.idLabel = document.createElement("id-label");
-		this.idLabel.contentEditable = "false";
-		this.updateIdLabel();
+		if (node.type.spec.attrs && "id" in node.type.spec.attrs) {
+			this.idLabel = document.createElement("id-label");
+			this.idLabel.contentEditable = "false";
+			this.updateIdLabel();
+			this.dom.appendChild(this.idLabel);
+		}
 
 		this.actions = document.createElement("context-actions");
 		this.actions.contentEditable = "false";
 
-		const insertBtn = document.createElement("insert-button");
-		insertBtn.className = "action-command";
-		insertBtn.textContent = "[+]";
+		if (!(node.isTextblock || node.type.contentMatch.edgeCount === 1 && node.type.contentMatch.edge(0).type.isTextblock)) {
+			const insertBtn = document.createElement("insert-button");
+			insertBtn.className = "action-command";
+			insertBtn.textContent = "[+]";
+			this.actions.appendChild(insertBtn);
+		}
 
 		// const menuBtn = document.createElement("block-menu");
 		// menuBtn.className = "action-command";
@@ -45,9 +52,9 @@ class BlockView implements NodeView {
 		const deleteBtn = document.createElement("delete-button");
 		deleteBtn.className = "action-command";
 		deleteBtn.textContent = "[x]";
+		this.actions.appendChild(deleteBtn);
 
-		this.actions.append(insertBtn, deleteBtn);
-		this.dom.append(this.contentDOM, this.idLabel, this.actions);
+		this.dom.appendChild(this.actions);
 
 		this.addEventListeners();
 	}
@@ -79,25 +86,25 @@ class BlockView implements NodeView {
 		} else {
 			this.contentDOM.removeAttribute("id");
 		};
-		this.idLabel.textContent = `#${id || "<не установлен>"}`;
+		this.idLabel!.textContent = `#${id || "<не установлен>"}`;
 	}
 
 	private addEventListeners() {
 		const insertBtn = this.dom.querySelector("insert-button") as HTMLElement;
 		const deleteBtn = this.dom.querySelector("delete-button") as HTMLElement;
 
-		this.idLabel.addEventListener("mousedown", this.handleSetId);
-		insertBtn.addEventListener("mousedown", this.handleInsert);
-		deleteBtn.addEventListener("click", this.handleDelete);
+		this.idLabel?.addEventListener("mousedown", this.handleSetId);
+		insertBtn?.addEventListener("mousedown", this.handleInsert);
+		deleteBtn?.addEventListener("click", this.handleDelete);
 	}
 
 	private removeEventListeners() {
 		const insertBtn = this.dom.querySelector("insert-button") as HTMLElement;
 		const deleteBtn = this.dom.querySelector("delete-button") as HTMLElement;
 
-		this.idLabel.removeEventListener("mousedown", this.handleSetId);
-		insertBtn.removeEventListener("mousedown", this.handleInsert);
-		deleteBtn.removeEventListener("click", this.handleDelete);
+		this.idLabel?.removeEventListener("mousedown", this.handleSetId);
+		insertBtn?.removeEventListener("mousedown", this.handleInsert);
+		deleteBtn?.removeEventListener("click", this.handleDelete);
 	}
 
 	private handleSetId = (event: MouseEvent) => {

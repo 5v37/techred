@@ -138,7 +138,12 @@ onMounted(() => {
 			epigraph: (node, view, getPos) => new BlockView(node, view, getPos),
 			section: (node, view, getPos) => new BlockView(node, view, getPos),
 			poem: (node, view, getPos) => new BlockView(node, view, getPos),
-			cite: (node, view, getPos) => new BlockView(node, view, getPos)
+			cite: (node, view, getPos) => new BlockView(node, view, getPos),
+			title: (node, view, getPos) => new BlockView(node, view, getPos),
+			subtitle: (node, view, getPos) => new BlockView(node, view, getPos),
+			stanza: (node, view, getPos) => new BlockView(node, view, getPos),
+			textauthor: (node, view, getPos) => new BlockView(node, view, getPos),
+			date: (node, view, getPos) => new BlockView(node, view, getPos)
 		},
 		dispatchTransaction(transaction) {
 			const newState = view.state.apply(transaction);

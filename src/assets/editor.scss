@@ -168,11 +168,6 @@
 		font-family: 'Nunito', sans-serif;
 	}
 
-	subtitle[id]::before {
-		@include before();
-		content: "#" attr(id);
-	}
-
 	note {
 		display: inline;
 		line-height: 0;
@@ -306,7 +301,8 @@
 		visibility: visible;
 	}
 
-	& > block-section:only-of-type > context-actions > delete-button {
+	& > block-section:only-of-type > context-actions > delete-button,
+	poem > block-stanza:only-of-type > context-actions > delete-button {
 		color: rgb(from var(--p-text-muted-color) r g b / var(--p-disabled-opacity));
 		cursor: auto;
 	}
