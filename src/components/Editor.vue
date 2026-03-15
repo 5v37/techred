@@ -7,7 +7,7 @@
 <script setup lang="ts">
 import { useTemplateRef, onMounted, onUnmounted } from "vue";
 
-import { EditorState, TextSelection, Transaction } from "prosemirror-state";
+import { EditorState, TextSelection, Transaction, Plugin } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
 import { Node, DOMParser as ProseDOMParser } from "prosemirror-model";
 import { DocAttrStep, ReplaceAroundStep, ReplaceStep } from "prosemirror-transform";
@@ -52,47 +52,39 @@ custKeymap["Enter"] = splitBlock(false);
 custKeymap["Shift-Enter"] = splitBlock(true);
 
 let view: EditorView;
-let state: EditorState;
-let root = emptyDoc();
+let plugins: Plugin[] = [];
 let observer: IntersectionObserver;
-if (!props.annotation) {
-	updateTOC(root);
-};
 
 fb2Mapper.addProcessor(parseContent, serializeContent, props.editorId, 1);
 const monitor = modificationMonitor();
 
 onMounted(() => {
-	state = EditorState.create({
-		doc: root,
-		plugins: [
-			props.annotation ? history() : sharedHistory(props.editorId),
-			keymap(custKeymap),
-			keymap({
-				"Mod-z": props.annotation ? undo : sharedUndo,
-				"Mod-y": props.annotation ? redo : sharedRedo,
-				"Mod-b": setMark(schema.marks.strong),
-				"Mod-i": setMark(schema.marks.emphasis),
-				"Mod-,": setMark(schema.marks.sub),
-				"Mod-.": setMark(schema.marks.sup),
-				"Mod-Shift-x": setMark(schema.marks.strikethrough),
-				"Mod-Shift-m": setMark(schema.marks.code),
-				"Mod-k": chainCommands(setLink(), () => true),
-				"Mod-;": chainCommands(setId(false), () => true),
-				"Mod-Shift-;": chainCommands(setId(true), () => true),
-				"Tab": goToNextCell(1),
-				"Shift-Tab": goToNextCell(-1)
-			}),
-			linkTooltip(editor.value!),
-			monitor,
-			tableEditing(),
-			dropCursor(),
-			toolbar(props.annotation ? props.editorId : "mainEditor")
-		]
-	});
-
+	plugins = [
+		props.annotation ? history() : sharedHistory(props.editorId),
+		keymap(custKeymap),
+		keymap({
+			"Mod-z": props.annotation ? undo : sharedUndo,
+			"Mod-y": props.annotation ? redo : sharedRedo,
+			"Mod-b": setMark(schema.marks.strong),
+			"Mod-i": setMark(schema.marks.emphasis),
+			"Mod-,": setMark(schema.marks.sub),
+			"Mod-.": setMark(schema.marks.sup),
+			"Mod-Shift-x": setMark(schema.marks.strikethrough),
+			"Mod-Shift-m": setMark(schema.marks.code),
+			"Mod-k": chainCommands(setLink(), () => true),
+			"Mod-;": chainCommands(setId(false), () => true),
+			"Mod-Shift-;": chainCommands(setId(true), () => true),
+			"Tab": goToNextCell(1),
+			"Shift-Tab": goToNextCell(-1)
+		}),
+		linkTooltip(editor.value!),
+		monitor,
+		tableEditing(),
+		dropCursor(),
+		toolbar(props.annotation ? props.editorId : "mainEditor")
+	];
 	view = new EditorView(editor.value, {
-		state: state,
+		state: EditorState.create({ doc: emptyDoc(), plugins }),
 		handleScrollToSelection: () => {
 			if (editorState.cancelEditorScroll) {
 				editorState.cancelEditorScroll = false;
@@ -156,6 +148,7 @@ onMounted(() => {
 	editorState.views[props.editorId] = view;
 
 	if (!props.annotation) {
+		updateTOC(view.state.doc);
 		observer = new IntersectionObserver((entries) => {
 			entries.forEach(entry => {
 				if (entry.isIntersecting && editor.value) {
@@ -180,14 +173,19 @@ function hasContent(): boolean {
 
 function parseContent(bodyElement: Element | undefined) {
 	const name = !props.annotation ? bodyElement?.getAttribute("name") || "" : undefined;
+	let doc;
 	if (!bodyElement || !bodyElement.textContent) {
-		root = emptyDoc(name);
+		doc = emptyDoc(name);
 	} else {
-		root = ProseDOMParser.fromSchema(schema).parse(bodyElement, { topNode: emptyDoc(name) });
-		root = removeEmptyMarks(root, schema);
+		doc = ProseDOMParser.fromSchema(schema).parse(bodyElement, { topNode: emptyDoc(name) });
+		doc = removeEmptyMarks(doc, schema);
 	}
+
+	if (view) {
+		view.updateState(EditorState.create({ doc, plugins }));
+	};
 	if (!props.annotation) {
-		updateTOC(root);
+		updateTOC(doc);
 		if (editor.value) {
 			if (editor.value.scrollHeight !== 0) {
 				editor.value.scrollTop = 0;
@@ -195,11 +193,6 @@ function parseContent(bodyElement: Element | undefined) {
 				observer.observe(editor.value);
 			};
 		};
-	};
-	if (view) {
-		state.doc = root;
-		view.updateState(state);
-		view.dispatch(view.state.tr.deleteSelection());
 	};
 }
 
