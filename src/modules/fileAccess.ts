@@ -1,7 +1,7 @@
 import { invoke } from "@tauri-apps/api/core";
 import { open as openDialog, OpenDialogOptions, save as saveDialog, SaveDialogOptions } from "@tauri-apps/plugin-dialog";
-import { readFile, writeFile } from "@tauri-apps/plugin-fs";
-import { fileOpen, fileSave, FirstFileOpenOptions, FirstFileSaveOptions, supported as fileAPIsupported } from "browser-fs-access";
+import { lstat, readFile, writeFile } from "@tauri-apps/plugin-fs";
+import { fileOpen, fileSave, FirstFileOpenOptions, FirstFileSaveOptions, supported as fileAPIsupported, FileWithHandle } from "browser-fs-access";
 
 import { base64toData, decodeXML, imageFileType, isTauriMode, parseDataURL } from "@/modules/utils";
 import { unpack, pack } from "@/modules/zip";
@@ -18,14 +18,51 @@ async function encode(content: string, filePath: string) {
 	return fileData;
 };
 
+export async function getFileHandle(dt: DataTransfer) {
+	const file: FileWithHandle = dt.files[0];
+
+	if (fileAPIsupported) {
+		const sysHandle = await dt.items[0].getAsFileSystemHandle();
+		if (sysHandle?.kind === "file") {
+			file.handle = sysHandle as FileSystemFileHandle;
+			return file;
+		};
+	} else {
+		const entry = dt.items[0].webkitGetAsEntry();
+		if (entry?.isFile) {
+			return file;
+		}
+	};
+	return undefined;
+}
+
+export async function getFilePath(path: string) {
+	const fileInfo = await lstat(path);
+	if (fileInfo.isFile) {
+		return path;
+	} else {
+		return undefined;
+	}
+}
+
+export async function openFictionBookByHandle(file: FileWithHandle) {
+	const fileData = await file.arrayBuffer();
+	const content = decodeXML(await unpack(fileData));
+	return { content, path: file.name, handle: file.handle };
+}
+
+export async function openFictionBookByPath(path: string) {
+	const fileData = (await readFile(path)).buffer;
+	const content = decodeXML(await unpack(fileData));
+	return { content, path, handle: undefined };
+}
+
 export function openInitialFictionBook() {
 	return new Promise<{ content: string, path: string } | void>((resolve, reject) => {
 		if (isTauriMode) {
 			invoke<string>("file_path").then(async path => {
 				if (path) {
-					const fileData = (await readFile(path)).buffer;
-					const content = decodeXML(await unpack(fileData));
-					resolve({ content, path });
+					resolve(openFictionBookByPath(path));
 				} else {
 					resolve();
 				};
@@ -52,9 +89,7 @@ export function openFictionBookDialog() {
 
 			openDialog(options).then(async path => {
 				if (path) {
-					const fileData = (await readFile(path)).buffer;
-					const content = decodeXML(await unpack(fileData));
-					resolve({ content, path, handle: undefined });
+					resolve(openFictionBookByPath(path));
 				};
 			}).catch((error) => {
 				reject(error);
@@ -67,9 +102,7 @@ export function openFictionBookDialog() {
 			};
 
 			fileOpen(options).then(async file => {
-				const fileData = await file.arrayBuffer();
-				const content = decodeXML(await unpack(fileData));
-				resolve({ content, path: file.name, handle: file.handle });
+				resolve(openFictionBookByHandle(file));
 			}).catch((error) => {
 				if (error.name !== "AbortError") {
 					reject(error);
@@ -200,10 +233,8 @@ export function saveFictionBookDialog(content: string, filePath: string, saveDir
 					excludeAcceptAllOption: true
 				};
 
-				fileSave(blob, options).then((handle) => {
-					if (handle) {
-						resolve({ path: handle.name, handle });
-					};
+				fileSave(blob, options).then(() => {
+					resolve({ path: filePath, handle: undefined });
 				}).catch(error => reject(error));
 			};
 		};

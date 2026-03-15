@@ -26,7 +26,7 @@ import { supported as fileAPIsupported } from "browser-fs-access";
 
 import Settings from "@/components/Settings.vue";
 import fb2Mapper from "@/modules/fb2Mapper";
-import { openInitialFictionBook, openFictionBookDialog, saveFictionBookDialog } from "@/modules/fileAccess";
+import { openInitialFictionBook, openFictionBookDialog, saveFictionBookDialog, openFictionBookByHandle, openFictionBookByPath, getFilePath, getFileHandle } from "@/modules/fileAccess";
 import { openFileError, saveFileError, saveFileInfo, UnexpectedError } from "@/modules/notifications";
 import { isTauriMode } from "@/modules/utils";
 import modificationTracker from "@/modules/modificationTracker";
@@ -85,10 +85,32 @@ addEventListener("keydown", (event: KeyboardEvent) => {
 addEventListener("error", UnexpectedError);
 
 if (isTauriMode) {
-	getCurrentWindow().onCloseRequested(async (event) => {
+	const currentWindow = getCurrentWindow();
+	currentWindow.onCloseRequested(async (event) => {
 		const confirmed = await confirmDiscardChanges();
 		if (!confirmed) {
 			event.preventDefault();
+		};
+	});
+
+	currentWindow.onDragDropEvent(async (event) => {
+		if (event.payload.type === "drop" && event.payload.paths.length === 1) {
+
+			const path = await getFilePath(event.payload.paths[0]);
+			if (!path) return;
+
+			const confirmed = await confirmDiscardChanges();
+			if (!confirmed) return;
+
+			openFictionBookByPath(path).then(async (file) => {
+				await fb2Mapper.parse(file.content);
+				currentFilePath.value = file.path;
+				fileHandle = file.handle;
+				modificationTracker.reset(true);
+			}).catch((error) => {
+				openFileError(error);
+				newFile();
+			});
 		};
 	});
 } else {
@@ -98,6 +120,36 @@ if (isTauriMode) {
 			return "";
 		}
 		return false;
+	});
+
+	addEventListener("dragover", (e: DragEvent) => {
+		const dt = e.dataTransfer;
+		if (dt && dt.types.includes("Files") && dt.items.length === 1) {
+			e.preventDefault();
+		};
+	});
+	addEventListener("drop", async (e: DragEvent) => {
+		const dt = e.dataTransfer;
+		if (dt && dt.types.includes("Files") && dt.items.length === 1) {
+			e.preventDefault();
+
+			const handle = await getFileHandle(dt);
+			if (!handle) return;
+
+			const confirmed = await confirmDiscardChanges();
+			if (!confirmed) return;
+
+			openFictionBookByHandle(handle).then(async (file) => {
+				await fb2Mapper.parse(file.content);
+				currentFilePath.value = file.path;
+				fileHandle = file.handle;
+				modificationTracker.reset(true);
+			}).catch((error) => {
+				openFileError(error);
+				modificationTracker.reset(true);
+				newFile();
+			});
+		};
 	});
 };
 
@@ -150,6 +202,7 @@ function openFile() {
 			modificationTracker.reset(true);
 		}).catch((error) => {
 			openFileError(error);
+			modificationTracker.reset(true);
 			newFile();
 		});
 	});

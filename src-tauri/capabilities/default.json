@@ -12,6 +12,7 @@
 		"dialog:allow-confirm",
 		"opener:allow-open-url",
 		"opener:allow-default-urls",
+		"fs:allow-lstat",
 		"fs:allow-read-file",
 		"fs:allow-write-file",
 		{
