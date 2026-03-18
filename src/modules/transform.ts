@@ -190,8 +190,8 @@ export function wordBoundaries($pos: ResolvedPos, markType?: MarkType, active?: 
 		wordEnd++;
 	}
 
-	let canMarkup = !atWhitespace;
-	if (canMarkup) {
+	let canMarkup = !atWhitespace || active;
+	if (!atWhitespace) {
 		if (markType && active) {
 			while (wordStart > segmentFrom && isWhitespace(text[wordStart - 1])) {
 				wordStart--;

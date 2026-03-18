@@ -95,17 +95,17 @@ onMounted(() => {
 		},
 		handleDoubleClick: (view, pos, event) => {
 			if (event.button === 0) {
-				if (!view.hasFocus()) {
-					view.focus();
-				};
+				const doc = view.state.doc;
+				const range = wordBoundaries(doc.resolve(pos));
+				if (range.from === range.to) return false;
+
 				// В Chromium рассинхрон с DOMObserver при замене выделения
 				setTimeout(() => {
-					const doc = view.state.doc;
-					const range = wordBoundaries(doc.resolve(pos));
+					view.focus();
+
 					const selection = TextSelection.create(doc, range.from, range.to);
 					if (!view.state.selection.eq(selection)) {
-						let tr = view.state.tr;
-						tr.setSelection(selection);
+						let tr = view.state.tr.setSelection(selection);
 						view.dispatch(tr);
 					};
 				});
