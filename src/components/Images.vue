@@ -1,9 +1,9 @@
 <template>
 	<div ref="binary" class="t-images-container">
 		<div class="t-images-panel">
-			<div v-for="value in imageStore.getActiveImages()" :key="value.imgid" class="t-images-block">
+			<div v-for="value in imageRegistry.getActiveImages()" :key="value.imgid" class="t-images-block">
 				<div class="t-images-error_wrapper">
-					<Image class="img" :src=value.dataURL preview width="200" />
+					<Image class="img" :src=value.url preview width="200" />
 					<Message v-if="value.id.invalid" severity="error" icon="pi pi-times-circle"
 						class="t-images-error_id">{{ value.id.error }}</Message>
 				</div>
@@ -25,14 +25,12 @@ import { Image, InputText, Message, Button } from "primevue";
 
 import fb2Mapper, { DocumentBlocks } from "@/modules/fb2Mapper";
 import editorState from "@/modules/editorState";
-import { addingNodes } from "@/modules/utils";
+import { addingNodes, dataToBase64 } from "@/modules/utils";
 import { fb2ns } from "@/modules/fb2Model";
 import { NCNameFilter, validateId, getIds } from "@/modules/idManager";
-import type { ImageSpec } from "@/modules/imageStore";
+import type { ImageSpec } from "@/modules/imageRegistry";
 import modificationTracker from "@/modules/modificationTracker";
-import imageStore from "@/modules/imageStore";
-import { saveImageDialog } from "@/modules/fileAccess";
-import { saveFileError, saveFileInfo } from "@/modules/notifications";
+import imageRegistry from "@/modules/imageRegistry";
 
 const props = defineProps<{ active: boolean; }>();
 const binary = useTemplateRef("binary");
@@ -44,7 +42,7 @@ let idsCacheKey: string | undefined = undefined;
 
 watch(() => props.active, async (isActive) => {
 	if (isActive) {
-		imageStore.collectActiveImages();
+		imageRegistry.collectActiveImages();
 
 		if (toTop && binary.value) {
 			await nextTick();
@@ -92,15 +90,13 @@ function getCachedIds(excludeId?: string) {
 }
 
 function saveImage(image: ImageSpec) {
-	saveImageDialog(image.dataURL, image.id.validValue).then(() => {
-		saveFileInfo();
-	}).catch((error) => saveFileError(error));
+	imageRegistry.exportToDialog(image.imgid);
 }
 
 function getBlocks(xmlDoc: Document, method: string) {
 	if (method === "parse") {
 		toTop = true;
-		imageStore.clear();
+		imageRegistry.clear();
 	};
 
 	const [fb2] = xmlDoc.getElementsByTagName("FictionBook");
@@ -124,7 +120,7 @@ function parseContent(descElements: Element | undefined) {
 		if (item.tagName === "binary") {
 			id = item.getAttribute("id");
 			if (id && item.textContent) {
-				imageStore.addAsContent(id, item.textContent.replace(/[\n\r]/g, ""), item.getAttribute("content-type"), ids);
+				imageRegistry.addAsContent(id, item.textContent.replace(/[\n\r]/g, ""), item.getAttribute("content-type"), ids);
 				if (id) {
 					ids.add(id);
 				};
@@ -133,7 +129,7 @@ function parseContent(descElements: Element | undefined) {
 	};
 
 	if (props.active) {
-		imageStore.collectActiveImages();
+		imageRegistry.collectActiveImages();
 	}
 }
 
@@ -141,13 +137,13 @@ function serializeContent(xmlDoc: Document, target: Element) {
 	const addElement = addingNodes(xmlDoc, fb2ns);
 	isModified.value = false;
 
-	imageStore.collectActiveImages();
-	for (const image of imageStore.getActiveImages()) {
+	imageRegistry.collectActiveImages();
+	for (const image of imageRegistry.getActiveImages()) {
 		const attrs = [
 			{ key: "id", value: image.id.validValue },
 			{ key: "content-type", value: image.type }
 		];
-		addElement(target, "binary", image.content, false, attrs);
+		addElement(target, "binary", dataToBase64(image.data), false, attrs);
 	};
 }
 

@@ -1,7 +1,7 @@
 <template>
 	<Toast />
 
-	<MainToolbar v-show="loaded" @loaded="loaded = true" />
+	<MainToolbar v-show="loaded" />
 	<Splitter v-show="loaded" :initialRatio="15" direction="vertical" class="t-app-main">
 		<template #main>
 			<div class="t-app-pane">
@@ -32,11 +32,15 @@ import Description from "@/components/Description.vue";
 import Content from "@/components/Content.vue";
 import Images from "@/components/Images.vue";
 import AppDialogs from "@/components/AppDialogs.vue";
-import { initNotification } from "@/modules/notifications";
+import { initNotification, UnexpectedError } from "@/modules/notifications";
+import { initFile } from "@/modules/documentSession";
 
 const loaded = ref(false);
 const current = ref("");
+
 initNotification();
+addEventListener("error", UnexpectedError);
+initFile().then(() => loaded.value = true);
 </script>
 
 <style>

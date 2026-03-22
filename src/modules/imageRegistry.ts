@@ -1,16 +1,17 @@
 import { reactive } from "vue";
 
-import { base64toData, imageFileType, parseDataURL } from "@/modules/utils";
+import { base64toData, imageFileType } from "@/modules/utils";
 import { validateId, generateUniqueFileName } from "@/modules/idManager";
-import { invalidId } from "@/modules/notifications";
+import { invalidId, openFileError, saveFileError, saveFileInfo } from "@/modules/notifications";
 import editorState from "@/modules/editorState";
+import { openFileDialog, saveFileDialog } from "@/modules/fileDialog";
 
 type ImageSpec = {
 	kind: "internal",
 	imgid: string,
 	type: string,
-	content: string,
-	dataURL: string,
+	url: string,
+	data: ArrayBuffer,
 	id: {
 		validValue: string,
 		invalid: boolean,
@@ -25,35 +26,37 @@ type ExternalImageSpec = {
 	href: string
 };
 
-class ImageStore {
+class ImageRegistry {
 	private allImages = new Map<string, ImageSpec | ExternalImageSpec>();
 	private activeIds = new Set<string>();
 	private reservedIds = new Map<string, string>();
 	private trackedIds = new Set<string>();
 
-	addAsDataURL(name: string, dataURL: string) {
-		const data = parseDataURL(dataURL);
-		if (data?.base64) {
-			const imgid = self.crypto.randomUUID();
-			const validId = generateUniqueFileName(name, data.mime);
-			this.allImages.set(imgid, {
-				kind: "internal",
-				imgid: imgid,
-				content: data.data,
-				type: data.mime,
-				dataURL: dataURL,
-				id: {
-					validValue: validId,
-					invalid: false,
-					draftValue: validId,
-					error: ""
-				}
-			});
-			if (validId !== name) {
-				invalidId(name, validId);
-			}
-			return imgid;
+	addAsArrayBuffer(data: ArrayBuffer, mimeType: `${string}/${string}`, name: string) {
+		const imgid = self.crypto.randomUUID();
+		const validId = generateUniqueFileName(name, mimeType);
+		const blob = new Blob([data], { type: mimeType });
+		const url = URL.createObjectURL(blob);
+
+		if (validId !== name) {
+			invalidId(name, validId);
 		};
+
+		this.allImages.set(imgid, {
+			kind: "internal",
+			imgid: imgid,
+			url: url,
+			type: mimeType,
+			data,
+			id: {
+				validValue: validId,
+				invalid: false,
+				draftValue: validId,
+				error: ""
+			}
+		});
+
+		return imgid;
 	}
 
 	addAsRef(href: string) {
@@ -67,29 +70,67 @@ class ImageStore {
 	}
 
 	addAsContent(id: string, content: string, type: string | null, ids: Set<string>) {
-		const validType = type || imageFileType(base64toData(content.slice(0, 12)).buffer);
-		if (content && validType) {
-			let imgid = this.reservedIds.get(id);
-			if (imgid) {
-				this.reservedIds.delete(id);
-			} else {
-				imgid = self.crypto.randomUUID();
+		if (content) {
+			const data = base64toData(content);
+			const mimeType = type || imageFileType(data.buffer);
+			if (mimeType) {
+				let imgid = this.reservedIds.get(id);
+				if (imgid) {
+					this.reservedIds.delete(id);
+				} else {
+					imgid = self.crypto.randomUUID();
+				};
+				const idValidation = validateId(id, ids, false);
+				const blob = new Blob([data], { type: mimeType });
+				const url = URL.createObjectURL(blob);
+
+				this.allImages.set(imgid, {
+					kind: "internal",
+					imgid: imgid,
+					url: url,
+					type: mimeType,
+					data: data.buffer,
+					id: {
+						validValue: id,
+						invalid: idValidation.invalid,
+						draftValue: id,
+						error: idValidation.error
+					}
+				});
+				return imgid;
 			};
-			const idValidation = validateId(id, ids, false);
-			this.allImages.set(imgid, {
-				kind: "internal",
-				imgid: imgid,
-				content: content,
-				type: validType,
-				dataURL: "data:" + validType + ";base64," + content,
-				id: {
-					validValue: id,
-					invalid: idValidation.invalid,
-					draftValue: id,
-					error: idValidation.error
-				}
-			});
-			return imgid;
+		};
+	}
+
+	async importFromDialog() {
+		try {
+			const vfile = await openFileDialog("Изображения", ["png", "jpg", "jpeg"]);
+			if (vfile) {
+				const fileData = await vfile.read();
+				const fileType = imageFileType(fileData);
+				if (!fileType) {
+					throw new Error("Неподдерживаемый формат изображения");
+				};
+
+				return this.addAsArrayBuffer(fileData, fileType, vfile.name);
+			};
+		} catch (error) {
+			openFileError(error);
+		};
+	}
+
+	async exportToDialog(imgid: string) {
+		try {
+			const image = this.allImages.get(imgid);
+			if (image && image.kind === "internal") {
+				const vfile = await saveFileDialog("Изображения", ["png", "jpg", "jpeg"], image.id.validValue);
+				if (vfile) {
+					await vfile.write(image.data);
+					saveFileInfo();
+				};
+			};
+		} catch (error) {
+			saveFileError(error);
 		};
 	}
 
@@ -99,7 +140,7 @@ class ImageStore {
 			if (image.kind === "external") {
 				return image.href;
 			} else {
-				return image.dataURL;
+				return image.url;
 			};
 		} else {
 			return "";
@@ -129,7 +170,7 @@ class ImageStore {
 			};
 			return "";
 		};
-	};
+	}
 
 	getImgid(href: string | null) {
 		if (!href) {
@@ -157,7 +198,7 @@ class ImageStore {
 			if (image.kind === "external") {
 				return `(Ссылка: ${image.href})`;
 			} else {
-				return `(Файл: ${image.id.validValue})`;
+				return `(Файл: ${image.id.validValue}`;
 			};
 		} else {
 			return "";
@@ -176,7 +217,7 @@ class ImageStore {
 		};
 	}
 
-	*getActiveImages(): Generator<ImageSpec, void, unknown> {
+	* getActiveImages(): Generator<ImageSpec, void, unknown> {
 		for (const id of this.activeIds) {
 			const image = this.allImages.get(id);
 			if (image && image.kind === "internal") {
@@ -200,6 +241,11 @@ class ImageStore {
 	}
 
 	clear() {
+		for (const image of this.allImages.values()) {
+			if (image.kind === "internal") {
+				URL.revokeObjectURL(image.url);
+			};
+		};
 		this.allImages.clear();
 		this.activeIds.clear();
 		this.reservedIds.clear();
@@ -207,8 +253,7 @@ class ImageStore {
 	}
 };
 
-const imageStore = reactive(new ImageStore());
+const imageRegistry = reactive(new ImageRegistry());
 
-export default imageStore;
-
+export default imageRegistry;
 export type { ImageSpec, ExternalImageSpec };

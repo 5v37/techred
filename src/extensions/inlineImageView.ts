@@ -3,7 +3,7 @@ import { watchEffect, WatchHandle } from "vue";
 import type { Node } from "prosemirror-model";
 import type { NodeView } from "prosemirror-view";
 
-import imageStore from "@/modules/imageStore";
+import imageRegistry from "@/modules/imageRegistry";
 
 class InlineImageView implements NodeView {
 	private node: Node;
@@ -42,7 +42,7 @@ class InlineImageView implements NodeView {
 	}
 
 	private updateSrc() {
-		const src = imageStore.getSrc(this.node.attrs.imgid);
+		const src = imageRegistry.getSrc(this.node.attrs.imgid);
 		if (src) {
 			this.dom.classList.remove("t-img-broken");
 			this.dom.setAttribute("src", src);

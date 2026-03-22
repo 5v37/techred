@@ -100,7 +100,8 @@ const extensionFromMimeType: Record<MIMEType, string> = {
 	"image/jpeg": "jpg",
 	"image/jpg": "jpg",
 	"image/png": "png",
-	"image/gif": "gif"
+	"image/gif": "gif",
+	"application/fb2": "fb2"
 };
 
 const extensionSynonyms: Record<string, string> = {
@@ -108,17 +109,16 @@ const extensionSynonyms: Record<string, string> = {
 	jpe: "jpg"
 };
 
-export function resolveFileExtension(originalName: string, mimeType: MIMEType) {
+export function resolveFileExtension(originalName: string, mimeType?: MIMEType) {
 	const separator = originalName.lastIndexOf(".");
 	let name = separator > -1 ? originalName.slice(0, separator) : originalName;
 	let ext = separator > -1 ? originalName.slice(separator + 1).toLowerCase() : "";
 
 	if (ext && extensionSynonyms[ext]) {
 		ext = extensionSynonyms[ext];
-	} else {
+	} else if (mimeType) {
 		const expectedExt = extensionFromMimeType[mimeType];
-
-		if (expectedExt && !ext || ext !== expectedExt) {
+		if (expectedExt && ext !== expectedExt) {
 			ext = expectedExt;
 			name = originalName;
 		};
@@ -158,11 +158,23 @@ export function parseDataURL(dataURL: string | undefined) {
 export function base64toData(data64: string) {
 	const bstr = atob(data64);
 	let n = bstr.length;
-	const u8arr = new Uint8Array(n);
+	const bytes = new Uint8Array(n);
 	while (n--) {
-		u8arr[n] = bstr.charCodeAt(n);
+		bytes[n] = bstr.charCodeAt(n);
 	}
-	return u8arr;
+	return bytes;
+}
+
+export function dataToBase64(data: ArrayBuffer) {
+	const bytes = new Uint8Array(data);
+	const chunkSize = 0x8000; // 32KB chunks
+	let bstr = "";
+
+	for (let i = 0; i < bytes.length; i += chunkSize) {
+		const chunk = bytes.subarray(i, i + chunkSize);
+		bstr += String.fromCharCode(...chunk);
+	};
+	return btoa(bstr);
 }
 
 export function addingNodes(xmlDoc: Document, nameSpace: string) {
@@ -239,6 +251,10 @@ export class CircularBuffer<T> {
 	private _left(index: number) {
 		return (index - 1 < 0) ? this.capacity - 1 : index - 1;
 	}
+}
+
+export function isFunction(value: unknown) {
+	return typeof value === "function";
 }
 
 export function isMac() {

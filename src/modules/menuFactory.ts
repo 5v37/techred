@@ -4,9 +4,7 @@ import type { Command } from "prosemirror-state";
 import type { MenuItem } from "primevue/menuitem";
 
 import { addNodeByPos } from "@/modules/commands";
-import { openImageDialog } from "@/modules/fileAccess";
-import { openFileError } from "@/modules/notifications";
-import imageStore from "@/modules/imageStore";
+import imageRegistry from "@/modules/imageRegistry";
 import editorState from "@/modules/editorState";
 
 function getAllowedChildren(node: Node) {
@@ -44,13 +42,12 @@ function addImageByPos(node: Node, nodeType: NodeType, pos: number): Command {
 			return addNodeByPos(node, nodeType, pos)(state, dispatch);
 		};
 
-		openImageDialog().then(file => {
-			const imgid = imageStore.addAsDataURL(file.name, file.content);
-			if (imgid && dispatch) {
+		imageRegistry.importFromDialog().then(imgid => {
+			if (imgid) {
 				const imageNode = nodeType.create({ imgid });
 				addNodeByPos(node, nodeType, pos, imageNode)(state, dispatch);
 			}
-		}).catch((error) => openFileError(error));
+		});
 
 		return true;
 	};

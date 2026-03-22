@@ -4,7 +4,7 @@ import type { Node } from "prosemirror-model";
 import type { EditorView, NodeView } from "prosemirror-view";
 
 import ui from "@/modules/ui";
-import imageStore from "@/modules/imageStore";
+import imageRegistry from "@/modules/imageRegistry";
 import { deleteNodeByPos } from "@/modules/commands";
 
 class ImageView implements NodeView {
@@ -100,7 +100,7 @@ class ImageView implements NodeView {
 	}
 
 	private updateSrc() {
-		const src = imageStore.getSrc(this.node.attrs.imgid);
+		const src = imageRegistry.getSrc(this.node.attrs.imgid);
 		if (src) {
 			this.imageContent.classList.remove("t-img-broken");
 			this.imageContent.setAttribute("src", src);
@@ -112,7 +112,7 @@ class ImageView implements NodeView {
 	}
 
 	private updateInfo() {
-		const info = imageStore.getInfo(this.node.attrs.imgid);
+		const info = imageRegistry.getInfo(this.node.attrs.imgid);
 		const imgInfo = this.figure.querySelector("img-info");
 		if (info) {
 			const element = imgInfo || document.createElement("img-info");

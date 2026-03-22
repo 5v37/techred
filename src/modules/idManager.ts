@@ -1,6 +1,6 @@
 import editorState from "@/modules/editorState";
 import { resolveFileExtension } from "@/modules/utils";
-import imageStore from "@/modules/imageStore";
+import imageRegistry from "@/modules/imageRegistry";
 
 const NCNameFilter = { pattern: /^[\p{L}_][\p{L}\p{N}_.-]*$/u, validateOnly: true };
 
@@ -76,10 +76,10 @@ function getIds(targetId?: string, skipImages = false) {
 		};
 	};
 
-	const usedImgids = imageStore.getTrackedImgids();
+	const usedImgids = imageRegistry.getTrackedImgids();
 	if (!skipImages) {
 		for (const imgId of usedImgids) {
-			processId(imageStore.getId(imgId));
+			processId(imageRegistry.getId(imgId));
 		};
 	};
 
@@ -89,7 +89,7 @@ function getIds(targetId?: string, skipImages = false) {
 				processId(node.attrs.id);
 			};
 			if (!skipImages && node.attrs.imgid && !usedImgids.has(node.attrs.imgid)) {
-				processId(imageStore.getId(node.attrs.imgid));
+				processId(imageRegistry.getId(node.attrs.imgid));
 				usedImgids.add(node.attrs.imgid);
 			};
 		});

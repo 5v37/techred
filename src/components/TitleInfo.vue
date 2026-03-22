@@ -95,18 +95,16 @@ import EmbeddedEditor from "@/components/EmbeddedEditor.vue";
 import ComplexDatePicker from "@/components/ComplexDatePicker.vue";
 import Sequences from "@/components/Sequences.vue";
 
-import { openFileError, saveFileError, saveFileInfo } from "@/modules/notifications";
 import { genresTree, findGenre } from "@/types/genres";
 import type { Genre } from "@/types/genres";
 import { languages, findLanguage } from "@/types/languages";
 import type { Language } from "@/types/languages";
 import PersonInfo from "@/types/personInfo";
 import Series from "@/types/series";
-import { openImageDialog, saveImageDialog } from "@/modules/fileAccess";
 import { addingNodes } from "@/modules/utils";
 import { fb2ns, xlinkns } from "@/modules/fb2Model";
 import fb2Mapper from "@/modules/fb2Mapper";
-import imageStore from "@/modules/imageStore";
+import imageRegistry from "@/modules/imageRegistry";
 import modificationTracker from "@/modules/modificationTracker";
 
 const model = ref(initialStateDescription());
@@ -125,10 +123,10 @@ modificationTracker.register(model);
 
 watch(() => model.value.cover, (newCover, oldCover) => {
 	if (oldCover) {
-		imageStore.untrackImgid(oldCover);
+		imageRegistry.untrackImgid(oldCover);
 	}
 	if (newCover) {
-		imageStore.trackImgid(newCover);
+		imageRegistry.trackImgid(newCover);
 	}
 });
 
@@ -136,7 +134,7 @@ const hasCover = computed(() => {
 	return cover.value !== "";
 });
 const cover = computed(() => {
-	return imageStore.getSrc(model.value.cover);
+	return imageRegistry.getSrc(model.value.cover);
 });
 
 function initialStateDescription() {
@@ -190,7 +188,7 @@ function parseContent(descElement: Element | undefined) {
 			data.dateValue = item.getAttribute("value") ?? "";
 			data.date = item.textContent.trim();
 		} else if (item.tagName === "coverpage" && item.children) {
-			data.cover = imageStore.getImgid(item.children[0].getAttributeNS(xlinkns, "href"));
+			data.cover = imageRegistry.getImgid(item.children[0].getAttributeNS(xlinkns, "href"));
 		} else if (item.tagName === "lang" && item.textContent) {
 			data.selectedLang = findLanguage(item.textContent);
 		} else if (item.tagName === "src-lang" && item.textContent) {
@@ -236,7 +234,7 @@ function serializeContent(xmlDoc: Document, titleInfo: Element) {
 	if (hasCover.value) {
 		const coverpage = xmlDoc.createElementNS(fb2ns, "coverpage");
 		const image = xmlDoc.createElementNS(fb2ns, "image");
-		image.setAttributeNS(xlinkns, "href", imageStore.getHref(data.cover));
+		image.setAttributeNS(xlinkns, "href", imageRegistry.getHref(data.cover));
 
 		coverpage.appendChild(image);
 		titleInfo.appendChild(coverpage);
@@ -269,19 +267,16 @@ function serializeContent(xmlDoc: Document, titleInfo: Element) {
 }
 
 function selectCover() {
-	openImageDialog().then(file => {
-		const imgid = imageStore.addAsDataURL(file.name, file.content);
+	imageRegistry.importFromDialog().then(imgid => {
 		if (imgid) {
 			model.value.cover = imgid;
 		};
-	}).catch((error) => openFileError(error));
+	});
 }
 
 function saveCover() {
 	if (hasCover.value) {
-		saveImageDialog(cover.value, imageStore.getId(model.value.cover)).then(() => {
-			saveFileInfo();
-		}).catch((error) => saveFileError(error));
+		imageRegistry.exportToDialog(model.value.cover);
 	};
 }
 

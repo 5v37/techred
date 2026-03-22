@@ -57,10 +57,8 @@ import { redo as localRedo, undo as localUndo } from "prosemirror-history";
 import { setBlockType, wrapIn } from "prosemirror-commands";
 
 import editorState from "@/modules/editorState";
-import imageStore from "@/modules/imageStore";
+import imageRegistry from "@/modules/imageRegistry";
 import { addInlineImage, addNodeAfterSelection, deleteTableSafety, setId, setLink, setMark, wrapPoem } from "@/modules/commands";
-import { openImageDialog } from "@/modules/fileAccess";
-import { openFileError } from "@/modules/notifications";
 import { isSameMark, marksInPos } from "@/modules/transform";
 import { sharedRedo, sharedUndo } from "@/extensions/sharedHistory";
 import { addColumnAfter, addColumnBefore, addRowAfter, addRowBefore, deleteColumn, deleteRow, isInTable, mergeCells, setCellAttr, splitCell, toggleHeaderCell, toggleHeaderColumn, toggleHeaderRow } from "prosemirror-tables";
@@ -87,26 +85,24 @@ const createInsertMenuItems = () => [
 		label: nodes.image.spec.label,
 		disabled: !addNodeAfterSelection(nodes.image)(editorView.state),
 		command: () => {
-			openImageDialog().then(file => {
-				const imgid = imageStore.addAsDataURL(file.name, file.content);
+			imageRegistry.importFromDialog().then(imgid => {
 				if (imgid) {
 					const image = nodes.image.create({ imgid });
 					insertCommand(addNodeAfterSelection(nodes.image, image));
 				};
-			}).catch((error) => openFileError(error));
+			});
 		}
 	},
 	{
 		label: "Изображение в текст",
 		disabled: !addInlineImage()(editorView.state),
 		command: () => {
-			openImageDialog().then(file => {
-				const imgid = imageStore.addAsDataURL(file.name, file.content);
+			imageRegistry.importFromDialog().then(imgid => {
 				if (imgid) {
 					const image = nodes.inlineimage.create({ imgid });
 					insertCommand(addInlineImage(image));
 				};
-			}).catch((error) => openFileError(error));
+			});
 		}
 	},
 	{
