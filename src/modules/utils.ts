@@ -177,6 +177,25 @@ export function dataToBase64(data: ArrayBuffer) {
 	return btoa(bstr);
 }
 
+export function formatBytes(bytes: number) {
+	if (bytes < 1) return "0 байт";
+
+	const base = 1024;
+	const decimals = 2;
+	const locale = "ru-RU";
+	const sizes = ["байт", "КБ", "МБ", "ГБ", "ТБ", "ПБ"];
+
+	const i = Math.floor(Math.log(bytes) / Math.log(base));
+	const value = parseFloat((bytes / Math.pow(base, i)).toFixed(decimals));
+
+	const formatter = new Intl.NumberFormat(locale, {
+		minimumFractionDigits: 0,
+		maximumFractionDigits: decimals
+	});
+
+	return `${formatter.format(value)} ${sizes[i]}`;
+}
+
 export function addingNodes(xmlDoc: Document, nameSpace: string) {
 	type attrType = {
 		key: string,

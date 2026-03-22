@@ -234,6 +234,10 @@
 			color: var(--p-text-muted-color);
 			background: var(--p-form-field-background);
 			user-select: none;
+			max-width: calc(100% - 7rem);
+			text-overflow: ellipsis;
+			white-space: nowrap;
+			overflow: hidden;
 		}
 	}
 

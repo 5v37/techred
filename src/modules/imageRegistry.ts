@@ -1,6 +1,6 @@
 import { reactive } from "vue";
 
-import { base64toData, imageFileType } from "@/modules/utils";
+import { base64toData, formatBytes, imageFileType } from "@/modules/utils";
 import { validateId, generateUniqueFileName } from "@/modules/idManager";
 import { invalidId, openFileError, saveFileError, saveFileInfo } from "@/modules/notifications";
 import editorState from "@/modules/editorState";
@@ -198,7 +198,7 @@ class ImageRegistry {
 			if (image.kind === "external") {
 				return `(Ссылка: ${image.href})`;
 			} else {
-				return `(Файл: ${image.id.validValue}`;
+				return `(Файл: ${image.id.validValue} | ${formatBytes(image.data.byteLength)})`;
 			};
 		} else {
 			return "";
