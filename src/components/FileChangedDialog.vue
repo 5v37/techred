@@ -1,10 +1,11 @@
 <template>
-	<Dialog v-model:visible=visible modal :closable="false" :close-on-escape="false" class="t-ui-dialog"
-		header="Хотите сохранить изменения в документе?">
+	<Dialog v-model:visible=visible modal :closable="false" :close-on-escape="false" class="t-ui-dialog">
+		<template #header>
+			<span class="p-dialog-title">Документ был изменен другим приложением.<br />Хотите его обновить?</span>
+		</template>
 		<template #footer>
 			<Button type="button" label="Отмена" severity="secondary" @click="resolve('cancel')"></Button>
-			<Button type="button" label="Не сохранять" severity="secondary" @click="resolve('discard')"></Button>
-			<Button type="button" label="Сохранить" autofocus @click="resolve('save')"></Button>
+			<Button type="button" label="Обновить" autofocus @click="resolve('reload')"></Button>
 		</template>
 	</Dialog>
 </template>
@@ -15,9 +16,9 @@ import { Dialog, Button } from "primevue";
 import ui from "@/modules/ui";
 
 const visible = ref(false);
-let resolvePromise: ((result: "save" | "discard" | "cancel") => void) | null = null;
+let resolvePromise: ((result: "reload" | "cancel") => void) | null = null;
 
-ui.openSaveChangesDialog = openDialog;
+ui.openFileChangedDialog = openDialog;
 
 function keyListener(event: KeyboardEvent) {
 	if (event.defaultPrevented) {
@@ -27,14 +28,14 @@ function keyListener(event: KeyboardEvent) {
 	if (event.code === "Escape") {
 		resolve("cancel");
 	} else if (event.code === "Enter") {
-		resolve("save");
+		resolve("reload");
 	} else {
 		return;
 	};
 	event.preventDefault();
 }
 
-function openDialog(): Promise<"save" | "discard" | "cancel"> {
+function openDialog(): Promise<"reload" | "cancel"> {
 	visible.value = true;
 	addEventListener("keydown", keyListener);
 	return new Promise((resolve) => {
@@ -42,7 +43,7 @@ function openDialog(): Promise<"save" | "discard" | "cancel"> {
 	});
 }
 
-function resolve(result: "save" | "discard" | "cancel") {
+function resolve(result: "reload" | "cancel") {
 	if (resolvePromise) {
 		resolvePromise(result);
 		resolvePromise = null;

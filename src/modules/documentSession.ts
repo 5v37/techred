@@ -74,6 +74,14 @@ if (isTauriMode) {
 	});
 };
 
+const fileChangeHandle = (vfile: VirtualFile) => {
+	ui.openFileChangedDialog().then(async (choice) => {
+		if (choice === "reload") {
+			await open(Promise.resolve(vfile));
+		}
+	});
+};
+
 async function encode(content: string, fileName: string) {
 	let xmlData = new TextEncoder().encode(content).buffer;
 	const { name, ext } = resolveFileExtension(fileName);
@@ -82,18 +90,20 @@ async function encode(content: string, fileName: string) {
 		xmlData = await pack(xmlData, `${iName}.${iExt}`);
 	}
 	return xmlData;
-};
+}
 
 async function open(futureVfile: Promise<VirtualFile | undefined>) {
 	try {
 		const vfile = await futureVfile;
 		if (vfile) {
+			currentFile.value?.stopWatch();
 			const fileData = await vfile.read();
 			const content = decodeXML(await unpack(fileData));
 
 			await fb2Mapper.parse(content);
 			currentFile.value = vfile;
 			modificationTracker.reset(true);
+			await vfile.startWatch(fileChangeHandle);
 
 			return true;
 		};
@@ -109,11 +119,13 @@ async function save(futureVfile: Promise<VirtualFile | undefined>) {
 	try {
 		const vfile = await futureVfile;
 		if (vfile) {
+			currentFile.value?.stopWatch();
 			const content = fb2Mapper.serialize();
-			vfile.write(await encode(content, vfile.name));
+			await vfile.write(await encode(content, vfile.name));
 
 			currentFile.value = vfile;
 			modificationTracker.reset(false);
+			await vfile.startWatch(fileChangeHandle);
 			saveFileInfo();
 
 			return true;
@@ -126,6 +138,7 @@ async function save(futureVfile: Promise<VirtualFile | undefined>) {
 }
 
 async function reset() {
+	currentFile.value?.stopWatch();
 	await fb2Mapper.reset();
 	currentFile.value = undefined;
 	modificationTracker.reset(true);

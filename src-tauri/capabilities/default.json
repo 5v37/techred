@@ -12,15 +12,29 @@
 		"dialog:allow-confirm",
 		"opener:allow-open-url",
 		"opener:allow-default-urls",
-		"fs:allow-lstat",
 		"fs:allow-read-file",
 		"fs:allow-write-file",
+		"fs:allow-lstat",
+		"fs:allow-watch",
+		"fs:allow-exists",
 		{
 			"identifier": "fs:allow-read-file",
 			"allow": ["**"]
 		},
 		{
 			"identifier": "fs:allow-write-file",
+			"allow": ["**"]
+		},
+		{
+			"identifier": "fs:allow-lstat",
+			"allow": ["**"]
+		},
+		{
+			"identifier": "fs:allow-watch",
+			"allow": ["**"]
+		},
+		{
+			"identifier": "fs:allow-exists",
 			"allow": ["**"]
 		}
 	]

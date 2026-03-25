@@ -1,4 +1,4 @@
-import { lstat, readFile, writeFile } from "@tauri-apps/plugin-fs";
+import { readFile, writeFile, exists, lstat, watch, type UnwatchFn } from "@tauri-apps/plugin-fs";
 import { isFunction, isTauriMode } from "@/modules/utils";
 
 interface VirtualFile {
@@ -7,6 +7,9 @@ interface VirtualFile {
 
 	read(): Promise<ArrayBuffer>;
 	write(data: ArrayBuffer): Promise<void>;
+
+	startWatch(callback: (vfile: VirtualFile) => void): Promise<void>;
+	stopWatch(): void;
 }
 
 async function createVirtualFile(input: string | Array<string> | File | FileSystemFileHandle | DataTransfer): Promise<VirtualFile> {
@@ -59,9 +62,13 @@ class WebFile implements VirtualFile {
 		const blob = new Blob([data], { type: this.file.type });
 		triggerDownload(this.file.name, blob);
 	}
+
+	async startWatch(_callback: (vfile: VirtualFile) => void): Promise<void> { }
+	stopWatch(): void { }
 }
 
 class AccessApiFile implements VirtualFile {
+	private observer: FileSystemObserver | undefined;
 
 	constructor(private handle: FileSystemFileHandle) { }
 
@@ -78,9 +85,40 @@ class AccessApiFile implements VirtualFile {
 		await writableStream.write(data);
 		await writableStream.close();
 	}
+
+	async startWatch(callback: (vfile: VirtualFile) => void): Promise<void> {
+		if (!isFunction(window.FileSystemObserver)) {
+			return;
+		};
+
+		this.stopWatch();
+		this.observer = new FileSystemObserver((records) => {
+			for (const record of records) {
+				if (record.type === "modified" || record.type === "appeared") {
+					callback(this);
+					return;
+				};
+			};
+		});
+
+		try {
+			await this.observer.observe(this.handle);
+		} catch (error) {
+			this.observer = undefined;
+			console.error("Failed to start file observation:", error);
+		};
+	}
+
+	stopWatch(): void {
+		if (this.observer) {
+			this.observer.disconnect();
+			this.observer = undefined;
+		};
+	}
 }
 
 class TauriFile implements VirtualFile {
+	private unwatch: UnwatchFn | undefined;
 	readonly name;
 
 	constructor(private path: string) {
@@ -96,6 +134,25 @@ class TauriFile implements VirtualFile {
 
 	async write(data: ArrayBuffer) {
 		await writeFile(this.path, new Uint8Array(data));
+	}
+
+	async startWatch(callback: (vfile: VirtualFile) => void): Promise<void> {
+		this.stopWatch();
+		this.unwatch = await watch(this.path, async (event) => {
+			if (typeof event.type === "string" || !("modify" in event.type || "create" in event.type)) {
+				return;
+			};
+			if (await exists(this.path)) {
+				callback(this);
+			};
+		}, { delayMs: 1000 });
+	}
+
+	stopWatch(): void {
+		if (this.unwatch) {
+			this.unwatch();
+			this.unwatch = undefined;
+		};
 	}
 }
 

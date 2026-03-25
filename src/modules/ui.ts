@@ -11,6 +11,8 @@ class ui {
 		() => { throw new Error("[UI] openLinkEditDialog not initialized.") };
 	public openSaveChangesDialog: () => Promise<"save" | "discard" | "cancel"> =
 		() => Promise.reject(new Error("[UI] openSaveChangesDialog not initialized."));
+	public openFileChangedDialog: () => Promise<"reload" | "cancel"> =
+		() => Promise.reject(new Error("[UI] openFileChangedDialog not initialized."));
 
 	public showInsertBlockMenu: (event: Event, view: EditorView, node: Node, pos: number) => Promise<void> =
 		() => Promise.reject(new Error("[UI] showInsertBlockMenu not initialized."));
