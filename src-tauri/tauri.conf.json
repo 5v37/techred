@@ -15,7 +15,7 @@
 				"width": 800,
 				"height": 600,
 				"visible": false,
-				"dragDropEnabled": true
+				"dragDropEnabled": false
 			}
 		],
 		"security": {

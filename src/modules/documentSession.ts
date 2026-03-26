@@ -33,16 +33,6 @@ if (isTauriMode) {
 		};
 	});
 
-	currentWindow.onDragDropEvent(async (event) => {
-		if (event.payload.type === "drop" && event.payload.paths.length === 1) {
-			const vfile = createVirtualFile(event.payload.paths);
-
-			const confirmed = await confirmDiscardChanges();
-			if (!confirmed) return;
-
-			await open(vfile);
-		};
-	});
 } else {
 	addEventListener("beforeunload", (event: BeforeUnloadEvent) => {
 		if (modificationTracker.docModified.value) {
@@ -51,28 +41,28 @@ if (isTauriMode) {
 		}
 		return false;
 	});
-
-	addEventListener("dragover", (e: DragEvent) => {
-		const dt = e.dataTransfer;
-		if (dt && dt.types.includes("Files") && dt.items.length === 1) {
-			e.preventDefault();
-			e.stopPropagation();
-		};
-	}, { capture: true });
-	addEventListener("drop", async (e: DragEvent) => {
-		const dt = e.dataTransfer;
-		if (dt && dt.types.includes("Files") && dt.items.length === 1) {
-			e.preventDefault();
-
-			const vfile = createVirtualFile(dt);
-
-			const confirmed = await confirmDiscardChanges();
-			if (!confirmed) return;
-
-			await open(vfile);
-		};
-	});
 };
+
+addEventListener("dragover", (e: DragEvent) => {
+	const dt = e.dataTransfer;
+	if (dt && dt.types.includes("Files") && dt.items.length === 1) {
+		e.preventDefault();
+		e.stopPropagation();
+	};
+}, { capture: true });
+addEventListener("drop", async (e: DragEvent) => {
+	const dt = e.dataTransfer;
+	if (dt && dt.types.includes("Files") && dt.items.length === 1) {
+		e.preventDefault();
+
+		const vfile = createVirtualFile(dt);
+
+		const confirmed = await confirmDiscardChanges();
+		if (!confirmed) return;
+
+		await open(vfile);
+	};
+});
 
 const fileChangeHandle = (vfile: VirtualFile) => {
 	ui.openFileChangedDialog().then(async (choice) => {
@@ -149,7 +139,7 @@ async function confirmDiscardChanges(): Promise<boolean> {
 
 	const choice = await ui.openSaveChangesDialog();
 	if (choice === "save") {
-		return currentFile.value && saveFileAvailable ? await saveFile() : await saveFileAs();
+		return currentFile.value?.hasLocation ? await saveFile() : await saveFileAs();
 	} else if (choice === "discard") {
 		return true;
 	} else {
@@ -182,7 +172,7 @@ async function openFile(): Promise<boolean> {
 }
 
 async function saveFile(): Promise<boolean> {
-	if (currentFile.value && saveFileAvailable) {
+	if (currentFile.value?.hasLocation) {
 		return await save(Promise.resolve(currentFile.value));
 	};
 

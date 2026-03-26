@@ -4,7 +4,7 @@
 			<Button icon="pi pi-file" text @click="newFile" severity="secondary" v-tooltip="'Новый (Ctrl+N)'" />
 			<Button icon="pi pi-file-import" text @click="openFile" severity="secondary"
 				v-tooltip="'Открыть... (Ctrl+O)'" />
-			<Button icon="pi pi-save" text @click="saveFile" severity="secondary" :disabled="!currentFile"
+			<Button icon="pi pi-save" text @click="saveFile" severity="secondary" :disabled="!currentFile?.hasLocation"
 				v-tooltip="'Сохранить (Ctrl+S)'" v-if="saveFileAvailable" />
 			<Button icon="pi pi-file-export" text @click="saveFileAs" severity="secondary"
 				v-tooltip="'Сохранить как... (Ctrl+Shift+S)'" />

@@ -1,9 +1,10 @@
-import { readFile, writeFile, exists, lstat, watch, type UnwatchFn } from "@tauri-apps/plugin-fs";
+import { readFile, writeFile, exists, watch, type UnwatchFn } from "@tauri-apps/plugin-fs";
 import { isFunction, isTauriMode } from "@/modules/utils";
 
 interface VirtualFile {
 	readonly name: string;
 	readonly presentation: string;
+	readonly hasLocation: boolean;
 
 	read(): Promise<ArrayBuffer>;
 	write(data: ArrayBuffer): Promise<void>;
@@ -12,34 +13,34 @@ interface VirtualFile {
 	stopWatch(): void;
 }
 
-async function createVirtualFile(input: string | Array<string> | File | FileSystemFileHandle | DataTransfer): Promise<VirtualFile> {
+async function createVirtualFile(input: string | File | FileSystemFileHandle | DataTransfer): Promise<VirtualFile> {
 	if (isTauriMode) {
 		if (typeof input === "string") {
 			return new TauriFile(input);
-		} else if (Array.isArray(input) && input.length === 1) {
-			const fileInfo = await lstat(input[0]);
-			if (fileInfo.isFile) {
-				return new TauriFile(input[0]);
-			};
 		};
 	} else {
 		if (input instanceof File) {
 			return new WebFile(input);
 		} else if (input instanceof FileSystemFileHandle) {
 			return new AccessApiFile(input);
-		} else if (input instanceof DataTransfer && input.types.includes("Files") && input.items.length === 1) {
-			const item = input.items[0];
-			if (isFunction(item.getAsFileSystemHandle)) {
-				const handle = await item.getAsFileSystemHandle();
-				if (handle?.kind === "file") {
-					return new AccessApiFile(handle as FileSystemFileHandle);
-				};
-			} else {
-				const file = input.files[0];
-				const entry = item.webkitGetAsEntry();
-				if (entry?.isFile) {
-					return new WebFile(file);
-				};
+		};
+	};
+
+	// Tauri 2, при включённой настройке dragDropEnabled, перехватывает все события drag-and-drop на уровне окна
+	// для обеспечения доступа к путям файлов, что полностью блокирует стандартные drag-and-drop DOM-события.
+	// Из-за чего в tauri-сборке открытие перенесённых файлов также реализовано через браузерное API
+	if (input instanceof DataTransfer && input.types.includes("Files") && input.items.length === 1) {
+		const item = input.items[0];
+		if (isFunction(item.getAsFileSystemHandle)) {
+			const handle = await item.getAsFileSystemHandle();
+			if (handle?.kind === "file") {
+				return new AccessApiFile(handle as FileSystemFileHandle);
+			};
+		} else {
+			const file = input.files[0];
+			const entry = item.webkitGetAsEntry();
+			if (entry?.isFile) {
+				return new WebFile(file);
 			};
 		};
 	};
@@ -48,6 +49,7 @@ async function createVirtualFile(input: string | Array<string> | File | FileSyst
 }
 
 class WebFile implements VirtualFile {
+	readonly hasLocation = false;
 
 	constructor(private file: File) { }
 
@@ -69,6 +71,7 @@ class WebFile implements VirtualFile {
 
 class AccessApiFile implements VirtualFile {
 	private observer: FileSystemObserver | undefined;
+	readonly hasLocation = true;
 
 	constructor(private handle: FileSystemFileHandle) { }
 
@@ -120,6 +123,7 @@ class AccessApiFile implements VirtualFile {
 class TauriFile implements VirtualFile {
 	private unwatch: UnwatchFn | undefined;
 	readonly name;
+	readonly hasLocation = true;
 
 	constructor(private path: string) {
 		this.name = path.split(/[/\\]/).pop() || "";
