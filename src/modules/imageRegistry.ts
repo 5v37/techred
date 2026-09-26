@@ -208,8 +208,8 @@ class ImageRegistry {
 	collectActiveImages() {
 		this.activeIds = new Set<string>(this.trackedIds);
 
-		for (const view of Object.values(editorState.views)) {
-			view.state.doc.descendants((node) => {
+		for (const manager of editorState.viewManagers) {
+			manager.state.doc.descendants((node) => {
 				if (node.attrs.imgid) {
 					this.activeIds.add(node.attrs.imgid);
 				};

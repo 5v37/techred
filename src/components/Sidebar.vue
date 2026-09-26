@@ -37,8 +37,8 @@ function onNodeSelect(node: TreeNode) {
 		emit("switch", "content");
 	};
 
-	if (node.data) {
-		editorState.setBody(node.data);
+	if (node.type) {
+		//editorState.setBody(node.data);
 		queueMicrotask(() => {
 			const element = document.querySelector(`[uid="${node.key}"]`);
 			if (element) {

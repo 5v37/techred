@@ -2,7 +2,8 @@
 	<Toast />
 
 	<MainToolbar v-show="loaded" />
-	<Splitter v-show="loaded" :initialRatio="15" direction="vertical" class="t-app-main">
+	<Splitter v-show="loaded" :initialRatio="15" direction="vertical" class="t-app-main"
+		:spellcheck="userSettings.spellCheck" :class="{ 'highlight-emphasis': userSettings.highlightEmphasis }">
 		<template #main>
 			<div class="t-app-pane">
 				<Sidebar @switch="current = $event" />
@@ -34,6 +35,7 @@ import Images from "@/components/Images.vue";
 import AppDialogs from "@/components/AppDialogs.vue";
 import { initNotification, UnexpectedError } from "@/modules/notifications";
 import { initFile } from "@/modules/documentSession";
+import { userSettings } from "@/modules/settingsManager";
 
 const loaded = ref(false);
 const current = ref("");

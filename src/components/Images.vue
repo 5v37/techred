@@ -59,7 +59,7 @@ editorState.menu.push({
 });
 
 fb2Mapper.addPreprocessor(getBlocks);
-fb2Mapper.addProcessor(parseContent, serializeContent, "fiction-book", 2);
+fb2Mapper.addProcessor(parseContent, serializeContent, "binary", 2);
 modificationTracker.register(isModified);
 
 function updateMessage(image: ImageSpec) {
@@ -101,7 +101,7 @@ function getBlocks(xmlDoc: Document, method: string) {
 
 	const [fb2] = xmlDoc.getElementsByTagName("FictionBook");
 	const parts: DocumentBlocks = {
-		"fiction-book": fb2
+		"binary": fb2
 	};
 
 	return parts;

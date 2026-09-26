@@ -1,17 +1,20 @@
-import { ref, reactive } from "vue";
+import { reactive, shallowReactive } from "vue";
 
 import { EditorView } from "prosemirror-view";
 import { TreeNode } from "primevue/treenode";
 
-type bodiesType = { [key: string]: TreeNode };
+import {  ViewManager } from "@/modules/viewManager";
 
 class editorState {
+
+	viewManagers: ViewManager[] = [];
+
 	public views: { [key: string]: EditorView } = Object.create(null);
 	public cancelEditorScroll = false;
 	public menu = reactive<TreeNode[]>([]);
-	public bodies: bodiesType = Object.create(null);
-	public currentBody = ref("");
-	public toolbars: { [key: string]: (view: EditorView) => void } = Object.create(null);
+	// public currentBody = ref("");
+
+	mainTOC: TreeNode[] = shallowReactive([]);
 
 	private focusedView?: EditorView;
 
@@ -34,19 +37,20 @@ class editorState {
 		};
 	}
 
-	setBody(key: string) {
-		if (key !== "body0" && key !== this.currentBody.value) {
-			this.currentBody.value = key;
-			return true;
-		};
-		return false;
-	}
+	// setBody(key: string) {
+	// 	if (key !== "body0" && key !== this.currentBody.value) {
+	// 		this.currentBody.value = key;
+	// 		return true;
+	// 	};
+	// 	return false;
+	// }
 
-	focusView(view: EditorView) {
-		if (!view.hasFocus()) {
-			view.dom.focus({ preventScroll: true });
-		}
-	}
+	// ???
+	// Из сайдбара: вычисляем в каком body элемент, если он есть в текущих view позиционируемся на него,
+	//   если нет, в extra view меняем body, если требуемый body в обоих view позиционируемся в extra view
+	// Из тултипа: вычисляем в каком body элемент, если он есть в соседнем view позиционируемся на него,
+	//   если нет, в соседнем view меняем body,
+
 };
 
 export default new editorState();

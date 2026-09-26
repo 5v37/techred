@@ -312,8 +312,6 @@
 	}
 }
 
-.highlight-emphasis {
-	em {
-		border: thin solid rgb(255, 88, 88);
-	}
+.highlight-emphasis .ProseMirror em {
+	border: thin solid rgb(255, 88, 88);
 }

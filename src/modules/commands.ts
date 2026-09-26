@@ -278,23 +278,27 @@ export function deleteTableSafety(): Command {
 	};
 }
 
-function expectedChild(nodeType: NodeType, schema: Schema) {
+export function expectedChild(nodeType: NodeType, schema: Schema): Node | null {
 	const nodeTypes = schema.nodes;
 	if (nodeType === nodeTypes.poem) {
 		return nodeTypes.stanza.create(null, nodeTypes.v.create());
 	} else if (nodeType === nodeTypes.cite || nodeType === nodeTypes.section || nodeType === nodeTypes.epigraph) {
 		return nodeTypes.p.create();
+	} else if (nodeType === nodeTypes.body) {
+		return nodeTypes.section.create(expectedAttrs(nodeTypes.section, schema), expectedChild(nodeTypes.section, schema));
 	} else if (nodeType.isTextblock) {
 		return null;
 	} else {
-		return nodeType.contentMatch.defaultType?.createAndFill();
+		return nodeType.contentMatch.defaultType ? nodeType.contentMatch.defaultType.createAndFill() : null;
 	};
 }
 
-function expectedAttrs(nodeType: NodeType, schema: Schema) {
+export function expectedAttrs(nodeType: NodeType, schema: Schema): Attrs | null {
 	const nodeTypes = schema.nodes;
-	if (nodeType === nodeTypes.section) {
+	if (nodeType === nodeTypes.section || nodeType === nodeTypes.body) {
 		return { uid: self.crypto.randomUUID() };
+	} else {
+		return null;
 	};
 }
 
@@ -451,6 +455,7 @@ export type SectionRange = {
 
 function sectionRangeByUID(uid: string, state: EditorState) {
 	const sectionType = state.schema.nodes.section;
+	const bodyType = state.schema.nodes.body;
 	function getSectionRange(uid: string, root: readonly Node[], pos: number): SectionRange | undefined {
 		let result: SectionRange | undefined;
 		let nodeBefore: Node | undefined;
@@ -470,7 +475,7 @@ function sectionRangeByUID(uid: string, state: EditorState) {
 					parentStart: 0,
 					parentEnd: 0
 				};
-			} else if (node.type === sectionType) {
+			} else if (node.type === sectionType || node.type === bodyType) {
 				if (node.childCount > 0) {
 					const target = getSectionRange(uid, node.children, pos + 1);
 					if (target) {

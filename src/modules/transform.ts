@@ -1,6 +1,23 @@
 import { Mark } from "prosemirror-model";
 import type { Node, Schema, MarkType, ResolvedPos } from "prosemirror-model";
 
+export type NodeWithPos = { node: Node; pos: number; } | undefined;
+
+export function findNodeWithPosByAttr(doc: Node, attr: string, target: string): NodeWithPos {
+	let result: NodeWithPos = undefined;
+
+	doc.descendants((node, pos) => {
+		if (result) return false;
+
+		if (node.attrs[attr] === target) {
+			result = { node, pos };
+			return false;
+		}
+	});
+
+	return result;
+}
+
 function getCommonMarks(marksA: readonly Mark[], marksB: readonly Mark[]) {
 	const len = Math.min(marksA.length, marksB.length);
 

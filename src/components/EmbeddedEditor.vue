@@ -1,21 +1,28 @@
 <template>
-	<div class="t-embedded_editor t-link-tooltip-root">
-		<EditorToolbar :editor-id="props.editorId" />
-		<Editor ref="editor" :editor-id="props.editorId" annotation />
+	<div class="t-embedded_editor">
+		<EditorToolbar :view-manager="viewManager" />
+		<div ref="editor" />
 	</div>
 </template>
 
 <script setup lang="ts">
 import { useTemplateRef } from "vue";
 
-import Editor from "@/components/Editor.vue";
 import EditorToolbar from "@/components/EditorToolbar.vue";
+import editorState from "@/modules/editorState";
+import { DescManager } from "@/modules/viewManager";
+import useEditorView from "@/modules/useEditorView";
 
 const props = defineProps<{ editorId: string }>();
-const editor = useTemplateRef<InstanceType<typeof Editor>>("editor");
+const editor = useTemplateRef("editor");
+
+const viewManager = new DescManager(props.editorId);
+editorState.viewManagers.push(viewManager);
+
+useEditorView(editor, viewManager, props.editorId);
 
 function hasContent() {
-	return editor.value ? editor.value.hasContent() : false;
+	return viewManager.hasContent();
 }
 
 defineExpose({ hasContent });
@@ -23,6 +30,7 @@ defineExpose({ hasContent });
 
 <style>
 .t-embedded_editor {
+	position: relative;
 	font-family: inherit;
 	font-feature-settings: inherit;
 	font-size: 1rem;

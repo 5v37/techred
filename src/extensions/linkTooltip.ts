@@ -1,14 +1,16 @@
 import type { EditorView } from "prosemirror-view";
-import type { Node, Mark } from "prosemirror-model";
+import type { Mark, Schema } from "prosemirror-model";
 import { Plugin } from "prosemirror-state";
 import { DOMSerializer } from "prosemirror-model";
 import { openUrl } from "@tauri-apps/plugin-opener";
 
 import { setLink, updateLink } from "@/modules/commands";
-import editorState from "@/modules/editorState";
+import { findNodeWithPosByAttr, type NodeWithPos } from "@/modules/transform";
+import { ViewManager } from "@/modules/viewManager";
 
 class LinkTooltipView {
 	private view: EditorView;
+	private viewManager: ViewManager;
 	private root: HTMLElement;
 	private tooltip: HTMLElement;
 	private url: HTMLElement;
@@ -16,11 +18,12 @@ class LinkTooltipView {
 	private displayed: boolean;
 	private broken: boolean;
 	private link: Mark | undefined;
-	private target: { node: Node, body: string, pos: number } | undefined;
+	private target: NodeWithPos;
 
-	constructor(view: EditorView, root: HTMLElement) {
+	constructor(view: EditorView, viewManager: ViewManager) {
 		this.view = view;
-		this.root = root;
+		this.viewManager = viewManager;
+		this.root = view.dom.parentElement!;
 
 		this.tooltip = this.createTooltip();
 		this.url = this.tooltip.querySelector(".link-url")!;
@@ -37,19 +40,25 @@ class LinkTooltipView {
 	}
 
 	update(view: EditorView) {
+		if (this.viewManager.activeView !== this.view) {
+			this.hideTooltip();
+			return;
+		};
+
 		const $to = view.state.selection.$to;
-		this.link = $to.marks().find(mark => mark.type === view.state.schema.marks.a || mark.type === view.state.schema.marks.note);
+		const schema = view.state.schema;
+		this.link = $to.marks().find(mark => mark.type === schema.marks.a || mark.type === schema.marks.note);
 		this.target = undefined;
 		this.broken = false;
 		if (this.link) {
 			const href = this.link.attrs.href as string;
 			if (href.startsWith("#")) {
-				this.target = getNodeById(href.slice(1));
+				this.target = findNodeWithPosByAttr(view.state.doc, "id", href.slice(1));
 				this.broken = !this.target;
 			} else {
 				try { new URL(href) } catch { this.broken = true };
 			};
-			this.showTooltip(href, $to.pos);
+			this.showTooltip(href, $to.pos, schema);
 		} else {
 			this.hideTooltip();
 		};
@@ -80,7 +89,7 @@ class LinkTooltipView {
 		return tooltip;
 	}
 
-	private showTooltip(href: string, pos: number) {
+	private showTooltip(href: string, pos: number, schema: Schema) {
 		this.displayed = true;
 		this.url.innerHTML = href;
 		if (this.broken) {
@@ -89,22 +98,21 @@ class LinkTooltipView {
 			this.url.removeAttribute("broken");
 		};
 
-		this.updatePreview();
+		this.updatePreview(schema);
 		this.positionTooltip(pos);
 	}
 
-	private updatePreview() {
+	private updatePreview(schema: Schema) {
 		if (this.target) {
 			let header = "", block = "";
-			const view = editorState.views[this.target.body];
-			const serializer = DOMSerializer.fromSchema(view.state.schema);
+			const serializer = DOMSerializer.fromSchema(schema);
 			if (this.target.node.isTextblock) {
 				const text = serializer.serializeNode(this.target.node) as HTMLElement;
 				block = text.innerHTML;
 			} else {
 				try {
 					this.target.node.descendants((node) => {
-						if (node.type === view.state.schema.nodes.title && node.childCount) {
+						if (node.type === schema.nodes.title && node.childCount) {
 							const title = serializer.serializeNode(node.firstChild!) as HTMLElement;
 							header = `<strong>${title.innerHTML}</strong>   `;
 							return false;
@@ -178,7 +186,6 @@ class LinkTooltipView {
 			event.preventDefault();
 
 			if (this.target) {
-				editorState.setBody(this.target.body);
 				const selector = this.target.node.attrs.uid ? `[uid="${this.target.node.attrs.uid}"]` : `[id="${this.target.node.attrs.id}"]`;
 				queueMicrotask(() => {
 					const element = document.querySelector(selector);
@@ -211,28 +218,8 @@ class LinkTooltipView {
 	};
 }
 
-function getNodeById(id: string) {
-	let target: { node: Node, body: string, pos: number; } | undefined;
-	try {
-		for (const body in editorState.bodies) {
-			editorState.views[body].state.doc.descendants((node, pos) => {
-				if (node.attrs.id === id) {
-					target = { node, body, pos };
-					throw target;
-				};
-			});
-		};
-	} catch (e) {
-		if (e !== target) {
-			throw e;
-		};
-	};
-
-	return target;
-}
-
-export default function linkTooltip(root: HTMLElement) {
+export default function linkTooltip(viewManager: ViewManager) {
 	return new Plugin({
-		view(editorView) { return new LinkTooltipView(editorView, root) }
+		view(editorView) { return new LinkTooltipView(editorView, viewManager) }
 	});
 }

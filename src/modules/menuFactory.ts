@@ -6,6 +6,7 @@ import type { MenuItem } from "primevue/menuitem";
 import { addNodeByPos } from "@/modules/commands";
 import imageRegistry from "@/modules/imageRegistry";
 import editorState from "@/modules/editorState";
+import { ViewManager } from "./viewManager";
 
 function getAllowedChildren(node: Node) {
 	const visited = new Set<ContentMatch>();
@@ -53,12 +54,12 @@ function addImageByPos(node: Node, nodeType: NodeType, pos: number): Command {
 	};
 }
 
-function wrapCommand(view: EditorView, command: Command) {
+function wrapCommand(view: EditorView | ViewManager, command: Command) {
 	editorState.restoreViewFocus();
 	command(view.state, view.dispatch);
 }
 
-export function generateInsertMenuItems(view: EditorView, node: Node, pos: number) {
+export function generateInsertMenuItems(view: EditorView | ViewManager, node: Node, pos: number) {
 	const allowed = getAllowedChildren(node);
 	const menu: MenuItem[] = [];
 

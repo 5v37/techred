@@ -17,7 +17,6 @@ import { computed, ref } from "vue";
 import { Dialog, Button, InputText, Message } from "primevue";
 import type { EditorState, Transaction } from "prosemirror-state";
 
-import { endHistoryGroup, startHistoryGroup } from "@/extensions/sharedHistory";
 import { NCNameFilter, validateId, getIds } from "@/modules/idManager";
 import editorState from "@/modules/editorState";
 import ui from "@/modules/ui";
@@ -73,31 +72,18 @@ function changeId() {
 		return;
 	};
 	if ((newId.value || params.id) && newId.value !== params.id) {
-		startHistoryGroup();
 		let tr = params.state.tr;
 		tr.setNodeAttribute(params.pos, params.key, newId.value || undefined);
 
-		const bodyKey = params.state.doc.attrs.body;
-		if (bodyKey && params.id) {
+		if (params.id) {
 			const oldHref = "#" + params.id, newHref = "#" + newId.value;
 			replaceLinkHrefs(params.state, tr, oldHref, newHref);
-
-			params.dispatch(tr);
-
-			for (let view of Object.values(editorState.views)) {
-				const relatedBodyKey = view.state.doc.attrs.body;
-				if (relatedBodyKey && relatedBodyKey !== bodyKey) {
-					let relatedTr = view.state.tr;
-					if (replaceLinkHrefs(view.state, relatedTr, oldHref, newHref)) {
-						view.dispatch(relatedTr);
-					};
-				};
-			};
-		} else {
-			params.dispatch(tr);
 		};
 
-		endHistoryGroup();
+		params.dispatch(tr);
+
+		// по остальным state надо сделать replaceLinkHrefs без добавления в историю
+		// а при отмене операции, отследить такое изменение и отменить в других state, также без добавления в историю
 	};
 	closeDialog();
 }
@@ -106,7 +92,6 @@ function replaceLinkHrefs(state: EditorState, tr: Transaction, oldHref: string, 
 	const noteMarkType = state.schema.marks.note;
 	const linkMarkType = state.schema.marks.a;
 
-	let found = false;
 	state.doc.descendants((node, pos) => {
 		if (node.marks.length === 0) return;
 
@@ -114,12 +99,10 @@ function replaceLinkHrefs(state: EditorState, tr: Transaction, oldHref: string, 
 			if ((mark.type === linkMarkType || mark.type === noteMarkType) && mark.attrs.href === oldHref) {
 				tr.removeMark(pos, pos + node.nodeSize, mark);
 				tr.addMark(pos, pos + node.nodeSize, mark.type.create({ ...mark.attrs, href: newHref }));
-				found = true;
 			}
 		};
 	});
 
-	return found;
 }
 </script>
 

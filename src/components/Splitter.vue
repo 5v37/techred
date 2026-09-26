@@ -1,13 +1,14 @@
 <template>
 	<div ref="containerRef" class="t-splitter" :class="{ 't-splitter-vertical': isVertical }">
-		<div class="t-splitter-pane" :style="{ [isVertical ? 'width' : 'height']: `${mainPercent}%` }">
+		<div class="t-splitter-pane"
+			:style="{ [isVertical ? 'width' : 'height']: showExtra ? `${mainPercent}%` : '100%' }">
 			<slot name="main" />
 		</div>
-		<div ref="splitterRef" class="t-splitter-bar"
+		<div ref="splitterRef" class="t-splitter-bar" v-show="showExtra"
 			:class="{ 't-splitter-bar-vertical': isVertical, 't-splitter-bar-horizontal': !isVertical }"
 			@pointerdown.prevent="onPointerDown" @pointermove="onPointerMove" @pointerup="onPointerUp"
 			@pointercancel="onPointerUp" @dblclick="onDbClick" />
-		<div class="t-splitter-pane"
+		<div class="t-splitter-pane" v-show="showExtra"
 			:style="{ [isVertical ? 'width' : 'height']: `calc(${100 - mainPercent}% - var(--t-splitter-bar-size))` }">
 			<slot name="extra" />
 		</div>
@@ -15,19 +16,24 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { computed, ref } from "vue";
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
 	direction?: "horizontal" | "vertical"
 	initialRatio?: number,
-	minRatio?: number
-}>();
+	minRatio?: number,
+	showExtra?: boolean
+}>(), {
+	direction: "horizontal",
+	initialRatio: 50,
+	minRatio: 10,
+	showExtra: true
+});
 
-const isVertical = props.direction === "vertical";
-const minRatio = props.minRatio || 10;
+const isVertical = computed(() => props.direction === "vertical");
 const containerRef = ref<HTMLDivElement>();
 const splitterRef = ref<HTMLDivElement>();
-const mainPercent = ref(props.initialRatio || 50);
+const mainPercent = ref(props.initialRatio);
 
 let isDragging = false;
 let startClient = 0;
@@ -39,7 +45,7 @@ function onPointerDown(e: PointerEvent) {
 	if (!splitterRef.value) return;
 
 	isDragging = true;
-	startClient = isVertical ? e.clientX : e.clientY;
+	startClient = isVertical.value ? e.clientX : e.clientY;
 	startPercent = mainPercent.value;
 
 	splitterRef.value.setPointerCapture(e.pointerId);
@@ -48,14 +54,14 @@ function onPointerDown(e: PointerEvent) {
 function onPointerMove(e: PointerEvent) {
 	if (!isDragging || !containerRef.value) return;
 
-	const containerSize = isVertical ? containerRef.value.clientWidth : containerRef.value.clientHeight;
+	const containerSize = isVertical.value ? containerRef.value.clientWidth : containerRef.value.clientHeight;
 	if (containerSize <= 0) return;
 
-	const deltaY = (isVertical ? e.clientX : e.clientY) - startClient;
-	const deltaPercent = (deltaY / containerSize) * 100;
+	const delta = (isVertical.value ? e.clientX : e.clientY) - startClient;
+	const deltaPercent = (delta / containerSize) * 100;
 
 	newPercent = startPercent + Math.round(deltaPercent * 10000) / 10000;
-	newPercent = Math.max(minRatio, Math.min(100 - minRatio, newPercent));
+	newPercent = Math.max(props.minRatio, Math.min(100 - props.minRatio, newPercent));
 
 	if (rafId === null) {
 		rafId = requestAnimationFrame(() => {
@@ -72,7 +78,7 @@ function onPointerUp() {
 }
 
 function onDbClick() {
-	mainPercent.value = props.initialRatio || 50;
+	mainPercent.value = props.initialRatio;
 }
 </script>
 

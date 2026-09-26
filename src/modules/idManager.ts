@@ -83,8 +83,8 @@ function getIds(targetId?: string, skipImages = false) {
 		};
 	};
 
-	for (const view of Object.values(editorState.views)) {
-		view.state.doc.descendants((node) => {
+	for (const manager of editorState.viewManagers) {
+		manager.state.doc.descendants((node) => {
 			if (node.attrs.id) {
 				processId(node.attrs.id);
 			};

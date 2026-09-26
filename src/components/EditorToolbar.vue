@@ -51,140 +51,135 @@ import { ref, useTemplateRef } from "vue";
 import { Button, ButtonGroup, Menu, TieredMenu } from "primevue";
 import type { MenuItem } from "primevue/menuitem";
 import type { Command } from "prosemirror-state";
-import type { EditorView } from "prosemirror-view";
-import type { NodeType } from "prosemirror-model";
-import { redo as localRedo, undo as localUndo } from "prosemirror-history";
+import { undo as undoCommand, redo as redoCommand } from "prosemirror-history";
 import { setBlockType, wrapIn } from "prosemirror-commands";
 
 import editorState from "@/modules/editorState";
 import imageRegistry from "@/modules/imageRegistry";
 import { addInlineImage, addNodeAfterSelection, deleteTableSafety, setId, setLink, setMark, wrapPoem } from "@/modules/commands";
 import { isSameMark, marksInPos } from "@/modules/transform";
-import { sharedRedo, sharedUndo } from "@/extensions/sharedHistory";
 import { addColumnAfter, addColumnBefore, addRowAfter, addRowBefore, deleteColumn, deleteRow, isInTable, mergeCells, setCellAttr, splitCell, toggleHeaderCell, toggleHeaderColumn, toggleHeaderRow } from "prosemirror-tables";
+import { ViewManager } from "@/modules/viewManager";
 
-const props = defineProps<{ editorId: string }>();
+const props = defineProps<{ viewManager: ViewManager }>();
 
 const insertMenu = useTemplateRef<InstanceType<typeof Menu>>("insertMenu");
 const insertMenuItems = ref<Array<MenuItem>>();
 const tableMenu = useTemplateRef<InstanceType<typeof TieredMenu>>("tableMenu");
 const tableMenuItems = ref<Array<MenuItem>>();
 
-const sh = props.editorId === "mainEditor";
-const undoCommand = sh ? sharedUndo : localUndo;
-const redoCommand = sh ? sharedRedo : localRedo;
 const idCommand = setId(false);
 const linkCommand = setLink();
 
 const insertCommand = (command: Command) => {
 	editorState.restoreViewFocus();
-	command(editorView.state, editorView.dispatch);
+	command(props.viewManager.state, props.viewManager.dispatch);
 };
 const createInsertMenuItems = () => [
 	{
-		label: nodes.image.spec.label,
-		disabled: !addNodeAfterSelection(nodes.image)(editorView.state),
+		label: nodeTypes.image.spec.label,
+		disabled: !addNodeAfterSelection(nodeTypes.image)(props.viewManager.state),
 		command: () => {
 			imageRegistry.importFromDialog().then(imgid => {
 				if (imgid) {
-					const image = nodes.image.create({ imgid });
-					insertCommand(addNodeAfterSelection(nodes.image, image));
+					const image = nodeTypes.image.create({ imgid });
+					insertCommand(addNodeAfterSelection(nodeTypes.image, image));
 				};
 			});
 		}
 	},
 	{
 		label: "Изображение в текст",
-		disabled: !addInlineImage()(editorView.state),
+		disabled: !addInlineImage()(props.viewManager.state),
 		command: () => {
 			imageRegistry.importFromDialog().then(imgid => {
 				if (imgid) {
-					const image = nodes.inlineimage.create({ imgid });
+					const image = nodeTypes.inlineimage.create({ imgid });
 					insertCommand(addInlineImage(image));
 				};
 			});
 		}
 	},
 	{
-		label: nodes.subtitle.spec.label,
-		disabled: !setBlockType(nodes.subtitle)(editorView.state),
-		command: () => insertCommand(setBlockType(nodes.subtitle))
+		label: nodeTypes.subtitle.spec.label,
+		disabled: !setBlockType(nodeTypes.subtitle)(props.viewManager.state),
+		command: () => insertCommand(setBlockType(nodeTypes.subtitle))
 	},
 	{
-		label: nodes.poem.spec.label,
-		disabled: !wrapPoem()(editorView.state),
+		label: nodeTypes.poem.spec.label,
+		disabled: !wrapPoem()(props.viewManager.state),
 		command: () => insertCommand(wrapPoem())
 	},
 	{
-		label: nodes.table.spec.label,
-		disabled: !addNodeAfterSelection(nodes.table)(editorView.state),
+		label: nodeTypes.table.spec.label,
+		disabled: !addNodeAfterSelection(nodeTypes.table)(props.viewManager.state),
 		command: () => {
-			const tableTemplate = nodes.table.create(null,
-				[nodes.tr.create(null, [nodes.td.create(), nodes.td.create()]),
-				nodes.tr.create(null, [nodes.td.create(), nodes.td.create()])]);
-			insertCommand(addNodeAfterSelection(nodes.table, tableTemplate));
+			const tableTemplate = nodeTypes.table.create(null,
+				[nodeTypes.tr.create(null, [nodeTypes.td.create(), nodeTypes.td.create()]),
+				nodeTypes.tr.create(null, [nodeTypes.td.create(), nodeTypes.td.create()])]);
+			insertCommand(addNodeAfterSelection(nodeTypes.table, tableTemplate));
 		}
 	},
 	{
-		label: nodes.cite.spec.label,
-		disabled: !wrapIn(nodes.cite)(editorView.state),
-		command: () => insertCommand(wrapIn(nodes.cite))
+		label: nodeTypes.cite.spec.label,
+		disabled: !wrapIn(nodeTypes.cite)(props.viewManager.state),
+		command: () => insertCommand(wrapIn(nodeTypes.cite))
 	}
 ];
 const createTableMenuItems = () => [
 	{
 		label: "Вставить столбец слева",
-		disabled: !addColumnBefore(editorView.state),
+		disabled: !addColumnBefore(props.viewManager.state),
 		command: () => insertCommand(addColumnBefore)
 	},
 	{
 		label: "Вставить столбец справа",
-		disabled: !addColumnAfter(editorView.state),
+		disabled: !addColumnAfter(props.viewManager.state),
 		command: () => insertCommand(addColumnAfter)
 	},
 	{
 		label: "Удалить столбец",
-		disabled: !deleteColumn(editorView.state),
+		disabled: !deleteColumn(props.viewManager.state),
 		command: () => insertCommand(deleteColumn)
 	},
 	{
 		label: "Вставить строку сверху",
-		disabled: !addRowBefore(editorView.state),
+		disabled: !addRowBefore(props.viewManager.state),
 		command: () => insertCommand(addRowBefore)
 	},
 	{
 		label: "Вставить строку снизу",
-		disabled: !addRowAfter(editorView.state),
+		disabled: !addRowAfter(props.viewManager.state),
 		command: () => insertCommand(addRowAfter)
 	},
 	{
 		label: "Удалить строку",
-		disabled: !deleteRow(editorView.state),
+		disabled: !deleteRow(props.viewManager.state),
 		command: () => insertCommand(deleteRow)
 	},
 	{
 		label: "Объединить ячейки",
-		disabled: !mergeCells(editorView.state),
+		disabled: !mergeCells(props.viewManager.state),
 		command: () => insertCommand(mergeCells)
 	},
 	{
 		label: "Разделить ячейки",
-		disabled: !splitCell(editorView.state),
+		disabled: !splitCell(props.viewManager.state),
 		command: () => insertCommand(splitCell)
 	},
 	{
 		label: "Включить заголовочный столбец",
-		disabled: !toggleHeaderColumn(editorView.state),
+		disabled: !toggleHeaderColumn(props.viewManager.state),
 		command: () => insertCommand(toggleHeaderColumn)
 	},
 	{
 		label: "Включить заголовочную строку",
-		disabled: !toggleHeaderRow(editorView.state),
+		disabled: !toggleHeaderRow(props.viewManager.state),
 		command: () => insertCommand(toggleHeaderRow)
 	},
 	{
 		label: "Включить заголовочную ячейку",
-		disabled: !toggleHeaderCell(editorView.state),
+		disabled: !toggleHeaderCell(props.viewManager.state),
 		command: () => insertCommand(toggleHeaderCell)
 	},
 	{
@@ -192,46 +187,46 @@ const createTableMenuItems = () => [
 		items: [
 			{
 				label: "Выровнять по левому краю",
-				disabled: !setCellAttr("align", "left")(editorView.state),
+				disabled: !setCellAttr("align", "left")(props.viewManager.state),
 				command: () => insertCommand(setCellAttr("align", "left"))
 			},
 			{
 				label: "Выровнять по центру",
-				disabled: !setCellAttr("align", "center")(editorView.state),
+				disabled: !setCellAttr("align", "center")(props.viewManager.state),
 				command: () => insertCommand(setCellAttr("align", "center"))
 			},
 			{
 				label: "Выровнять по правому краю",
-				disabled: !setCellAttr("align", "right")(editorView.state),
+				disabled: !setCellAttr("align", "right")(props.viewManager.state),
 				command: () => insertCommand(setCellAttr("align", "right"))
 			},
 			{
 				label: "Выровнять по верхнему краю",
-				disabled: !setCellAttr("valign", "top")(editorView.state),
+				disabled: !setCellAttr("valign", "top")(props.viewManager.state),
 				command: () => insertCommand(setCellAttr("valign", "top"))
 			},
 			{
 				label: "Выровнять по середине",
-				disabled: !setCellAttr("valign", "middle")(editorView.state),
+				disabled: !setCellAttr("valign", "middle")(props.viewManager.state),
 				command: () => insertCommand(setCellAttr("valign", "middle"))
 			},
 			{
 				label: "Выровнять по нижнему краю",
-				disabled: !setCellAttr("valign", "bottom")(editorView.state),
+				disabled: !setCellAttr("valign", "bottom")(props.viewManager.state),
 				command: () => insertCommand(setCellAttr("valign", "bottom"))
 			}
 		]
 	},
 	{
 		label: "Удалить таблицу",
-		disabled: !deleteTableSafety()(editorView.state),
+		disabled: !deleteTableSafety()(props.viewManager.state),
 		command: () => insertCommand(deleteTableSafety())
 	}
 ];
 
-let editorView: EditorView;
-let nodes: { [key: string]: NodeType };
-editorState.toolbars[props.editorId] = updateButtonState;
+props.viewManager.registerToolbar(updateButtonState);
+const nodeTypes = props.viewManager.state.schema.nodes;
+const markTypes = props.viewManager.state.schema.marks;
 
 const isTable = ref(false);
 const buttonState = ref({
@@ -245,11 +240,8 @@ const markState = ref(
 	Object.fromEntries(MARK_KEYS.map(k => [k, true])) as Record<typeof MARK_KEYS[number], boolean>
 );
 
-function updateButtonState(view: EditorView) {
-	editorView = view;
-	nodes = view.state.schema.nodes;
-
-	const state = view.state;
+function updateButtonState() {
+	const state = props.viewManager.state;
 	const { $from, $to, empty } = state.selection;
 
 	buttonState.value.undo = !undoCommand(state);
@@ -258,8 +250,6 @@ function updateButtonState(view: EditorView) {
 	isTable.value = isInTable(state);
 
 	const marks = marksInPos($to);
-	const markTypes = state.schema.marks;
-
 	for (const mark of MARK_KEYS) {
 		markState.value[mark] = true;
 	};
@@ -277,7 +267,7 @@ function undo(event: MouseEvent) {
 	if (event.button === 0) {
 		event.preventDefault();
 
-		undoCommand(editorView.state, editorView.dispatch);
+		undoCommand(props.viewManager.state, props.viewManager.dispatch);
 	}
 }
 
@@ -285,7 +275,7 @@ function redo(event: MouseEvent) {
 	if (event.button === 0) {
 		event.preventDefault();
 
-		redoCommand(editorView.state, editorView.dispatch);
+		redoCommand(props.viewManager.state, props.viewManager.dispatch);
 	}
 }
 
@@ -294,8 +284,8 @@ function mark(key: typeof MARK_KEYS[number], event: MouseEvent) {
 		event.preventDefault();
 
 		const isActive = !markState.value[key];
-		const markType = editorView.state.schema.marks[key];
-		setMark(markType, isActive)(editorView.state, editorView.dispatch);
+		const markType = props.viewManager.state.schema.marks[key];
+		setMark(markType, isActive)(props.viewManager.state, props.viewManager.dispatch);
 	}
 }
 
@@ -303,7 +293,7 @@ function link(event: MouseEvent) {
 	if (event.button === 0) {
 		event.preventDefault();
 
-		linkCommand(editorView.state, editorView.dispatch);
+		linkCommand(props.viewManager.state, props.viewManager.dispatch);
 	}
 }
 
@@ -311,7 +301,7 @@ function id(event: MouseEvent) {
 	if (event.button === 0) {
 		event.preventDefault();
 
-		idCommand(editorView.state, editorView.dispatch);
+		idCommand(props.viewManager.state, props.viewManager.dispatch);
 	}
 }
 

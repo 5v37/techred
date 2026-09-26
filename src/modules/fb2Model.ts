@@ -50,12 +50,35 @@ function template(topNode: string, toXML: boolean): Schema {
 	return new Schema({
 		topNode: topNode,
 		nodes: {
+			fb2: {
+				content: "body+"
+			},
+
 			body: {
 				attrs: {
 					name: { default: null },
-					body: { default: null }
+					uid: { default: null }
 				},
-				content: "image? title? epigraph* section+"
+				tag: "fb2-body",
+				isolating: true,
+				selectable: false,
+				content: "image? title? epigraph* section+",
+				parseDOM: [{
+					tag: "body",
+					getAttrs(dom) {
+						return {
+							name: dom.getAttribute("name"),
+							uid: self.crypto.randomUUID()
+						};
+					}
+				}],
+				toDOM(node) {
+					if (defaultNameSpace) {
+						return [defaultNameSpace + "body", { name: node.attrs.name }, 0];
+					} else {
+						return ["div", node.attrs, 0];
+					}
+				}
 			},
 
 			image: {
@@ -431,8 +454,8 @@ function template(topNode: string, toXML: boolean): Schema {
 	});
 };
 
-const bodySchema = template("body", false);
-const bodySchemaXML = template("body", true);
+const bodySchema = template("fb2", false);
+const bodySchemaXML = template("fb2", true);
 
 const annotationSchema = template("annotation", false);
 const annotationSchemaXML = template("annotation", true);
