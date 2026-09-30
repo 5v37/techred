@@ -347,30 +347,29 @@ function updateTOC(doc: Node) {
 
 function needUpdateTOC(transaction: Transaction, schema: Schema) {
 	if (transaction.docChanged) {
-		let hasChange = false;
 		const isRelevantNode = (node: Node) => {
 			return node.attrs.uid || (node.type === schema.nodes.title && node.textContent !== "");
 		};
 		for (const step of transaction.steps) {
 			if (step instanceof ReplaceStep || step instanceof ReplaceAroundStep) {
-				// Проверяем вставленный контент
-				hasChange = step.slice.content.content.some(isRelevantNode);
-				// Проверяем удаленный контент
-				if (!hasChange) {
-					const deletedFragment = transaction.before.slice(step.from, step.to).content;
-					hasChange = deletedFragment.content.some(isRelevantNode);
-				}
-				// Проверяем редактирование внутри заголовка
-				if (!hasChange) {
-					const pos = transaction.doc.resolve(step.from);
-					if (pos.depth > 1 && pos.node(pos.depth - 1).type === schema.nodes.title) {
-						const parentType = pos.node(pos.depth - 2).type;
-						hasChange = parentType === schema.nodes.section || parentType === schema.nodes.body;
-					};
+				// 1. Проверяем вставленный контент
+				if (step.slice.content.content.some(isRelevantNode)) {
+					return true;
 				};
 
-				if (hasChange) {
+				// 2. Проверяем удаленный контент
+				const deletedFragment = transaction.before.slice(step.from, step.to).content;
+				if (deletedFragment.content.some(isRelevantNode)) {
 					return true;
+				};
+
+				// 3. Проверяем редактирование внутри заголовка
+				const pos = transaction.doc.resolve(step.from);
+				if (pos.depth > 1 && pos.node(pos.depth - 1).type === schema.nodes.title) {
+					const parentType = pos.node(pos.depth - 2).type;
+					if (parentType === schema.nodes.section || parentType === schema.nodes.body) {
+						return true;
+					};
 				};
 			} else if (step instanceof AttrStep && step.attr === "name") {
 				return true;

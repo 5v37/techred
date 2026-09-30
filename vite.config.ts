@@ -1,8 +1,6 @@
-import { fileURLToPath, URL } from "node:url";
-
 import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
-import { version } from "./package.json";
+import packageJson from "./package.json" with { type: "json" };
 
 const host = process.env.TAURI_DEV_HOST;
 
@@ -10,12 +8,12 @@ const host = process.env.TAURI_DEV_HOST;
 export default defineConfig(async ({ mode }) => ({
 	define: {
 		__APP_TAURI_MODE__: mode === "tauri",
-		__APP_VERSION__: JSON.stringify(version)
+		__APP_VERSION__: JSON.stringify(packageJson.version)
 	},
 	resolve: {
 		alias: {
-			"@": fileURLToPath(new URL("./src", import.meta.url))
-		},
+			"@": `${import.meta.dirname}/src`
+		}
 	},
 	plugins: [
 		vue()
@@ -34,12 +32,12 @@ export default defineConfig(async ({ mode }) => ({
 			? {
 				protocol: "ws",
 				host,
-				port: 1421,
+				port: 1421
 			}
 			: undefined,
 		watch: {
 			// 3. tell vite to ignore watching `src-tauri`
-			ignored: ["**/src-tauri/**"],
-		},
-	},
+			ignored: ["**/src-tauri/**"]
+		}
+	}
 }));
